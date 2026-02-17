@@ -1,0 +1,7 @@
+{
+  "name": "cross-spawn",
+  "version": "7.0.6",
+  "description": "Native shim for cross-spawn using child_process",
+  "main": "index.js",
+  "license": "MIT"
+}

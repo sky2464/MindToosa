@@ -1,9 +1,10 @@
-import { auth } from "@/auth";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/auth";
 import { NextResponse } from "next/server";
 import { focusService } from "@/server/services/focusService";
 
 export async function POST(request: Request) {
-    const session = await auth();
+    const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -19,13 +20,14 @@ export async function POST(request: Request) {
 
         const savedSession = await focusService.createSession(session.user.id, body);
         return NextResponse.json(savedSession);
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 400 });
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : "An unknown error occurred";
+        return NextResponse.json({ error: message }, { status: 400 });
     }
 }
 
-export async function GET(request: Request) {
-    const session = await auth();
+export async function GET() {
+    const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -34,7 +36,8 @@ export async function GET(request: Request) {
     try {
         const sessions = await focusService.getSessions(session.user.id);
         return NextResponse.json(sessions);
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 400 });
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : "An unknown error occurred";
+        return NextResponse.json({ error: message }, { status: 400 });
     }
 }

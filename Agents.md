@@ -13,6 +13,9 @@ This document serves as the primary context and rulebook for the MindToosa codeb
 |AI| **Google Generative AI** | SDK |
 |Validation| **Zod** | For all inputs/env vars |
 |Icons| **Lucide React** | |
+|Linting| **ESLint** | v10.0.0 (Flat Config) |
+
+**Note:** ESLint 10 requires specific `overrides` in `package.json` for Next.js plugin compatibility and explicit React version setting in `eslint.config.mjs` for React 19 detection.
 
 ### Project Structure
 
@@ -52,9 +55,14 @@ This document serves as the primary context and rulebook for the MindToosa codeb
 
 ### TypeScript
 
-- **Strict Typing:** No `any`. Use `unknown` + validation (Zod) for uncertain data.
+- **Strict Typing:** No `any`. Use `unknown` for error handlers and external data.
+- **Error Handling:** Use `catch (error: unknown)` and check `if (error instanceof Error)`.
 - **Interfaces:** Prefer `interface` over `type` for object definitions.
 - **Validation:** All external data (API params, Environment variables) MUST be validated with Zod.
+
+### React Hooks
+
+- **Focus Safety:** Avoid synchronous `setState` in `useEffect`. Use deferred updates or functional state updates to prevent cascading renders.
 
 ### Styling (Tailwind CSS)
 

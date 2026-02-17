@@ -11,8 +11,8 @@ This document serves as the primary context source for AI agents working on the 
 - **AI Integration**: Google GenAI SDK (`@google/genai` v1.41.0)
 - **Validation**: Zod (v4.3.6)
 - **Icons**: Lucide React (v0.574.0)
-- **Environment**: ESM (eslint 10.x, postcss 8.4.45)
-- **Package Manager**: NPM
+- **Environment**: ESM (eslint 10.0.0, postcss 8.4.45)
+- **Package Manager**: NPM (requires `overrides` in `package.json` for ESLint 10 compatibility with Next.js plugins)
 
 ## 2. 📂 Project Structure
 
@@ -47,11 +47,19 @@ This document serves as the primary context source for AI agents working on the 
 - **Client/Server separation**: Use specifically typed clients for browser vs. server contexts (`createClient` from `@supabase/ssr`).
 - **Row Level Security (RLS)**: ALWAYS enable RLS on database tables. Never rely solely on application logic for security.
 
+### React & Client Components
+
+- **React 19+**: Code is optimized for React 19. Ensure ESLint config explicitly sets React version to avoid detection failures in ESLint 10.
+- **Hook Rules**:
+  - **Avoid Synchronous setState in Effects**: To prevent cascading renders and linting errors, avoid calling `setState` directly in the body of an effect. Use `Promise.resolve().then(() => setState(...))` for deferred updates or refactor to event handlers.
+  - **Dependencies**: Always include all used variables in the dependency array. Wrap complex functions in `useCallback` to maintain stability.
+
 ## 4. 🧱 Coding Standards
 
 ### TypeScript
 
-- **No `any`**: Explicitly define types. Use `unknown` if strictly necessary and narrow it down.
+- **No `any`**: Explicitly define types. Use `unknown` for error handlers and external data before validation.
+- **Error Handling Pattern**: Use `catch (error: unknown)` and check `if (error instanceof Error)` before accessing `.message`.
 - **Zod for Validation**: Use Zod schemas to validate all external inputs (API requests, form data, env vars).
 - **Interfaces over Types**: Prefer `interface` for object definitions (better error messages/extensibility).
 
@@ -85,6 +93,7 @@ To maintain a secure and state-of-the-art codebase, the following rules are **MA
 - **No Downgrades**: Downgrading a package to fix a temporary conflict is FORBIDDEN. Instead, resolve the environmental issue (e.g., using `--legacy-peer-deps`) or use `overrides` to patch sub-dependencies.
 - **Custom Logic over Bloat**: Before adding any new utility dependency (e.g., string manipulation, small hooks, or UI helpers), check if it can be implemented in < 50 lines of TypeScript. If so, implement it internally.
 - **Pre-Flight Check**: Any agent or developer modifying `package.json` MUST run `npm audit` and verify with a web search that they are using the absolute latest stable versions of all added/updated packages.
+- **ESLint 10 Compatibility**: Since ESLint 10 is used with Next.js plugins that may have outdated peer dependencies, use `package.json` `overrides` to pin compatible versions of `eslint-plugin-react`, `eslint-plugin-react-hooks`, `eslint-plugin-import`, and `eslint-plugin-jsx-a11y`.
 
 ## 6. 🔒 Security & Performance
 
@@ -95,5 +104,5 @@ To maintain a secure and state-of-the-art codebase, the following rules are **MA
 ## 7. 🧪 Workflow
 
 - **Dependency Management**: Treat dependency changes as code changes. Use `npm ci` for clean environments.
-- **Linting**: Ensure `npm run lint` passes before committing.
+- **Linting**: Ensure `npm run lint` passes before committing. The project uses the flat config system (`eslint.config.mjs`).
 - **Type Checking**: Ensure no TypeScript errors exist.

@@ -11,6 +11,18 @@ interface ConfettiOptions {
     colors?: string[];
 }
 
+interface Particle {
+    x: number;
+    y: number;
+    vx: number;
+    vy: number;
+    size: number;
+    color: string;
+    rotation: number;
+    rotationSpeed: number;
+    opacity: number;
+}
+
 export function fireConfetti(options: ConfettiOptions = {}) {
     const {
         particleCount = 100,
@@ -36,7 +48,7 @@ export function fireConfetti(options: ConfettiOptions = {}) {
     canvas.height = window.innerHeight * window.devicePixelRatio;
     ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
 
-    const particles: any[] = [];
+    const particles: Particle[] = [];
 
     for (let i = 0; i < particleCount; i++) {
         particles.push({

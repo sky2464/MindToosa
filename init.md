@@ -103,6 +103,7 @@ Validation:
 Styling:
 
 - Tailwind (or CSS Modules) — keep dependencies minimal
+- ESLint 10.0.0 (Strict mode enabled)
 
 Dependency policy:
 
@@ -334,10 +335,9 @@ Definition of done (MVP):
 
 - No file > 400 LOC.
 - Every new feature must state:
-  - Which Space(s) it touches,
-  - Which entity changes,
-  - Which clamp rules apply,
   - What the default user flow is on `/today`.
+
+- **React Hook Safety**: No synchronous `setState` in effects (prevents performance degradation).
 
 ---
 

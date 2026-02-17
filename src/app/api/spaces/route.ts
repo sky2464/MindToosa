@@ -1,10 +1,11 @@
-import { auth } from "@/auth"
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/auth";
 import { db } from "@/server/db"
 import { SpaceSchema } from "@/core/planTypes"
 import { NextResponse } from "next/server"
 
 export async function GET() {
-    const session = await auth()
+    const session = await getServerSession(authOptions)
     if (!session?.user?.email) {
         return new NextResponse("Unauthorized", { status: 401 })
     }
@@ -27,7 +28,7 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-    const session = await auth()
+    const session = await getServerSession(authOptions)
     if (!session?.user?.email) {
         return new NextResponse("Unauthorized", { status: 401 })
     }

@@ -1,0 +1,80 @@
+
+> mindtoosa@0.1.0 lint
+> eslint
+
+
+/Users/navid/Documents/Code/MindToosa/src/app/api/focus/route.ts
+  22:21  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  27:27  warning  'request' is defined but never used       @typescript-eslint/no-unused-vars
+  37:21  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/navid/Documents/Code/MindToosa/src/app/api/gamification/route.ts
+   5:27  warning  'request' is defined but never used       @typescript-eslint/no-unused-vars
+  15:21  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  42:21  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/navid/Documents/Code/MindToosa/src/app/api/plan/apply/route.ts
+  49:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/navid/Documents/Code/MindToosa/src/app/api/plan/daily/route.ts
+  24:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  37:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/navid/Documents/Code/MindToosa/src/app/api/tasks/[taskId]/route.ts
+   4:10  warning  'TaskSchema' is defined but never used    @typescript-eslint/no-unused-vars
+  25:21  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  44:21  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/navid/Documents/Code/MindToosa/src/app/api/tasks/route.ts
+  19:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  35:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/navid/Documents/Code/MindToosa/src/app/today/FocusTimer.tsx
+    5:34  warning  'CheckCircle2' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 @typescript-eslint/no-unused-vars
+   61:13  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/navid/Documents/Code/MindToosa/src/app/today/FocusTimer.tsx:61:13
+  59 |             }, 1000);
+  60 |         } else if (timeLeft === 0 && isActive) {
+> 61 |             setIsActive(false);
+     |             ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  62 |             setMode("completed");
+  63 |             playComplete();
+  64 |             saveSession();  react-hooks/set-state-in-effect
+   70:8   warning  React Hook useEffect has a missing dependency: 'saveSession'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           react-hooks/exhaustive-deps
+  208:59  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  225:59  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+
+/Users/navid/Documents/Code/MindToosa/src/app/today/TaskListClient.tsx
+  3:10  warning  'useState' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/navid/Documents/Code/MindToosa/src/app/today/page.tsx
+   3:8   warning  'Image' is defined but never used         @typescript-eslint/no-unused-vars
+   9:8   warning  'GlassCard' is defined but never used     @typescript-eslint/no-unused-vars
+  10:10  warning  'CheckCircle2' is defined but never used  @typescript-eslint/no-unused-vars
+  10:24  warning  'Circle' is defined but never used        @typescript-eslint/no-unused-vars
+  10:32  warning  'Clock' is defined but never used         @typescript-eslint/no-unused-vars
+  10:39  warning  'Tag' is defined but never used           @typescript-eslint/no-unused-vars
+
+/Users/navid/Documents/Code/MindToosa/src/components/FlowBoard.tsx
+  43:13  warning  'newStatus' is assigned a value but never used      @typescript-eslint/no-unused-vars
+  56:13  warning  'shouldReorder' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/navid/Documents/Code/MindToosa/src/lib/confetti.ts
+  39:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/navid/Documents/Code/MindToosa/src/lib/utils.ts
+  3:83  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/navid/Documents/Code/MindToosa/src/server/services/gamificationService.ts
+  47:13  error  'newXP' is never reassigned. Use 'const' instead  prefer-const
+
+✖ 31 problems (17 errors, 14 warnings)
+  1 error and 0 warnings potentially fixable with the `--fix` option.
+

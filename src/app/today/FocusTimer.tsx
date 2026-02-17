@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Play, Pause, RotateCcw, CheckCircle2, Maximize2, Minimize2 } from "lucide-react";
+import { Play, Pause, RotateCcw, Maximize2, Minimize2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSoundEffects } from "@/hooks/useSoundEffects"; // Ensure this hook exists or mock it if needed
 
@@ -20,7 +20,7 @@ export default function FocusTimer({ activeTaskId, activeTaskTitle }: FocusTimer
     // Sound hooks
     const { playStart, playPause, playComplete, playClick } = useSoundEffects();
 
-    const saveSession = async () => {
+    const saveSession = useCallback(async () => {
         try {
             await fetch("/api/focus", {
                 method: "POST",
@@ -48,7 +48,7 @@ export default function FocusTimer({ activeTaskId, activeTaskTitle }: FocusTimer
         } catch (error) {
             console.error("Error saving focus session:", error);
         }
-    };
+    }, [activeTaskId]);
 
     useEffect(() => {
         let interval: NodeJS.Timeout | null = null;
@@ -58,16 +58,18 @@ export default function FocusTimer({ activeTaskId, activeTaskTitle }: FocusTimer
                 setTimeLeft((prev) => prev - 1);
             }, 1000);
         } else if (timeLeft === 0 && isActive) {
-            setIsActive(false);
-            setMode("completed");
-            playComplete();
-            saveSession();
+            Promise.resolve().then(() => {
+                setIsActive(false);
+                setMode("completed");
+                playComplete();
+                saveSession();
+            });
         }
 
         return () => {
             if (interval) clearInterval(interval);
         };
-    }, [isActive, timeLeft, playComplete]);
+    }, [isActive, timeLeft, playComplete, saveSession]);
 
     const startTimer = () => {
         setIsActive(true);
@@ -205,7 +207,7 @@ export default function FocusTimer({ activeTaskId, activeTaskTitle }: FocusTimer
     );
 }
 
-function TimerDisplay({ timeLeft, formatTime, isActive }: any) {
+function TimerDisplay({ timeLeft, formatTime, isActive }: { timeLeft: number; formatTime: (s: number) => string; isActive: boolean }) {
     return (
         <div className="relative">
             {isActive && (
@@ -222,7 +224,7 @@ function TimerDisplay({ timeLeft, formatTime, isActive }: any) {
     )
 }
 
-function ControlButton({ onClick, icon, label, primary }: any) {
+function ControlButton({ onClick, icon, label, primary }: { onClick: () => void; icon: React.ReactNode; label: string; primary?: boolean }) {
     return (
         <button
             onClick={onClick}

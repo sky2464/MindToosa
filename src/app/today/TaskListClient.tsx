@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { CheckCircle2, Circle, Clock, Tag } from "lucide-react";
 import GlassCard from "@/components/ui/GlassCard";
 import { fireConfetti } from "@/lib/confetti";

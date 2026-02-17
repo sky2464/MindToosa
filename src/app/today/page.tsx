@@ -1,17 +1,13 @@
-import { auth } from "@/auth";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/auth";
 import { redirect } from "next/navigation";
-import Image from "next/image"; // Added for optimization? No, not needed here.
-import { taskService } from "@/server/services/taskService";
-import { spaceService } from "@/server/services/spaceService";
 import TaskInput from "./TaskInput";
 import FocusTimer from "./FocusTimer";
 import AmbientBackground from "@/components/ui/AmbientBackground";
-import GlassCard from "@/components/ui/GlassCard";
-import { CheckCircle2, Circle, Clock, Tag } from "lucide-react";
 import TaskListClient from "./TaskListClient"; // Use a client component for interactivity
 
 export default async function TodayPage() {
-    const session = await auth();
+    const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
         redirect("/api/auth/signin");
     }

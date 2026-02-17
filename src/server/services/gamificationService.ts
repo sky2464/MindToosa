@@ -44,7 +44,7 @@ export const gamificationService = {
         const stats = await this.getStats(userId);
 
         // 2. Calculate new values
-        let newXP = stats.xp + amount;
+        const newXP = stats.xp + amount;
         let newLevel = stats.level;
 
         // Simple level formula: Level = floor(sqrt(XP / 100)) + 1

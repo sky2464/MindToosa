@@ -36,8 +36,6 @@ export default function FlowBoard({ tasks: initialTasks }: FlowBoardProps) {
         if (taskIndex === -1) return;
 
         const task = updatedTasks[taskIndex];
-        let newStatus = task.status;
-        let shouldReorder = false;
 
         if (targetStatus === 'done') {
             newStatus = 'done';

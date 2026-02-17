@@ -1,13 +1,13 @@
-import { auth } from "@/auth"
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/auth";
 import { taskService } from "@/server/services/taskService"
 import { NextResponse } from "next/server"
-import { TaskSchema } from "@/core/planTypes"
 
 export async function PATCH(
     req: Request,
     { params }: { params: { taskId: string } }
 ) {
-    const session = await auth()
+    const session = await getServerSession(authOptions)
     const userId = session?.user?.email
     if (!userId) {
         return new NextResponse("Unauthorized", { status: 401 })
@@ -22,8 +22,9 @@ export async function PATCH(
 
         const updatedTask = await taskService.updateTask(userId, taskId, json)
         return NextResponse.json(updatedTask)
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 400 })
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : "An unknown error occurred";
+        return NextResponse.json({ error: message }, { status: 400 })
     }
 }
 
@@ -31,7 +32,7 @@ export async function DELETE(
     req: Request,
     { params }: { params: { taskId: string } }
 ) {
-    const session = await auth()
+    const session = await getServerSession(authOptions)
     const userId = session?.user?.email
     if (!userId) {
         return new NextResponse("Unauthorized", { status: 401 })
@@ -41,7 +42,8 @@ export async function DELETE(
         const taskId = params.taskId;
         await taskService.deleteTask(userId, taskId);
         return new NextResponse(null, { status: 204 })
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 400 })
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : "An unknown error occurred";
+        return NextResponse.json({ error: message }, { status: 400 })
     }
 }
