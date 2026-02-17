@@ -1,33 +1,36 @@
+import { auth } from "@/auth"
+import { taskService } from "@/server/services/taskService"
 import { NextResponse } from "next/server"
-// import { DailyPlanSchema } from "@/core/planTypes"
 
-// Mock input: user context
-// Output: DailyPlan JSON
+// Input: user context (optional)
+// Output: DailyPlan JSON populated with real tasks
 export async function POST() {
-    // In real implementation:
-    // 1. Fetch user goals, constraints, energy level
-    // 2. Call AI with context
-    // 3. Validate AI output with DailyPlanSchema
-
-    // Mock response
-    const mockPlan = {
-        date: new Date().toISOString().split("T")[0],
-        mustDo: [
-            {
-                space_id: "00000000-0000-0000-0000-000000000000", // mock UUID needed
-                title: "Finish MVP Setup",
-                priority: "must_do",
-                estimated_minutes: 25,
-                micro_steps: ["Init repo", "Auth setup", "DB schema"],
-                status: "todo"
-            }
-        ],
-        optional: [],
-        notes: "Focus on the basics first."
+    const session = await auth()
+    const userId = session?.user?.email
+    if (!userId) {
+        return new NextResponse("Unauthorized", { status: 401 })
     }
 
-    // Note: space_id needs to be valid UUID in real DB, but for mock return it's fine.
-    // Validation might fail if we enforce UUID in schema on return?
+    try {
+        const today = new Date().toISOString().split("T")[0];
 
-    return NextResponse.json(mockPlan)
+        // 1. Fetch existing tasks scheduled for today
+        const tasks = await taskService.getTasks(userId, { date: today });
+
+        // 2. Segregate by priority
+        const mustDo = tasks.filter(t => t.priority === 'must_do' && t.status !== 'done');
+        const optional = tasks.filter(t => t.priority !== 'must_do' && t.status !== 'done');
+
+        // 3. Construct DailyPlan
+        const plan = {
+            date: today,
+            mustDo,
+            optional,
+            notes: "Plan generated from existing tasks."
+        };
+
+        return NextResponse.json(plan);
+    } catch (error: any) {
+        return NextResponse.json({ error: error.message }, { status: 500 })
+    }
 }

@@ -1,6 +1,5 @@
 import { auth } from "@/auth"
-import { db } from "@/server/db"
-import { TaskSchema } from "@/core/planTypes"
+import { taskService } from "@/server/services/taskService"
 import { NextResponse } from "next/server"
 
 export async function GET(req: Request) {
@@ -11,21 +10,15 @@ export async function GET(req: Request) {
     }
 
     const { searchParams } = new URL(req.url)
-    const spaceId = searchParams.get("spaceId")
-    const date = searchParams.get("date")
+    const spaceId = searchParams.get("spaceId") || undefined
+    const date = searchParams.get("date") || undefined
 
-    let query = db.from("tasks").select("*").eq("user_id", userId)
-
-    if (spaceId) query = query.eq("space_id", spaceId)
-    if (date) query = query.eq("scheduled_for", date)
-
-    const { data, error } = await query
-
-    if (error) {
+    try {
+        const tasks = await taskService.getTasks(userId, { spaceId, date })
+        return NextResponse.json(tasks)
+    } catch (error: any) {
         return NextResponse.json({ error: error.message }, { status: 500 })
     }
-
-    return NextResponse.json(data)
 }
 
 export async function POST(req: Request) {
@@ -37,26 +30,9 @@ export async function POST(req: Request) {
 
     try {
         const json = await req.json()
-        // Override user_id just in case
-        const payload = { ...json, user_id: userId }
-        const result = TaskSchema.safeParse(payload)
-
-        if (!result.success) {
-            return NextResponse.json({ error: result.error }, { status: 400 })
-        }
-
-        const { data, error } = await db
-            .from("tasks")
-            .insert(result.data)
-            .select()
-            .single()
-
-        if (error) {
-            return NextResponse.json({ error: error.message }, { status: 500 })
-        }
-
-        return NextResponse.json(data)
-    } catch {
-        return NextResponse.json({ error: "Internal Error" }, { status: 500 })
+        const task = await taskService.createTask(userId, json)
+        return NextResponse.json(task)
+    } catch (error: any) {
+        return NextResponse.json({ error: error.message }, { status: 400 })
     }
 }

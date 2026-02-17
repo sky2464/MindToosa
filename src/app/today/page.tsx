@@ -1,46 +1,75 @@
-export default function TodayPage() {
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
+import { taskService } from "@/server/services/taskService";
+import { spaceService } from "@/server/services/spaceService";
+import TaskInput from "./TaskInput";
+import FocusTimer from "./FocusTimer";
+
+export default async function TodayPage() {
+    const session = await auth();
+    if (!session?.user?.email) {
+        redirect("/api/auth/signin");
+    }
+
+    const userId = session.user.email;
+    const today = new Date().toISOString().split("T")[0];
+
+    // Ensure a default space exists for adding tasks
+    let defaultSpace;
+    try {
+        defaultSpace = await spaceService.ensureDefaultSpace(userId);
+    } catch (e) {
+        console.error("Failed to ensure default space", e);
+        return <div className="p-4 text-red-500">Error loading application data. Please contact support.</div>;
+    }
+
+    if (!defaultSpace?.id) {
+        return <div className="p-4 text-red-500">Error: Default space has no ID.</div>;
+    }
+
+    // Fetch tasks
+    const tasks = await taskService.getTasks(userId, { date: today });
+
+    // Group tasks if needed
+    // const mustDo = tasks.filter(t => t.priority === "must_do");
+
     return (
-        <div className="max-w-md mx-auto p-4 space-y-8">
+        <div className="max-w-md mx-auto p-4 space-y-8 pb-20">
             <header className="flex justify-between items-center">
                 <h1 className="text-2xl font-bold">Today</h1>
-                <div className="text-sm text-gray-500">Feb 16</div>
+                <div className="text-sm text-gray-500">{today}</div>
             </header>
 
-            {/* Focus Sprint CTA */}
-            <section className="bg-blue-50 p-6 rounded-xl text-center space-y-4">
-                <h2 className="text-lg font-semibold text-blue-900">Ready to focus?</h2>
-                <button className="bg-blue-600 text-white px-6 py-3 rounded-full font-medium hover:bg-blue-700 transition w-full">
-                    Start 25m Sprint
-                </button>
-            </section>
+            {/* Focus Timer */}
+            <FocusTimer />
 
-            {/* Must Do */}
+            {/* Add Task Input */}
+            <TaskInput spaceId={defaultSpace.id} />
+
+            {/* Tasks List */}
             <section>
-                <h3 className="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Must Do (0/3)</h3>
-                <ul className="space-y-3">
-                    <li className="p-4 border rounded-lg shadow-sm flex items-start gap-4">
-                        <div className="w-5 h-5 rounded-full border-2 border-gray-300 mt-1" />
-                        <div>
-                            <p className="font-medium">Finish project setup</p>
-                            <p className="text-sm text-gray-500">25m • Coding</p>
-                        </div>
-                    </li>
-                </ul>
-            </section>
+                <h3 className="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Tasks ({tasks.length})</h3>
 
-            {/* Optional */}
-            <section>
-                <h3 className="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Optional (0/4)</h3>
-                <p className="text-gray-400 text-sm italic">No optional tasks yet.</p>
+                {tasks.length === 0 ? (
+                    <p className="text-gray-400 text-sm italic text-center py-8">No tasks scheduled for today. Add one above!</p>
+                ) : (
+                    <ul className="space-y-3">
+                        {tasks.map(task => (
+                            <li key={task.id} className="p-4 border rounded-lg shadow-sm flex items-start gap-4 bg-white">
+                                <div className={`w-5 h-5 rounded-full border-2 mt-1 flex-shrink-0 cursor-pointer ${task.status === 'done' ? 'bg-green-500 border-green-500' : 'border-gray-300'}`} />
+                                <div>
+                                    <p className={`font-medium ${task.status === 'done' ? 'line-through text-gray-400' : ''}`}>{task.title}</p>
+                                    <div className="flex gap-2 text-sm text-gray-500 mt-1">
+                                        <span>{task.estimated_minutes}m</span>
+                                        <span>•</span>
+                                        <span className="capitalize">{task.priority.replace('_', ' ')}</span>
+                                    </div>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                )}
             </section>
-
-            {/* Next Action Panel */}
-            <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t">
-                <div className="max-w-md mx-auto">
-                    <p className="text-xs text-blue-600 font-bold uppercase mb-1">Next Action</p>
-                    <p className="font-medium">Run `npm run dev` to verify the setup.</p>
-                </div>
-            </div>
         </div>
     )
 }
