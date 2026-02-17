@@ -66,5 +66,18 @@ export const taskService = {
 
         if (error) throw new Error(error.message);
         return data as Task[];
+    },
+
+    async updateTask(userId: string, taskId: string, updates: Partial<Task>) {
+        const { data, error } = await db
+            .from("tasks")
+            .update(updates)
+            .eq("id", taskId)
+            .eq("user_id", userId)
+            .select()
+            .single();
+
+        if (error) throw new Error(error.message);
+        return data as Task;
     }
 };

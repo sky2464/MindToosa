@@ -1,9 +1,14 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import Image from "next/image"; // Added for optimization? No, not needed here.
 import { taskService } from "@/server/services/taskService";
 import { spaceService } from "@/server/services/spaceService";
 import TaskInput from "./TaskInput";
 import FocusTimer from "./FocusTimer";
+import AmbientBackground from "@/components/ui/AmbientBackground";
+import GlassCard from "@/components/ui/GlassCard";
+import { CheckCircle2, Circle, Clock, Tag } from "lucide-react";
+import TaskListClient from "./TaskListClient"; // Use a client component for interactivity
 
 export default async function TodayPage() {
     const session = await auth();
@@ -12,7 +17,8 @@ export default async function TodayPage() {
     }
 
     const userId = session.user.email;
-    const today = new Date().toISOString().split("T")[0];
+    const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+    const isoDate = new Date().toISOString().split("T")[0];
 
     // Ensure a default space exists for adding tasks
     let defaultSpace;
@@ -20,56 +26,54 @@ export default async function TodayPage() {
         defaultSpace = await spaceService.ensureDefaultSpace(userId);
     } catch (e) {
         console.error("Failed to ensure default space", e);
-        return <div className="p-4 text-red-500">Error loading application data. Please contact support.</div>;
+        return <div className="p-8 text-destructive">Error loading application data. Please contact support.</div>;
     }
 
     if (!defaultSpace?.id) {
-        return <div className="p-4 text-red-500">Error: Default space has no ID.</div>;
+        return <div className="p-8 text-destructive">Error: Default space has no ID.</div>;
     }
 
     // Fetch tasks
-    const tasks = await taskService.getTasks(userId, { date: today });
+    const tasks = await taskService.getTasks(userId, { date: isoDate });
 
-    // Group tasks if needed
-    // const mustDo = tasks.filter(t => t.priority === "must_do");
+    // Determine active task (first non-completed that is essential/important or just first)
+    const activeTask = tasks.find(t => t.status !== 'done' && t.status !== 'cancelled' && t.status !== 'migrated');
 
     return (
-        <div className="max-w-md mx-auto p-4 space-y-8 pb-20">
-            <header className="flex justify-between items-center">
-                <h1 className="text-2xl font-bold">Today</h1>
-                <div className="text-sm text-gray-500">{today}</div>
-            </header>
+        <div className="min-h-screen relative text-foreground overflow-x-hidden">
+            {/* Immersive Background */}
+            <AmbientBackground />
 
-            {/* Focus Timer */}
-            <FocusTimer />
+            <div className="max-w-xl mx-auto p-6 md:p-12 pb-32 space-y-10 relative z-10">
+                <header className="flex justify-between items-end">
+                    <div>
+                        <h1 className="text-4xl font-bold tracking-tight text-white mb-2">Today</h1>
+                        <p className="text-muted-foreground font-medium text-lg">{today}</p>
+                    </div>
+                </header>
 
-            {/* Add Task Input */}
-            <TaskInput spaceId={defaultSpace.id} />
+                {/* Focus Timer */}
+                <section>
+                    <FocusTimer
+                        activeTaskId={activeTask?.id}
+                        activeTaskTitle={activeTask?.title}
+                    />
+                </section>
 
-            {/* Tasks List */}
-            <section>
-                <h3 className="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3">Tasks ({tasks.length})</h3>
+                {/* Add Task Input */}
+                <section>
+                    <TaskInput spaceId={defaultSpace.id} />
+                </section>
 
-                {tasks.length === 0 ? (
-                    <p className="text-gray-400 text-sm italic text-center py-8">No tasks scheduled for today. Add one above!</p>
-                ) : (
-                    <ul className="space-y-3">
-                        {tasks.map(task => (
-                            <li key={task.id} className="p-4 border rounded-lg shadow-sm flex items-start gap-4 bg-white">
-                                <div className={`w-5 h-5 rounded-full border-2 mt-1 flex-shrink-0 cursor-pointer ${task.status === 'done' ? 'bg-green-500 border-green-500' : 'border-gray-300'}`} />
-                                <div>
-                                    <p className={`font-medium ${task.status === 'done' ? 'line-through text-gray-400' : ''}`}>{task.title}</p>
-                                    <div className="flex gap-2 text-sm text-gray-500 mt-1">
-                                        <span>{task.estimated_minutes}m</span>
-                                        <span>•</span>
-                                        <span className="capitalize">{task.priority.replace('_', ' ')}</span>
-                                    </div>
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
-                )}
-            </section>
+                {/* Tasks List - Moved to Client Component for interactivity */}
+                <section>
+                    <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Up Next ({tasks.length})</h3>
+                    </div>
+
+                    <TaskListClient tasks={tasks} />
+                </section>
+            </div>
         </div>
     )
 }

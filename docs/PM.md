@@ -1,8 +1,8 @@
 # Project Manager (PM) Update
 
-## Current Status (Feb 16, 2026)
+## Current Status (Feb 17, 2026)
 
-The project is in the **MVP Build Phase**. The foundation (Next.js, Tailwind, Auth, Zod) is solid. Backend API routes for Tasks and Spaces are implemented. The frontend for `/today` is integrated with Supabase and fetches real tasks.
+The project is in the **MVP Enhancements Phase**. Focus Session Persistence and AI Planning are complete. We are now moving to build the Spaces and Goals management UI.
 
 ## What is Done ✅
 
@@ -17,10 +17,11 @@ The project is in the **MVP Build Phase**. The foundation (Next.js, Tailwind, Au
 4.  **API Implementation (Sprint B - Backend)**:
     - `GET/POST /api/tasks`: Connected to Supabase (DB).
     - `GET/POST /api/spaces`: Connected to Supabase (DB).
-    - `POST /api/plan/daily`: Mock endpoint ready for frontend integration.
+    - `POST /api/plan/daily`: Connected to LLM (Google Gemini).
     - `POST /api/plan/apply`: Endpoint structure exists.
+    - `POST /api/focus`: Handles session persistence.
 5.  **Frontend (Sprint A - UI)**:
-    - `/today` page created (Static Mock UI).
+    - `/today` page created with Real Task fetching.
     - Basic layout and styling.
 6.  **Database Verification**:
     - Confirmed Supabase tables (`spaces`, `goals`, `tasks`, `focus_sessions`) match Zod schemas.
@@ -29,21 +30,23 @@ The project is in the **MVP Build Phase**. The foundation (Next.js, Tailwind, Au
     - Implemented "Add Task" feature using `TaskInput` and `POST /api/tasks`.
     - Created `spaceService` to handle default space creation.
 8.  **Planning Logic Implementation**:
-    - Upgraded `/api/plan/daily` to fetch real tasks via `taskService`.
+    - Upgraded `/api/plan/daily` to fetch real tasks via `taskService` and generate plan via LLM.
     - Implemented `POST /api/plan/apply` logic to upsert tasks to DB.
-9.  **Focus Timer (UI)**:
-    - Created `FocusTimer` component with idle/running/paused/completed states.
+9.  **Focus Timer (UI & Persistence)**:
+    - Created `FocusTimer` component.
     - Integrated timer into `/today` page.
+    - Linked sessions to active tasks and saved to DB.
+10. **AI Planning**:
+    - Integrated Google Generative AI.
+    - `/api/plan/daily` generates structure plans.
 
 ## What is Next 📝 (Immediate Steps)
 
-1.  **Focus Session Persistence**:
-    - Upgrade `FocusTimer` to save completed sessions to `focus_sessions` table via API.
-2.  **AI Planning**:
-    - Connect `/api/plan/daily` to an LLM provider (e.g., OpenAI/Gemini) for smart suggestions.
+1.  **Sprint E: Spaces & Goals Management UI**:
+    - `/spaces` page: Manage spaces (Create/Edit/Archive).
+    - `/goals` page: Manage goals (Create/Edit/Archive).
 
 ## Upcoming Roadmap
 
-- **Sprint C**: Focus Mode (Timer + Session tracking) & `focus_sessions` table integration.
-- **Sprint D**: AI Planning (Connect `/api/plan/daily` to LLM).
-- **Sprint E**: Spaces & Goals Management UI (`/spaces`, `/goals`).
+- **Sprint F**: Polish & Metrics (Dashboard view).
+- **Sprint G**: User Settings & Preferences.

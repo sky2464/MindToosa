@@ -5,7 +5,7 @@ export const MicroStepSchema = z.string().min(1);
 
 export const SpaceSchema = z.object({
     id: z.string().uuid().optional(),
-    user_id: z.string().uuid().optional(), // Often inferred from context
+    user_id: z.string().optional(), // Often inferred from context
     name: z.string().min(1),
     created_at: z.date().optional(),
     archived: z.boolean().default(false),
@@ -13,7 +13,7 @@ export const SpaceSchema = z.object({
 
 export const GoalSchema = z.object({
     id: z.string().uuid().optional(),
-    user_id: z.string().uuid().optional(),
+    user_id: z.string().optional(),
     space_id: z.string().uuid(),
     title: z.string().min(1),
     horizon: z.enum(["week", "month", "year", "life"]).optional(), // Simplified horizon
@@ -27,7 +27,7 @@ export const TaskPrioritySchema = z.enum(["must_do", "optional", "normal"]);
 
 export const TaskSchema = z.object({
     id: z.string().uuid().optional(),
-    user_id: z.string().uuid().optional(),
+    user_id: z.string().optional(),
     space_id: z.string().uuid(),
     goal_id: z.string().uuid().optional().nullable(),
     title: z.string().min(1),
@@ -41,7 +41,7 @@ export const TaskSchema = z.object({
 
 export const FocusSessionSchema = z.object({
     id: z.string().uuid().optional(),
-    user_id: z.string().uuid().optional(),
+    user_id: z.string().optional(),
     task_id: z.string().uuid().optional().nullable(),
     started_at: z.date(),
     duration_minutes: z.number().int().min(1),

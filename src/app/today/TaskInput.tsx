@@ -2,10 +2,13 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Loader2, Plus, ArrowUp } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const TaskInput = ({ spaceId }: { spaceId: string }) => {
     const [title, setTitle] = useState("");
     const [loading, setLoading] = useState(false);
+    const [isFocused, setIsFocused] = useState(false);
     const router = useRouter();
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -23,37 +26,6 @@ const TaskInput = ({ spaceId }: { spaceId: string }) => {
                 space_id: spaceId,
             };
 
-            // Hack: Create a default space first if none? Or rely on default.
-            // Oh right, spaces table exists. Goals table exists.
-            // I need a valid space_id.
-            // For now, I'll hardcode a spaceId? Or fetch one?
-            // "Confirm Supabase tables (`spaces`...) exist".
-            // If the user has no spaces, this will fail.
-            // The PM update mentions "Frontend Integration (Connect UI to API)".
-            // If I create a task without a space, the constraints will fail (`space_id uuid NOT NULL`).
-
-            // For MVP/testing, maybe create a "General" space if not exists?
-            // Or fetch existing spaces.
-
-            // Let's first try to fetch a space. If none, create one.
-            // But this is client-side.
-            // I'll assume for now I can create a space via API or just use a placeholder UUID if the backend handles it?
-            // No, verify schema: `space_id uuid references spaces(id)`. It MUST exist.
-
-            // So I need to fetch spaces first.
-            // I'll add logic to create a default space on the server if none exists when loading the page?
-            // Or just fetch spaces in this component.
-
-            // Let's keep it simple: assume the backend handles default space creation or the user has one.
-            // Wait, I should probably check for spaces in the page component.
-
-            // Moving back to page.tsx logic:
-            // 1. Fetch user's spaces.
-            // 2. If none, create a default "General" space.
-            // 3. Pass the default space ID to TaskInput.
-
-            // So TaskInput will accept `spaceId` as a prop.
-
             const res = await fetch("/api/tasks", {
                 method: "POST",
                 body: JSON.stringify(task),
@@ -68,7 +40,7 @@ const TaskInput = ({ spaceId }: { spaceId: string }) => {
             }
 
             setTitle("");
-            router.refresh(); // Tells Next.js to re-fetch server components
+            router.refresh();
         } catch (error) {
             console.error("Failed to add task", error);
         } finally {
@@ -77,23 +49,40 @@ const TaskInput = ({ spaceId }: { spaceId: string }) => {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="mb-6 p-4 border rounded-lg bg-gray-50">
-            <h3 className="text-sm font-semibold mb-2">Add New Task</h3>
-            <div className="flex gap-2">
+        <form
+            onSubmit={handleSubmit}
+            className={cn(
+                "relative rounded-2xl border transition-all duration-300",
+                isFocused
+                    ? "bg-white/10 border-primary/50 shadow-lg shadow-primary/10"
+                    : "bg-white/5 border-white/10 hover:border-white/20"
+            )}
+        >
+            <div className="flex items-center p-2">
+                <div className="pl-3 pr-2 text-muted-foreground">
+                    <Plus className="w-5 h-5" />
+                </div>
                 <input
                     type="text"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    placeholder="What needs to be done?"
-                    className="flex-1 p-2 border rounded text-sm disabled:opacity-50"
+                    onFocus={() => setIsFocused(true)}
+                    onBlur={() => setIsFocused(false)}
+                    placeholder="New mission..."
+                    className="flex-1 bg-transparent border-none text-white placeholder:text-muted-foreground/70 focus:ring-0 text-lg py-3"
                     disabled={loading}
                 />
                 <button
                     type="submit"
-                    className="bg-blue-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+                    className={cn(
+                        "p-3 rounded-xl transition-all duration-200",
+                        title.trim()
+                            ? "bg-primary text-white hover:bg-primary/90"
+                            : "bg-white/5 text-muted-foreground cursor-not-allowed"
+                    )}
                     disabled={loading || !title.trim()}
                 >
-                    {loading ? "Adding..." : "Add"}
+                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <ArrowUp className="w-5 h-5" />}
                 </button>
             </div>
         </form>
