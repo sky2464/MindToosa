@@ -7,6 +7,22 @@ export default function FocusTimer() {
     const [isActive, setIsActive] = useState(false);
     const [mode, setMode] = useState<"idle" | "running" | "paused" | "completed">("idle");
 
+    const saveSession = async () => {
+        try {
+            await fetch("/api/focus", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    started_at: new Date(Date.now() - 25 * 60 * 1000).toISOString(),
+                    duration_minutes: 25,
+                    completed: true,
+                }),
+            });
+        } catch (error) {
+            console.error("Error saving focus session:", error);
+        }
+    };
+
     useEffect(() => {
         let interval: NodeJS.Timeout | null = null;
 
@@ -17,7 +33,7 @@ export default function FocusTimer() {
         } else if (timeLeft === 0 && isActive) {
             setIsActive(false);
             setMode("completed");
-            // Here we would play a sound or notify
+            saveSession();
         }
 
         return () => {
