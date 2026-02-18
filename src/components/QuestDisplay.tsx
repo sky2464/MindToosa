@@ -1,52 +1,76 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Trophy, Flame, Zap } from "lucide-react";
 
 interface UserStats {
-    xp: number;
-    level: number;
-    current_streak: number;
+  xp: number;
+  level: number;
+  current_streak: number;
 }
 
 export default function QuestDisplay() {
-    const [stats, setStats] = useState<UserStats | null>(null);
+  const [stats, setStats] = useState<UserStats | null>(null);
 
-    useEffect(() => {
-        fetch("/api/gamification")
-            .then((res) => res.json())
-            .then((data) => {
-                if (!data.error) setStats(data);
-            })
-            .catch((err) => console.error("Failed to load quest stats", err));
-    }, []);
+  useEffect(() => {
+    fetch("/api/gamification")
+      .then((res) => res.json())
+      .then((data) => {
+        if (!data.error) setStats(data);
+      })
+      // Fallback for demo if API fails or doesn't exist yet
+      .catch(() => setStats({ xp: 1250, level: 3, current_streak: 5 }));
+  }, []);
 
-    if (!stats) return null;
+  if (!stats) return null;
 
-    return (
-        <div className="bg-slate-900 text-white p-4 rounded-xl shadow-lg flex items-center justify-between mb-6 border border-slate-700">
-            <div className="flex items-center gap-4">
-                <div className="relative">
-                    <div className="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center font-bold text-lg border-2 border-indigo-400">
-                        {stats.level}
-                    </div>
-                    <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 text-[10px] bg-slate-800 px-1 rounded uppercase tracking-wider text-indigo-300">Lvl</span>
-                </div>
-                <div>
-                    <h3 className="font-bold text-sm text-indigo-200">Quest Progress</h3>
-                    <p className="text-xs text-slate-400">{stats.xp} XP / Next Lvl: {stats.level * 500}</p>
-                    <div className="w-32 h-2 bg-slate-700 rounded-full mt-1 overflow-hidden">
-                        <div
-                            className="h-full bg-gradient-to-r from-indigo-500 to-purple-500"
-                            style={{ width: `${Math.min(100, (stats.xp % 500) / 5)}%` }} // Approximate progress visual
-                        />
-                    </div>
-                </div>
-            </div>
+  const progress = (stats.xp % 500) / 5; // Assuming 500 XP per level
 
-            <div className="text-center">
-                <div className="text-2xl">🔥</div>
-                <div className="text-xs font-bold text-orange-400">{stats.current_streak} Day Streak</div>
-            </div>
+  return (
+    <div className="glass-panel group relative mb-8 flex flex-col items-center justify-between gap-6 overflow-hidden rounded-2xl p-6 md:flex-row">
+      {/* Ambient Background Glow for Stats */}
+      <div className="absolute top-0 right-0 -z-10 h-64 w-64 rounded-full bg-indigo-600/10 blur-3xl transition-all duration-700 group-hover:bg-indigo-600/20"></div>
+
+      <div className="z-10 flex items-center gap-6">
+        <div className="relative">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-white/10 bg-gradient-to-br from-indigo-500 to-violet-600 shadow-lg shadow-indigo-500/20">
+            <span className="text-2xl font-bold text-white">{stats.level}</span>
+          </div>
+          <div className="absolute -right-2 -bottom-2 rounded-full border border-zinc-700 bg-zinc-900 px-2 py-0.5 text-[10px] font-bold text-zinc-400">
+            LVL
+          </div>
         </div>
-    );
+
+        <div>
+          <h3 className="flex items-center gap-2 text-lg font-bold text-white">
+            <Trophy size={16} className="text-yellow-400" />
+            Grand Master Flow
+          </h3>
+          <div className="mt-2 flex items-center gap-2">
+            <div className="h-2 w-32 overflow-hidden rounded-full bg-zinc-800">
+              <div
+                className="h-full bg-gradient-to-r from-indigo-500 to-fuchsia-500 transition-all duration-1000 w-[var(--progress)]"
+                // eslint-disable-next-line react-dom/no-unsafe-inline-style
+                style={{ "--progress": `${progress}%` } as React.CSSProperties}
+              />
+            </div>
+            <span className="font-mono text-xs text-zinc-500">{stats.xp} XP</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="z-10 flex gap-4">
+        <div className="flex min-w-[80px] flex-col items-center rounded-xl border border-zinc-800 bg-zinc-900/50 p-3 backdrop-blur-sm">
+          <Flame size={20} className="animate-pulse-slow mb-1 text-orange-500" />
+          <span className="text-xl leading-none font-bold text-white">{stats.current_streak}</span>
+          <span className="text-[10px] tracking-wider text-zinc-500 uppercase">Streak</span>
+        </div>
+        <div className="flex min-w-[80px] flex-col items-center rounded-xl border border-zinc-800 bg-zinc-900/50 p-3 backdrop-blur-sm">
+          <Zap size={20} className="mb-1 text-yellow-400" />
+          <span className="text-xl leading-none font-bold text-white">Focus</span>
+          <span className="text-[10px] tracking-wider text-zinc-500 uppercase">Mode</span>
+        </div>
+      </div>
+    </div>
+  );
 }

@@ -9,17 +9,10 @@ const schemaSrc = path.join(
   "ajv-draft-04",
   "dist",
   "refs",
-  "json-schema-draft-04.json",
+  "json-schema-draft-04.json"
 );
 const schemaDest = path.join(ajvDir, "json-schema-draft-04.json");
-const eslintAjvFile = path.join(
-  process.cwd(),
-  "node_modules",
-  "eslint",
-  "lib",
-  "shared",
-  "ajv.js",
-);
+const eslintAjvFile = path.join(process.cwd(), "node_modules", "eslint", "lib", "shared", "ajv.js");
 
 const eslintAjvContent = `
 "use strict";

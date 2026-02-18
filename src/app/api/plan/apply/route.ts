@@ -1,53 +1,52 @@
 import { auth } from "@/auth";
-import { taskService } from "@/server/services/taskService"
-import { DailyPlanSchema } from "@/core/planTypes"
-import { NextResponse } from "next/server"
+import { taskService } from "@/server/services/taskService";
+import { DailyPlanSchema } from "@/core/planTypes";
+import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
-    const session = await auth()
-    const userId = session?.user?.email
-    if (!userId) {
-        return new NextResponse("Unauthorized", { status: 401 })
+  const session = await auth();
+  const userId = session?.user?.email;
+  if (!userId) {
+    return new NextResponse("Unauthorized", { status: 401 });
+  }
+
+  try {
+    const json = await req.json();
+    const result = DailyPlanSchema.safeParse(json);
+
+    if (!result.success) {
+      return NextResponse.json({ error: result.error }, { status: 400 });
     }
 
-    try {
-        const json = await req.json()
-        const result = DailyPlanSchema.safeParse(json)
+    const { date, mustDo, optional } = result.data;
 
-        if (!result.success) {
-            return NextResponse.json({ error: result.error }, { status: 400 })
-        }
+    // 1. Prepare tasks for upsert
+    // - Set scheduled_for to the plan date
+    // - specific priority
+    const mustDoTasks = mustDo.map((t) => ({
+      ...t,
+      priority: "must_do" as const, // Force priority
+      scheduled_for: date,
+      user_id: userId,
+    }));
 
-        const { date, mustDo, optional } = result.data
+    const optionalTasks = optional.map((t) => ({
+      ...t,
+      priority: "optional" as const, // Force priority
+      scheduled_for: date,
+      user_id: userId,
+    }));
 
-        // 1. Prepare tasks for upsert
-        // - Set scheduled_for to the plan date
-        // - specific priority
-        const mustDoTasks = mustDo.map(t => ({
-            ...t,
-            priority: "must_do" as const, // Force priority
-            scheduled_for: date,
-            user_id: userId
-        }));
+    const allTasks = [...mustDoTasks, ...optionalTasks];
 
-        const optionalTasks = optional.map(t => ({
-            ...t,
-            priority: "optional" as const, // Force priority
-            scheduled_for: date,
-            user_id: userId
-        }));
-
-        const allTasks = [...mustDoTasks, ...optionalTasks];
-
-        // 2. Persist
-        if (allTasks.length > 0) {
-            await taskService.upsertTasks(userId, allTasks);
-        }
-
-        return NextResponse.json({ applied: true, taskCount: allTasks.length })
-
-    } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : "An unknown error occurred";
-        return NextResponse.json({ error: message || "Internal Error" }, { status: 500 })
+    // 2. Persist
+    if (allTasks.length > 0) {
+      await taskService.upsertTasks(userId, allTasks);
     }
+
+    return NextResponse.json({ applied: true, taskCount: allTasks.length });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "An unknown error occurred";
+    return NextResponse.json({ error: message || "Internal Error" }, { status: 500 });
+  }
 }

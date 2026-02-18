@@ -10,20 +10,17 @@ description: Guide for React 19 features including Actions, useOptimistic, and n
 - **Form Actions**: Pass functions to `action` props on `<form>`.
 - **`useActionState`**: Replaces `useFormState`. Use this to pinpoint form state (e.g., errors, success message) returned from a Server Action.
   ```typescript
-  const [state, formAction, isPending] = useActionState(
-    serverAction,
-    initialState,
-  );
+  const [state, formAction, isPending] = useActionState(serverAction, initialState);
   ```
 
 ## 2. Optimistic Updates
 
 - **`useOptimistic`**: Show immediate UI updates while a Server Action is pending.
   ```typescript
-  const [optimisticTasks, addOptimisticTask] = useOptimistic(
-    tasks,
-    (state, newTask) => [...state, newTask],
-  );
+  const [optimisticTasks, addOptimisticTask] = useOptimistic(tasks, (state, newTask) => [
+    ...state,
+    newTask,
+  ]);
   ```
 
 ## 3. New Hook Patterns

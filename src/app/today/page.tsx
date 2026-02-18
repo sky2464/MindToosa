@@ -6,65 +6,71 @@ import TaskInput from "./TaskInput";
 import FocusTimer from "./FocusTimer";
 import FlowBoard from "@/components/FlowBoard";
 import QuestDisplay from "@/components/QuestDisplay";
+import AmbientControls from "@/components/AmbientControls";
 
 export default async function TodayPage() {
-    const session = await auth();
-    if (!session?.user?.email) {
-        redirect("/api/auth/signin");
-    }
+  const session = await auth();
+  if (!session?.user?.email) {
+    redirect("/api/auth/signin");
+  }
 
-    const userId = session.user.email;
-    const today = new Date().toISOString().split("T")[0];
+  const userId = session.user.email;
+  const today = new Date().toISOString().split("T")[0];
 
-    // Ensure a default space exists for adding tasks
-    let defaultSpace;
-    try {
-        defaultSpace = await spaceService.ensureDefaultSpace(userId);
-    } catch (e) {
-        console.error("Failed to ensure default space", e);
-        return <div className="p-4 text-red-500">Error loading application data. Please contact support.</div>;
-    }
-
-    if (!defaultSpace?.id) {
-        return <div className="p-4 text-red-500">Error: Default space has no ID.</div>;
-    }
-
-    // Fetch tasks
-    const tasks = await taskService.getTasks(userId, { date: today });
-
-    // Determine active task (first non-completed task)
-    const activeTask = tasks.find(t => t.status !== 'done' && t.status !== 'cancelled' && t.status !== 'migrated');
-
+  // Ensure a default space exists for adding tasks
+  let defaultSpace;
+  try {
+    defaultSpace = await spaceService.ensureDefaultSpace(userId);
+  } catch (e) {
+    console.error("Failed to ensure default space", e);
     return (
-        <div className="max-w-4xl mx-auto p-4 space-y-6 pb-20">
-            <header className="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-800">Today's Flow</h1>
-                    <div className="text-sm text-gray-500">{today}</div>
-                </div>
-                {/* Future: Add Toggle for List/Flow View if requested */}
-            </header>
+      <div className="p-4 text-red-500">
+        Error loading application data. Please contact support.
+      </div>
+    );
+  }
 
-            {/* Gamification Stats */}
-            <QuestDisplay />
+  if (!defaultSpace?.id) {
+    return <div className="p-4 text-red-500">Error: Default space has no ID.</div>;
+  }
 
-            {/* Focus Timer (Top for easy access) */}
-            <div className="max-w-md mx-auto">
-                <FocusTimer
-                    activeTaskId={activeTask?.id}
-                    activeTaskTitle={activeTask?.title}
-                />
-            </div>
+  // Fetch tasks
+  const tasks = await taskService.getTasks(userId, { date: today });
 
-            {/* Visual Flow Board */}
-            <div className="h-[500px]">
-                <FlowBoard tasks={tasks} activeTaskId={activeTask?.id} />
-            </div>
+  // Determine active task (first non-completed task)
+  const activeTask = tasks.find(
+    (t) => t.status !== "done" && t.status !== "cancelled" && t.status !== "migrated"
+  );
 
-            {/* Quick Add */}
-            <div className="max-w-md mx-auto">
-                <TaskInput spaceId={defaultSpace.id} />
-            </div>
+  return (
+    <div className="relative min-h-screen overflow-x-hidden p-6 pb-24">
+      {/* Minimal Header */}
+      <header className="mb-8 flex items-center justify-between px-2">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-white">Today's Flow</h1>
+          <p className="mt-1 font-mono text-sm text-zinc-500">{today}</p>
         </div>
-    )
+        <div className="flex items-center gap-4">
+          <AmbientControls />
+        </div>
+      </header>
+
+      {/* Focus Timer (Floating or Integrated) */}
+      <div className="mb-8">
+        <QuestDisplay />
+      </div>
+
+      {/* Main Flow Board */}
+      <main className="h-[calc(100vh-250px)] min-h-[600px]">
+        <FlowBoard tasks={tasks} activeTaskId={activeTask?.id} />
+      </main>
+
+      {/* Floating Input (Bottom Fixed) */}
+      <div className="fixed bottom-6 left-1/2 z-40 w-full max-w-xl -translate-x-1/2 px-4">
+        <div className="rounded-2xl border border-white/10 bg-zinc-900/90 p-2 shadow-2xl shadow-indigo-500/10 backdrop-blur-xl">
+          <TaskInput spaceId={defaultSpace.id} />
+        </div>
+      </div>
+    </div>
+  );
 }

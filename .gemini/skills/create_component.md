@@ -40,11 +40,7 @@ export default function ComponentName({
 }: ComponentNameProps) {
   return (
     <div
-      className={`p-4 rounded-lg border transition-all \${
-        isActive 
-          ? 'bg-blue-50 border-blue-200 text-blue-700' 
-          : 'bg-white border-gray-200 text-gray-700 hover:border-gray-300'
-      } \${className}`}
+      className={`\${ isActive ? 'bg-blue-50 text-blue-700' : 'bg-white hover:border-gray-300' } \${className} rounded-lg border border-blue-200 border-gray-200 p-4 text-gray-700 transition-all`}
       onClick={onClick}
     >
       <h3 className="font-medium">{title}</h3>

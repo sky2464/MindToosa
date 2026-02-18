@@ -34,12 +34,12 @@ description: Guide for integrating Supabase with Next.js App Router using @supab
             // Only valid in Server Actions / Route Handlers
             try {
               cookiesToSet.forEach(({ name, value, options }) =>
-                cookieStore.set(name, value, options),
+                cookieStore.set(name, value, options)
               );
             } catch {}
           },
         },
-      },
+      }
     );
   }
   ```

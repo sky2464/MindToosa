@@ -1,142 +1,145 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Play, Pause, RotateCcw, CheckCircle2 } from "lucide-react";
+import useSoundEffects from "@/hooks/useSoundEffects";
 
 interface FocusTimerProps {
-    activeTaskId?: string;
-    activeTaskTitle?: string;
+  activeTaskId?: string;
+  activeTaskTitle?: string;
+  onComplete?: () => void;
 }
 
-export default function FocusTimer({ activeTaskId, activeTaskTitle }: FocusTimerProps) {
-    const [timeLeft, setTimeLeft] = useState(25 * 60); // 25 minutes in seconds
-    const [isActive, setIsActive] = useState(false);
-    const [mode, setMode] = useState<"idle" | "running" | "paused" | "completed">("idle");
+export default function FocusTimer({ activeTaskId, activeTaskTitle, onComplete }: FocusTimerProps) {
+  const [timeLeft, setTimeLeft] = useState(25 * 60); // 25 minutes
+  const [isActive, setIsActive] = useState(false);
+  const [mode, setMode] = useState<"idle" | "running" | "paused" | "completed">("idle");
 
-    const saveSession = async () => {
-        try {
-            await fetch("/api/focus", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    task_id: activeTaskId,
-                    started_at: new Date(Date.now() - 25 * 60 * 1000).toISOString(),
-                    duration_minutes: 25,
-                    completed: true,
-                }),
-            });
+  const { playSound } = useSoundEffects();
 
-            // Gamification: Award XP and Update Streak
-            await fetch("/api/gamification", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ action: "add_xp", amount: 25 }), // 1 XP per minute
-            });
-            await fetch("/api/gamification", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ action: "update_streak" }),
-            });
+  const saveSession = async () => {
+    try {
+      playSound("complete");
+      await fetch("/api/focus", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          task_id: activeTaskId,
+          started_at: new Date(Date.now() - 25 * 60 * 1000).toISOString(),
+          duration_minutes: 25,
+          completed: true,
+        }),
+      });
 
-        } catch (error) {
-            console.error("Error saving focus session:", error);
-        }
-    };
+      await fetch("/api/gamification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "add_xp", amount: 25 }),
+      });
+      await fetch("/api/gamification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "update_streak" }),
+      });
 
-    useEffect(() => {
-        let interval: NodeJS.Timeout | null = null;
+      if (onComplete) onComplete();
+    } catch (error) {
+      console.error("Error saving focus session:", error);
+    }
+  };
 
-        if (isActive && timeLeft > 0) {
-            interval = setInterval(() => {
-                setTimeLeft((prev) => prev - 1);
-            }, 1000);
-        } else if (timeLeft === 0 && isActive) {
-            setIsActive(false);
-            setMode("completed");
-            saveSession();
-        }
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null;
 
-        return () => {
-            if (interval) clearInterval(interval);
-        };
-    }, [isActive, timeLeft]);
-
-    const startTimer = () => {
-        setIsActive(true);
-        setMode("running");
-    };
-
-    const pauseTimer = () => {
-        setIsActive(false);
-        setMode("paused");
-    };
-
-    const resetTimer = () => {
-        setIsActive(false);
-        setMode("idle");
-        setTimeLeft(25 * 60);
-    };
-
-    const formatTime = (seconds: number) => {
-        const m = Math.floor(seconds / 60);
-        const s = seconds % 60;
-        return `${m}:${s.toString().padStart(2, "0")}`;
-    };
-
-    if (mode === "idle") {
-        return (
-            <section className="bg-blue-50 p-6 rounded-xl text-center space-y-4">
-                <h2 className="text-lg font-semibold text-blue-900">
-                    {activeTaskTitle ? `Ready to focus on "${activeTaskTitle}"?` : "Ready to focus?"}
-                </h2>
-                <button
-                    onClick={startTimer}
-                    className="bg-blue-600 text-white px-6 py-3 rounded-full font-medium hover:bg-blue-700 transition w-full shadow-md hover:shadow-lg"
-                >
-                    Start 25m Sprint
-                </button>
-            </section>
-        );
+    if (isActive && timeLeft > 0) {
+      interval = setInterval(() => {
+        setTimeLeft((prev) => prev - 1);
+      }, 1000);
+    } else if (timeLeft === 0 && isActive) {
+      setIsActive(false);
+      setMode("completed");
+      saveSession();
     }
 
-    return (
-        <section className={`p-6 rounded-xl text-center space-y-4 transition-colors duration-500 ${mode === 'running' ? 'bg-blue-900 text-white' : 'bg-blue-50 text-blue-900'}`}>
-            <h2 className="text-lg font-semibold opacity-90">
-                {mode === "completed" ? "Session Complete!" : mode === "paused" ? "Paused" : "Focus Mode"}
-            </h2>
-            {activeTaskTitle && mode !== "completed" && (
-                <p className="text-sm opacity-80">Focusing on: {activeTaskTitle}</p>
-            )}
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isActive, timeLeft]);
 
-            <div className="text-6xl font-bold tracking-tight font-mono my-4">
-                {formatTime(timeLeft)}
-            </div>
+  const startTimer = () => {
+    playSound("start");
+    setIsActive(true);
+    setMode("running");
+  };
 
-            <div className="flex justify-center gap-3">
-                {mode === "running" && (
-                    <button
-                        onClick={pauseTimer}
-                        className="bg-white/20 hover:bg-white/30 text-white px-6 py-2 rounded-full font-medium transition"
-                    >
-                        Pause
-                    </button>
-                )}
+  const pauseTimer = () => {
+    setIsActive(false);
+    setMode("paused");
+  };
 
-                {mode === "paused" && (
-                    <button
-                        onClick={startTimer}
-                        className="bg-blue-600 text-white px-6 py-2 rounded-full font-medium hover:bg-blue-700 transition"
-                    >
-                        Resume
-                    </button>
-                )}
+  const resetTimer = () => {
+    setIsActive(false);
+    setMode("idle");
+    setTimeLeft(25 * 60);
+  };
 
-                <button
-                    onClick={resetTimer}
-                    className={`${mode === 'running' ? 'text-white/60 hover:text-white' : 'text-gray-500 hover:text-gray-700'} px-4 py-2 text-sm font-medium transition`}
-                >
-                    {mode === "completed" ? "New Session" : "Stop"}
-                </button>
-            </div>
-        </section>
-    );
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s.toString().padStart(2, "0")}`;
+  };
+
+  // Compact View for FlowBoard
+  return (
+    <div className="flex w-full flex-col items-center gap-4">
+      <div
+        className={`font-mono text-6xl font-black tracking-tight transition-colors duration-500 ${isActive ? "text-indigo-400 drop-shadow-[0_0_15px_rgba(99,102,241,0.5)]" : "text-zinc-600"}`}
+      >
+        {formatTime(timeLeft)}
+      </div>
+
+      <div className="flex items-center gap-4">
+        {mode === "idle" || mode === "paused" ? (
+          <button
+            onClick={startTimer}
+            className="group flex items-center gap-2 rounded-full bg-indigo-600 px-6 py-2 font-bold text-white shadow-lg shadow-indigo-500/20 transition-all hover:scale-105 hover:bg-indigo-500 active:scale-95"
+          >
+            <Play size={18} className="fill-current" />
+            {mode === "paused" ? "Resume" : "Start Focus"}
+          </button>
+        ) : mode === "running" ? (
+          <button
+            onClick={pauseTimer}
+            className="flex items-center gap-2 rounded-full bg-zinc-800 px-6 py-2 font-medium text-zinc-300 transition-all hover:bg-zinc-700"
+          >
+            <Pause size={18} className="fill-current" />
+            Pause
+          </button>
+        ) : (
+          <div className="flex animate-pulse items-center gap-2 font-bold text-emerald-400">
+            <CheckCircle2 size={20} /> Session Complete
+          </div>
+        )}
+
+        {mode !== "idle" && mode !== "completed" && (
+          <button
+            onClick={resetTimer}
+            className="rounded-full p-2 text-zinc-500 transition-colors hover:bg-zinc-800 hover:text-zinc-300"
+            title="Reset Timer"
+          >
+            <RotateCcw size={18} />
+          </button>
+        )}
+
+        {mode === "completed" && (
+          <button
+            onClick={resetTimer}
+            className="text-sm text-zinc-500 underline underline-offset-4 hover:text-white"
+          >
+            Start New Session
+          </button>
+        )}
+      </div>
+    </div>
+  );
 }
