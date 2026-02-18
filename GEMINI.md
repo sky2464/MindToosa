@@ -11,7 +11,7 @@ This document serves as the primary context source for AI agents working on the 
 - **AI Integration**: Google GenAI SDK (`@google/genai` v0.24.1)
 - **Validation**: Zod (v4.3.6)
 - **Icons**: Lucide React (v0.574.0)
-- **Environment**: ESM (eslint 10.0.0, postcss 8.4.45)
+- **Environment**: ESM (no linter, postcss 8.4.45)
 - **Package Manager**: NPM (frozen lockfile recommended)
 
 ## 2. 📂 Project Structure
@@ -49,9 +49,9 @@ This document serves as the primary context source for AI agents working on the 
 
 ### React & Client Components
 
-- **React 19+**: Code is optimized for React 19. Ensure ESLint config explicitly sets React version to avoid detection failures in ESLint 10.
+- **React 19+**: Code is optimized for React 19.
 - **Hook Rules**:
-  - **Avoid Synchronous setState in Effects**: To prevent cascading renders and linting errors, avoid calling `setState` directly in the body of an effect. Use `Promise.resolve().then(() => setState(...))` for deferred updates or refactor to event handlers.
+  - **Avoid Synchronous setState in Effects**: To prevent cascading renders, avoid calling `setState` directly in the body of an effect. Use `Promise.resolve().then(() => setState(...))` for deferred updates or refactor to event handlers.
   - **Dependencies**: Always include all used variables in the dependency array. Wrap complex functions in `useCallback` to maintain stability.
 
 ## 4. 🧱 Coding Standards
@@ -94,7 +94,7 @@ To maintain a secure and state-of-the-art codebase, the following rules are **MA
 - **No Downgrades**: Downgrading a package to fix a temporary conflict is FORBIDDEN. Instead, resolve the environmental issue (e.g., using `--legacy-peer-deps`) or use `overrides` to patch sub-dependencies.
 - **Custom Logic over Bloat**: Before adding any new utility dependency (e.g., string manipulation, small hooks, or UI helpers), check if it can be implemented in < 50 lines of TypeScript. If so, implement it internally.
 - **Pre-Flight Check**: Any agent or developer modifying `package.json` MUST run `npm audit` and verify with a web search that they are using the absolute latest stable versions of all added/updated packages.
-- **ESLint 10 Compatibility**: Since ESLint 10 is used with Next.js plugins that may have outdated peer dependencies, use `package.json` `overrides` to pin compatible versions of `eslint-plugin-react`, `eslint-plugin-react-hooks`, `eslint-plugin-import`, and `eslint-plugin-jsx-a11y`.
+- **Zero Tolerance for Vulnerabilities**: If a tool causing vulnerabilities cannot be fixed via updates or overrides (like ESLint peerdeps), it must be removed until the ecosystem catches up. We prioritize security and clean audits over tooling.
 
 ## 6. 🔒 Security & Performance
 
