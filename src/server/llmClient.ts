@@ -1,6 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { env } from "./env";
 import { DailyPlanSchema, DailyPlan, Task, Goal, Project } from "@/core/planTypes";
+import { ApiError, ValidationError } from "@/lib/errors";
 
 export interface PlanContext {
   date: string;
@@ -18,7 +19,7 @@ export interface ProjectContext {
 
 export const llmClient = {
   async generateDailyPlan(context: PlanContext): Promise<DailyPlan> {
-    if (!env.AI_PROVIDER_API_KEY) throw new Error("AI_PROVIDER_API_KEY is not set.");
+    if (!env.AI_PROVIDER_API_KEY) throw new ApiError("AI_PROVIDER_API_KEY is not set.", 500, "MISSING_CONFIG");
 
     const genAI = new GoogleGenerativeAI(env.AI_PROVIDER_API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
@@ -67,13 +68,13 @@ export const llmClient = {
 
       if (!parsed.success) {
         console.error("LLM Validation Error:", JSON.stringify(parsed.error.format(), null, 2));
-        throw new Error("Failed to parse LLM response: " + parsed.error.issues[0].message);
+        throw new ValidationError("Failed to parse LLM response: " + parsed.error.issues[0].message);
       }
 
       return parsed.data;
     } catch (error) {
       console.error("LLM Generation Error:", error);
-      throw new Error("Failed to generate plan.");
+      throw new ApiError("Failed to generate plan.", 500, "LLM_GENERATION_FAILED");
     }
   },
 

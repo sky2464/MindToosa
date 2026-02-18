@@ -16,7 +16,7 @@ export default async function ProjectsPage() {
   const defaultSpace = await spaceService.ensureDefaultSpace(userId);
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8 p-6">
+    <div className="mx-auto max-w-5xl space-y-8 p-6 md:ml-20">
       <header className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Projects</h1>
@@ -52,13 +52,12 @@ export default async function ProjectsPage() {
             <div className="mt-4 flex items-center justify-between text-xs text-gray-400">
               <span>{new Date(project.created_at!).toLocaleDateString()}</span>
               <span
-                className={`rounded-full px-2 py-1 ${
-                  project.status === "active"
+                className={`rounded-full px-2 py-1 ${project.status === "active"
                     ? "bg-green-50 text-green-600"
                     : project.status === "completed"
                       ? "bg-blue-50 text-blue-600"
                       : "bg-gray-100 text-gray-600"
-                }`}
+                  }`}
               >
                 {project.status.replace("_", " ")}
               </span>

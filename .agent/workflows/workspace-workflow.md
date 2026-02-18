@@ -35,9 +35,10 @@ This workflow provides specific guidance for the MindToosa application, integrat
 
 ## ✅ Verification Checklist
 
-- [ ] `npm run lint` passes (ESLint 10 Flat Config).
 - [ ] `npm run type-check` reveals no errors.
-- [ ] RLS policies are verified for any new database tables.
+- [ ] `npm run test:ci` (Unit tests) passes.
+- [ ] `npm run audit` reveals no high/critical vulnerabilities.
+- [ ] CI pipeline (`.github/workflows/ci.yml`) is valid.
 - [ ] Design adheres to the premium, vibrant, and interactive MindToosa aesthetic.
 
 ---

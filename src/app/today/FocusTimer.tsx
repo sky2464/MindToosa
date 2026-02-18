@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Play, Pause, RotateCcw, CheckCircle2 } from "lucide-react";
+import { Play, Pause, RotateCcw, CheckCircle2, Check, SkipForward } from "lucide-react";
 import useSoundEffects from "@/hooks/useSoundEffects";
+import { useRouter } from "next/navigation";
 
 interface FocusTimerProps {
   activeTaskId?: string;
@@ -22,7 +23,9 @@ export default function FocusTimer({ activeTaskId, onComplete }: FocusTimerProps
   const [timeLeft, setTimeLeft] = useState(25 * 60);
   const [isActive, setIsActive] = useState(false);
   const [mode, setMode] = useState<"idle" | "running" | "paused" | "completed">("idle");
+  const [markingDone, setMarkingDone] = useState(false);
   const startedAtRef = useRef<Date | null>(null);
+  const router = useRouter();
 
   const { playSound } = useSoundEffects();
 
@@ -106,6 +109,24 @@ export default function FocusTimer({ activeTaskId, onComplete }: FocusTimerProps
     startedAtRef.current = null;
   };
 
+  const markTaskDone = async () => {
+    if (!activeTaskId) return;
+    setMarkingDone(true);
+    try {
+      await fetch(`/api/tasks/${activeTaskId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "done" }),
+      });
+      router.refresh();
+      resetTimer();
+    } catch (error) {
+      console.error("Failed to mark task done:", error);
+    } finally {
+      setMarkingDone(false);
+    }
+  };
+
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
@@ -156,8 +177,29 @@ export default function FocusTimer({ activeTaskId, onComplete }: FocusTimerProps
             Pause
           </button>
         ) : (
-          <div className="flex animate-pulse items-center gap-2 font-bold text-emerald-400">
-            <CheckCircle2 size={20} /> Session Complete
+          /* Completed state — show task done prompt */
+          <div className="flex flex-col items-center gap-3">
+            <div className="flex animate-pulse items-center gap-2 font-bold text-emerald-400">
+              <CheckCircle2 size={20} /> Session Complete!
+            </div>
+            {activeTaskId && (
+              <div className="flex items-center gap-2">
+                <p className="text-xs text-zinc-500">Mark task as done?</p>
+                <button
+                  onClick={markTaskDone}
+                  disabled={markingDone}
+                  className="flex items-center gap-1 rounded-lg bg-emerald-600/20 border border-emerald-500/30 px-3 py-1 text-xs font-bold text-emerald-400 transition hover:bg-emerald-600/30"
+                >
+                  <Check size={12} /> Yes
+                </button>
+                <button
+                  onClick={resetTimer}
+                  className="flex items-center gap-1 rounded-lg border border-zinc-700 px-3 py-1 text-xs font-medium text-zinc-500 transition hover:text-zinc-300"
+                >
+                  <SkipForward size={12} /> Skip
+                </button>
+              </div>
+            )}
           </div>
         )}
 
@@ -166,12 +208,13 @@ export default function FocusTimer({ activeTaskId, onComplete }: FocusTimerProps
             onClick={resetTimer}
             className="rounded-full p-2 text-zinc-500 transition-colors hover:bg-zinc-800 hover:text-zinc-300"
             title="Reset Timer"
+            aria-label="Reset timer"
           >
             <RotateCcw size={18} />
           </button>
         )}
 
-        {mode === "completed" && (
+        {mode === "completed" && !activeTaskId && (
           <button
             onClick={resetTimer}
             className="text-sm text-zinc-500 underline underline-offset-4 hover:text-white"

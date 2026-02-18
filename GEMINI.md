@@ -60,7 +60,7 @@ This document serves as the primary context source for AI agents working on the 
 ### TypeScript
 
 - **No `any`**: Explicitly define types. Use `unknown` for error handlers and external data before validation.
-- **Error Handling Pattern**: Use `catch (error: unknown)` and check `if (error instanceof Error)` before accessing `.message`.
+- **Error Handling Pattern**: Use structured error classes from `src/lib/errors.ts` (`AppError`, `ApiError`, `ValidationError`). Catch errors and handle according to type.
 - **Zod for Validation**: Use Zod schemas to validate all external inputs (API requests, form data, env vars).
 - **Interfaces over Types**: Prefer `interface` for object definitions (better error messages/extensibility).
 
@@ -74,7 +74,8 @@ This document serves as the primary context source for AI agents working on the 
 
 - **Prefer Direct TypeScript**: For small utilities (e.g., class merging, sound effects, animations), prefer custom TypeScript implementations over external packages to maintain a lean dependency tree and ensure long-term stability.
 - **Current Implementations**:
-  - `src/lib/utils.ts`: Custom `clsx` implementation.
+  - `src/lib/utils.ts`: Custom native `cn()` implementation (zero external dependencies).
+  - `src/lib/apiClient.ts`: Typed Fetch wrapper with automatic structured error handling.
   - `src/hooks/useSoundEffects.ts`: Custom `useAudio` hook using native Browser API.
   - `public/sounds/`: Local royalty-free MP3 assets for timer and UI feedback.
   - `src/lib/confetti.ts`: Custom Canvas-based confetti implementation (replaces `canvas-confetti`).
@@ -85,7 +86,8 @@ We enforce three gates for build integrity to ensure a secure and reproducible s
 
 1.  **Deterministic Resolution**: `package-lock.json` is the sole source of truth. It must be committed and never bypassed.
 2.  **Frozen Installs**: CI environments must use `npm ci` to ensure installs are reproducible and fail if the lockfile is out of sync.
-3.  **Vulnerability Gate**: Automated vulnerability scanning (e.g., `npm audit`, `OSV-Scanner`) is mandatory. High/critical vulnerabilities block releases.
+3.  **Vulnerability Gate**: Automated vulnerability scanning (`npm run audit`) is mandatory in CI. High/critical vulnerabilities block releases.
+4.  **Automated CI**: GitHub Actions (`ci.yml`) runs on every push/PR, performing `type-check`, `test:ci`, `audit`, and `build`.
 
 ### 🛡️ Dependency Guardrails (Strict Enforcement)
 

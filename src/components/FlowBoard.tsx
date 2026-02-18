@@ -5,59 +5,19 @@ import { Task } from "@/core/planTypes";
 import { useRouter } from "next/navigation";
 import {
   Maximize2, Minimize2, CheckCircle2, Clock, MoveRight, Flame,
-  ChevronDown, ChevronUp, AlertCircle, Circle
+  Pencil
 } from "lucide-react";
 import FocusTimer from "@/app/today/FocusTimer";
 import useSoundEffects from "@/hooks/useSoundEffects";
+import TaskEditModal from "@/components/TaskEditModal";
+import { PriorityBadge } from "./ui/PriorityBadge";
+import { MicroStepsList } from "./ui/MicroStepsList";
+import { TaskCard } from "./ui/TaskCard";
+import { apiClient } from "@/lib/apiClient";
 
 interface FlowBoardProps {
   tasks: Task[];
   activeTaskId?: string;
-}
-
-function PriorityBadge({ priority }: { priority: Task["priority"] }) {
-  if (priority === "must_do") {
-    return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-red-500/10 px-2 py-0.5 text-[10px] font-bold text-red-400 uppercase tracking-wider">
-        <AlertCircle size={10} /> Must-do
-      </span>
-    );
-  }
-  if (priority === "optional") {
-    return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold text-amber-400 uppercase tracking-wider">
-        <Circle size={10} /> Optional
-      </span>
-    );
-  }
-  return null;
-}
-
-function MicroStepsList({ steps }: { steps: string[] }) {
-  const [expanded, setExpanded] = useState(false);
-  if (!steps || steps.length === 0) return null;
-
-  return (
-    <div className="mt-2">
-      <button
-        onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
-        className="flex items-center gap-1 text-[10px] text-zinc-600 hover:text-zinc-400 transition-colors"
-      >
-        {expanded ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
-        {steps.length} steps
-      </button>
-      {expanded && (
-        <ol className="mt-1.5 space-y-1 pl-3">
-          {steps.map((step, i) => (
-            <li key={i} className="flex items-start gap-1.5 text-[11px] text-zinc-500">
-              <span className="mt-0.5 shrink-0 font-mono text-zinc-700">{i + 1}.</span>
-              {step}
-            </li>
-          ))}
-        </ol>
-      )}
-    </div>
-  );
 }
 
 export default function FlowBoard({ tasks: initialTasks }: FlowBoardProps) {
@@ -65,6 +25,7 @@ export default function FlowBoard({ tasks: initialTasks }: FlowBoardProps) {
   const router = useRouter();
   const [dragTaskId, setDragTaskId] = useState<string | null>(null);
   const [zenMode, setZenMode] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
   const { playSound } = useSoundEffects();
 
   const doneTasks = tasks.filter((t) => t.status === "done");
@@ -75,7 +36,6 @@ export default function FlowBoard({ tasks: initialTasks }: FlowBoardProps) {
   const activeTask = pendingTasks.length > 0 ? pendingTasks[0] : null;
   const upNextTasks = pendingTasks.length > 1 ? pendingTasks.slice(1) : [];
 
-  // Next concrete action = first micro-step of active task
   const nextAction =
     activeTask?.micro_steps && activeTask.micro_steps.length > 0
       ? activeTask.micro_steps[0]
@@ -116,11 +76,7 @@ export default function FlowBoard({ tasks: initialTasks }: FlowBoardProps) {
 
     try {
       if (targetStatus === "done") {
-        await fetch(`/api/tasks/${dragTaskId}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: "done" }),
-        });
+        await apiClient.patch(`/api/tasks/${dragTaskId}`, { status: "done" });
       }
       router.refresh();
     } catch (error) {
@@ -169,30 +125,13 @@ export default function FlowBoard({ tasks: initialTasks }: FlowBoardProps) {
             </div>
             <div className="min-h-[200px] space-y-3">
               {upNextTasks.map((task, i) => (
-                <div
+                <TaskCard
                   key={task.id}
-                  draggable
-                  onDragStart={(e) => handleDragStart(e, task.id!)}
-                  className="group relative cursor-grab rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 transition-all hover:translate-x-1 hover:border-zinc-700 hover:bg-zinc-800 active:cursor-grabbing"
-                  style={{
-                    transform: `scale(${1 - i * 0.02}) translateY(${i * 4}px)`,
-                    zIndex: 10 - i,
-                  }}
-                >
-                  <div className="mb-1.5">
-                    <PriorityBadge priority={task.priority} />
-                  </div>
-                  <h4 className="line-clamp-2 text-sm font-medium text-zinc-300 transition-colors group-hover:text-white">
-                    {task.title}
-                  </h4>
-                  <div className="mt-3 flex items-center justify-between">
-                    <span className="font-mono text-xs text-zinc-500">{task.estimated_minutes}m</span>
-                    <div className="opacity-0 transition-opacity group-hover:opacity-100">
-                      <MoveRight size={14} className="text-zinc-600" />
-                    </div>
-                  </div>
-                  <MicroStepsList steps={task.micro_steps ?? []} />
-                </div>
+                  task={task}
+                  index={i}
+                  onDragStart={handleDragStart}
+                  onEdit={setEditingTask}
+                />
               ))}
               {upNextTasks.length === 0 && (
                 <div className="rounded-xl border-2 border-dashed border-zinc-800 p-8 text-center">
@@ -255,16 +194,10 @@ export default function FlowBoard({ tasks: initialTasks }: FlowBoardProps) {
                     </div>
                   )}
 
-                  {zenMode && (
-                    <div className="mt-8 scale-125 transform">
-                      <FocusTimer activeTaskId={activeTask.id} activeTaskTitle={activeTask.title} />
-                    </div>
-                  )}
+                  <div className={`mt-6 flex w-full flex-col items-center gap-4 ${zenMode ? "scale-125 transform" : ""}`}>
+                    <FocusTimer activeTaskId={activeTask.id} activeTaskTitle={activeTask.title} />
 
-                  {!zenMode && (
-                    <div className="mt-6 flex w-full flex-col items-center gap-4">
-                      <FocusTimer activeTaskId={activeTask.id} activeTaskTitle={activeTask.title} />
-
+                    {!zenMode && (
                       <div className="mt-4 flex items-center gap-6 opacity-50 transition-opacity hover:opacity-100">
                         <div className="flex flex-col items-center">
                           <span className="font-mono text-xs font-bold text-zinc-400">
@@ -278,8 +211,8 @@ export default function FlowBoard({ tasks: initialTasks }: FlowBoardProps) {
                           </span>
                         </div>
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               ) : (
                 <div className="flex flex-col items-center gap-4 text-zinc-600">
@@ -309,12 +242,20 @@ export default function FlowBoard({ tasks: initialTasks }: FlowBoardProps) {
               {doneTasks.map((task) => (
                 <div
                   key={task.id}
-                  className="flex items-center gap-3 rounded-lg border border-zinc-800/80 bg-zinc-900/80 p-3 text-zinc-500 transition hover:bg-zinc-900"
+                  className="group flex items-center gap-3 rounded-lg border border-zinc-800/80 bg-zinc-900/80 p-3 text-zinc-500 transition hover:bg-zinc-900"
                 >
-                  <CheckCircle2 size={16} className="text-emerald-500/50" />
-                  <span className="truncate text-sm line-through decoration-zinc-700">
+                  <CheckCircle2 size={16} className="shrink-0 text-emerald-500/50" />
+                  <span className="truncate text-sm line-through decoration-zinc-700 flex-1">
                     {task.title}
                   </span>
+                  <button
+                    onClick={() => setEditingTask(task)}
+                    className="rounded p-1 text-zinc-700 opacity-0 transition group-hover:opacity-100 hover:text-zinc-400"
+                    aria-label="Edit task"
+                    title="Edit task"
+                  >
+                    <Pencil size={11} />
+                  </button>
                 </div>
               ))}
               {doneTasks.length === 0 && (
@@ -326,6 +267,14 @@ export default function FlowBoard({ tasks: initialTasks }: FlowBoardProps) {
           </div>
         )}
       </div>
+
+      {/* Task Edit Modal */}
+      {editingTask && (
+        <TaskEditModal
+          task={editingTask}
+          onClose={() => setEditingTask(null)}
+        />
+      )}
     </div>
   );
 }

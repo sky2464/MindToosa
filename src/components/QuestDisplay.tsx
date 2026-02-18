@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Trophy, Flame, Zap } from "lucide-react";
+import { apiClient } from "@/lib/apiClient";
 
 interface UserStats {
   xp: number;
@@ -13,10 +14,9 @@ export default function QuestDisplay() {
   const [stats, setStats] = useState<UserStats | null>(null);
 
   useEffect(() => {
-    fetch("/api/gamification")
-      .then((res) => res.json())
+    apiClient.get<UserStats>("/api/gamification")
       .then((data) => {
-        if (!data.error) setStats(data);
+        setStats(data);
       })
       // Fallback for demo if API fails or doesn't exist yet
       .catch(() => setStats({ xp: 1250, level: 3, current_streak: 5 }));
@@ -49,9 +49,8 @@ export default function QuestDisplay() {
           <div className="mt-2 flex items-center gap-2">
             <div className="h-2 w-32 overflow-hidden rounded-full bg-zinc-800">
               <div
-                className="h-full bg-gradient-to-r from-indigo-500 to-fuchsia-500 transition-all duration-1000 w-[var(--progress)]"
-                // eslint-disable-next-line react-dom/no-unsafe-inline-style
-                style={{ "--progress": `${progress}%` } as React.CSSProperties}
+                className="h-full bg-gradient-to-r from-indigo-500 to-fuchsia-500 transition-all duration-1000"
+                style={{ width: `var(--progress, ${progress}%)` } as React.CSSProperties}
               />
             </div>
             <span className="font-mono text-xs text-zinc-500">{stats.xp} XP</span>

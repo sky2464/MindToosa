@@ -133,8 +133,8 @@ export default function PlanGenerator({ spaceId }: PlanGeneratorProps) {
                         <button
                             onClick={() => setRebootMode(!rebootMode)}
                             className={`rounded-lg px-3 py-1 text-xs font-bold transition-all ${rebootMode
-                                    ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
-                                    : "text-zinc-500 hover:text-zinc-300"
+                                ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+                                : "text-zinc-500 hover:text-zinc-300"
                                 }`}
                         >
                             {rebootMode ? "Reboot ON" : "I'm behind"}
@@ -142,6 +142,8 @@ export default function PlanGenerator({ spaceId }: PlanGeneratorProps) {
                         <button
                             onClick={() => { setOpen(false); setPlan(null); setError(""); }}
                             className="rounded-lg p-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
+                            aria-label="Close plan generator"
+                            title="Close"
                         >
                             <X size={18} />
                         </button>
@@ -168,8 +170,8 @@ export default function PlanGenerator({ spaceId }: PlanGeneratorProps) {
                                             key={d}
                                             onClick={() => setTimeAvailable(d)}
                                             className={`flex-1 rounded-xl py-2 text-sm font-bold transition-all ${timeAvailable === d
-                                                    ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20"
-                                                    : "border border-zinc-700 bg-zinc-800/50 text-zinc-400 hover:text-zinc-300"
+                                                ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20"
+                                                : "border border-zinc-700 bg-zinc-800/50 text-zinc-400 hover:text-zinc-300"
                                                 }`}
                                         >
                                             {DURATION_LABELS[d]}
@@ -189,12 +191,12 @@ export default function PlanGenerator({ spaceId }: PlanGeneratorProps) {
                                             key={level}
                                             onClick={() => setEnergyLevel(level)}
                                             className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2 text-sm font-bold capitalize transition-all ${energyLevel === level
-                                                    ? level === "low"
-                                                        ? "bg-red-500/20 text-red-300 border border-red-500/30"
-                                                        : level === "medium"
-                                                            ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
-                                                            : "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
-                                                    : "border border-zinc-700 bg-zinc-800/50 text-zinc-500 hover:text-zinc-300"
+                                                ? level === "low"
+                                                    ? "bg-red-500/20 text-red-300 border border-red-500/30"
+                                                    : level === "medium"
+                                                        ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+                                                        : "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                                                : "border border-zinc-700 bg-zinc-800/50 text-zinc-500 hover:text-zinc-300"
                                                 }`}
                                         >
                                             <EnergyIcon size={14} />
