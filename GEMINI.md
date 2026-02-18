@@ -11,7 +11,8 @@ This document serves as the primary context source for AI agents working on the 
 - **AI Integration**: Google GenAI SDK (`@google/genai` v0.24.1)
 - **Validation**: Zod (v4.3.6)
 - **Icons**: Lucide React (v0.574.0)
-- **Environment**: ESM (no linter, postcss 8.4.45)
+- **Environment**: ESM (postcss 8.4.45)
+- **Linting**: **REMOVED** - ESLint v10+ has unresolved vulnerabilities in transitive dependencies (`ajv` < 8.18.0, `@eslint-community/eslint-utils`). Removed per zero-tolerance policy until ecosystem resolves these issues. TypeScript's strict mode provides sufficient type checking.
 - **Package Manager**: NPM (frozen lockfile recommended)
 
 ## 2. 📂 Project Structure

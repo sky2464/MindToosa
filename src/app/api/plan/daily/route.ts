@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { taskService } from "@/server/services/taskService";
+import { goalService } from "@/server/services/goalService";
 import { llmClient } from "@/server/llmClient";
 import { NextResponse } from "next/server";
 import { Goal } from "@/core/planTypes";
@@ -21,8 +22,7 @@ export async function POST(request: Request) {
 
     // 1. Fetch context
     const existingTasks = await taskService.getTasks(userId, { date: today });
-    // TODO: Fetch goals when goalService is ready. For now, empty.
-    const activeGoals: Goal[] = [];
+    const activeGoals = await goalService.getGoals(userId, { archived: false });
 
     // 2. Call LLM
     const plan = await llmClient.generateDailyPlan({

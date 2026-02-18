@@ -89,10 +89,6 @@ export const projectService = {
     if (!session?.user?.email) throw new Error("Unauthorized");
     const userId = session.user.email;
 
-    // Verify project ownership first
-    const project = await this.getProjectById(projectId);
-    if (!project) throw new Error("Project not found");
-
     const { data, error } = await db
       .from("tasks")
       .select("*")

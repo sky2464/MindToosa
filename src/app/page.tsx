@@ -1,5 +1,4 @@
-import Link from "next/link";
-import { ArrowRight, Layout, Zap } from "lucide-react";
+import { ArrowRight, Layout, Zap, Target } from "lucide-react";
 
 export default function Home() {
   return (
@@ -29,11 +28,11 @@ export default function Home() {
           </Link>
 
           <Link
-            href="/projects"
-            className="flex items-center justify-center gap-2 rounded-xl border border-zinc-800 bg-zinc-900/50 px-6 py-4 font-medium text-zinc-300 transition-all hover:border-zinc-700 hover:bg-zinc-800 hover:text-white"
+            href="/goals"
+            className="flex items-center justify-center gap-2 rounded-xl border border-zinc-800 bg-zinc-900/50 px-6 py-4 font-medium text-zinc-300 transition-all hover:border-indigo-500/50 hover:bg-indigo-500/5 hover:text-white sm:col-span-2"
           >
-            <Layout size={20} />
-            <span>Manage Projects</span>
+            <Target size={20} className="text-indigo-400" />
+            <span>Set North Stars</span>
           </Link>
         </div>
 
