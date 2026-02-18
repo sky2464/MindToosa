@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import AmbientBackground from "@/components/AmbientBackground";
+import NavBar from "@/components/NavBar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MindToosa",
-  description: "MindToosa project",
+  title: "MindToosa — Planning for Deep Flow",
+  description: "Focus-friendly planning and execution webapp. Create daily plans, track goals, and run focus sprints.",
 };
 
 export default function RootLayout({
@@ -27,7 +28,10 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <AmbientBackground />
-        {children}
+        <NavBar />
+        <div className="pb-16 md:pb-0">
+          {children}
+        </div>
       </body>
     </html>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Play, Pause, RotateCcw, CheckCircle2 } from "lucide-react";
 import useSoundEffects from "@/hooks/useSoundEffects";
 
@@ -10,23 +10,43 @@ interface FocusTimerProps {
   onComplete?: () => void;
 }
 
-export default function FocusTimer({ activeTaskId, activeTaskTitle, onComplete }: FocusTimerProps) {
-  const [timeLeft, setTimeLeft] = useState(25 * 60); // 25 minutes
+const DURATION_OPTIONS = [
+  { label: "10m", minutes: 10 },
+  { label: "15m", minutes: 15 },
+  { label: "25m", minutes: 25 },
+  { label: "45m", minutes: 45 },
+];
+
+export default function FocusTimer({ activeTaskId, onComplete }: FocusTimerProps) {
+  const [selectedMinutes, setSelectedMinutes] = useState(25);
+  const [timeLeft, setTimeLeft] = useState(25 * 60);
   const [isActive, setIsActive] = useState(false);
   const [mode, setMode] = useState<"idle" | "running" | "paused" | "completed">("idle");
+  const startedAtRef = useRef<Date | null>(null);
 
   const { playSound } = useSoundEffects();
+
+  // Sync timeLeft when duration changes (only in idle mode)
+  useEffect(() => {
+    if (mode === "idle") {
+      setTimeLeft(selectedMinutes * 60);
+    }
+  }, [selectedMinutes, mode]);
 
   const saveSession = async () => {
     try {
       playSound("complete");
+      const actualMinutes = startedAtRef.current
+        ? Math.round((Date.now() - startedAtRef.current.getTime()) / 60000)
+        : selectedMinutes;
+
       await fetch("/api/focus", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           task_id: activeTaskId,
-          started_at: new Date(Date.now() - 25 * 60 * 1000).toISOString(),
-          duration_minutes: 25,
+          started_at: startedAtRef.current?.toISOString() ?? new Date().toISOString(),
+          duration_minutes: actualMinutes,
           completed: true,
         }),
       });
@@ -34,7 +54,7 @@ export default function FocusTimer({ activeTaskId, activeTaskTitle, onComplete }
       await fetch("/api/gamification", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "add_xp", amount: 25 }),
+        body: JSON.stringify({ action: "add_xp", amount: actualMinutes }),
       });
       await fetch("/api/gamification", {
         method: "POST",
@@ -64,10 +84,12 @@ export default function FocusTimer({ activeTaskId, activeTaskTitle, onComplete }
     return () => {
       if (interval) clearInterval(interval);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isActive, timeLeft]);
 
   const startTimer = () => {
     playSound("start");
+    startedAtRef.current = new Date();
     setIsActive(true);
     setMode("running");
   };
@@ -80,7 +102,8 @@ export default function FocusTimer({ activeTaskId, activeTaskTitle, onComplete }
   const resetTimer = () => {
     setIsActive(false);
     setMode("idle");
-    setTimeLeft(25 * 60);
+    setTimeLeft(selectedMinutes * 60);
+    startedAtRef.current = null;
   };
 
   const formatTime = (seconds: number) => {
@@ -89,9 +112,26 @@ export default function FocusTimer({ activeTaskId, activeTaskTitle, onComplete }
     return `${m}:${s.toString().padStart(2, "0")}`;
   };
 
-  // Compact View for FlowBoard
   return (
     <div className="flex w-full flex-col items-center gap-4">
+      {/* Duration Selector (only in idle mode) */}
+      {mode === "idle" && (
+        <div className="flex items-center gap-1.5">
+          {DURATION_OPTIONS.map(({ label, minutes }) => (
+            <button
+              key={minutes}
+              onClick={() => setSelectedMinutes(minutes)}
+              className={`rounded-lg px-2.5 py-1 text-xs font-bold transition-all ${selectedMinutes === minutes
+                  ? "bg-indigo-600/30 text-indigo-300 border border-indigo-500/30"
+                  : "text-zinc-600 hover:text-zinc-400"
+                }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
+
       <div
         className={`font-mono text-6xl font-black tracking-tight transition-colors duration-500 ${isActive ? "text-indigo-400 drop-shadow-[0_0_15px_rgba(99,102,241,0.5)]" : "text-zinc-600"}`}
       >
