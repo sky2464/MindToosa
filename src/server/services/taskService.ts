@@ -2,7 +2,7 @@ import { db } from "@/server/db";
 import { Task, TaskSchema } from "@/core/planTypes";
 
 export const taskService = {
-    async getTasks(userId: string, options: { spaceId?: string; date?: string } = {}) {
+    async getTasks(userId: string, options: { spaceId?: string; date?: string; projectId?: string } = {}) {
         let query = db.from("tasks").select("*").eq("user_id", userId);
 
         if (options.spaceId) {
@@ -11,6 +11,10 @@ export const taskService = {
 
         if (options.date) {
             query = query.eq("scheduled_for", options.date);
+        }
+
+        if (options.projectId) {
+            query = query.eq("project_id", options.projectId);
         }
 
         const { data, error } = await query;

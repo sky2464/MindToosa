@@ -6,13 +6,13 @@ This document serves as the primary context source for AI agents working on the 
 
 - **Framework**: Next.js 16.1.6 (App Router)
 - **Language**: TypeScript 5.9.3 (`StrictMode` enabled)
-- **Styling**: Tailwind CSS 4.0.0
-- **Database & Auth**: Supabase (PostgreSQL), NextAuth.js (v5 Beta)
-- **AI Integration**: Google GenAI SDK (`@google/genai` v1.41.0)
+- **Styling**: Tailwind CSS 4.1.18
+- **Database & Auth**: Supabase (PostgreSQL), NextAuth.js (v5 Beta 30)
+- **AI Integration**: Google GenAI SDK (`@google/genai` v0.24.1)
 - **Validation**: Zod (v4.3.6)
 - **Icons**: Lucide React (v0.574.0)
 - **Environment**: ESM (eslint 10.0.0, postcss 8.4.45)
-- **Package Manager**: NPM (requires `overrides` in `package.json` for ESLint 10 compatibility with Next.js plugins)
+- **Package Manager**: NPM (frozen lockfile recommended)
 
 ## 2. 📂 Project Structure
 
@@ -75,6 +75,7 @@ This document serves as the primary context source for AI agents working on the 
 - **Current Implementations**:
   - `src/lib/utils.ts`: Custom `clsx` implementation.
   - `src/hooks/useSoundEffects.ts`: Custom `useAudio` hook using native Browser API.
+  - `public/sounds/`: Local royalty-free MP3 assets for timer and UI feedback.
   - `src/lib/confetti.ts`: Custom Canvas-based confetti implementation (replaces `canvas-confetti`).
 
 ## 5. 📦 Supply Chain Security & Build Integrity (SLSA)
@@ -103,6 +104,6 @@ To maintain a secure and state-of-the-art codebase, the following rules are **MA
 
 ## 7. 🧪 Workflow
 
-- **Dependency Management**: Treat dependency changes as code changes. Use `npm ci` for clean environments.
-- **Linting**: Ensure `npm run lint` passes before committing. The project uses the flat config system (`eslint.config.mjs`).
+- **Empty State Accessibility**: Ensure buttons have `aria-label` or `title` if they don't contain visible text (e.g., icon-only buttons).
+- **HTML Structure**: Strictly follow nesting rules (e.g., `<ul>` must only contain `<li>` as direct children).
 - **Type Checking**: Ensure no TypeScript errors exist.

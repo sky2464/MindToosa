@@ -30,6 +30,9 @@ export default function FlowBoard({ tasks: initialTasks }: FlowBoardProps) {
         e.preventDefault();
         if (!dragTaskId) return;
 
+        let newStatus: string | undefined;
+        let shouldReorder = false;
+
         // Optimistic Update
         const updatedTasks = [...tasks];
         const taskIndex = updatedTasks.findIndex(t => t.id === dragTaskId);

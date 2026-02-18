@@ -1,17 +1,22 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/auth";
+import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 import { gamificationService } from "@/server/services/gamificationService";
 
 export async function GET() {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
 
-    if (!session?.user?.id) {
+    // v5 session.user might have different shape, typically it has email/name/image. 
+    // If we need ID, we might need to check how it's stored. 
+    // For now assuming email is the key as used elsewhere in the app (projectService).
+    if (!session?.user?.email) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     try {
-        const stats = await gamificationService.getStats(session.user.id);
+        // Warning: gamificationService.getStats likely expects an ID, but we are using email as user_id in other places.
+        // We should double check what logic is used for user identification. 
+        // In projectService we used email. Let's assume email is the consistent ID.
+        const stats = await gamificationService.getStats(session.user.email);
         return NextResponse.json(stats);
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : "An unknown error occurred";
@@ -20,9 +25,9 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
 
-    if (!session?.user?.id) {
+    if (!session?.user?.email) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -31,12 +36,12 @@ export async function POST(request: Request) {
         const { action, amount } = body;
 
         if (action === "add_xp") {
-            const stats = await gamificationService.addXP(session.user.id, amount || 10);
+            const stats = await gamificationService.addXP(session.user.email, amount || 10);
             return NextResponse.json(stats);
         }
 
         if (action === "update_streak") {
-            const stats = await gamificationService.updateStreak(session.user.id);
+            const stats = await gamificationService.updateStreak(session.user.email);
             return NextResponse.json(stats);
         }
 

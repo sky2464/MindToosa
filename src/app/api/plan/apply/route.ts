@@ -1,11 +1,10 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/auth";
+import { auth } from "@/auth";
 import { taskService } from "@/server/services/taskService"
 import { DailyPlanSchema } from "@/core/planTypes"
 import { NextResponse } from "next/server"
 
 export async function POST(req: Request) {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
     const userId = session?.user?.email
     if (!userId) {
         return new NextResponse("Unauthorized", { status: 401 })

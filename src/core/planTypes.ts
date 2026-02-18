@@ -22,6 +22,18 @@ export const GoalSchema = z.object({
     archived: z.boolean().default(false),
 });
 
+export const ProjectSchema = z.object({
+    id: z.string().uuid().optional(),
+    user_id: z.string().optional(),
+    space_id: z.string().uuid(),
+    title: z.string().min(1),
+    description: z.string().optional(),
+    status: z.enum(["active", "completed", "on_hold"]).default("active"),
+    due_date: z.string().date().optional(), // YYYY-MM-DD
+    created_at: z.date().optional(),
+    updated_at: z.date().optional(),
+});
+
 export const TaskStatusSchema = z.enum(["todo", "in_progress", "done", "migrated", "cancelled"]);
 export const TaskPrioritySchema = z.enum(["must_do", "optional", "normal"]);
 
@@ -30,6 +42,7 @@ export const TaskSchema = z.object({
     user_id: z.string().optional(),
     space_id: z.string().uuid(),
     goal_id: z.string().uuid().optional().nullable(),
+    project_id: z.string().uuid().optional().nullable(),
     title: z.string().min(1),
     priority: TaskPrioritySchema.default("normal"),
     estimated_minutes: z.number().int().min(1).default(25),
@@ -59,6 +72,7 @@ export const DailyPlanSchema = z.object({
 
 export type Space = z.infer<typeof SpaceSchema>;
 export type Goal = z.infer<typeof GoalSchema>;
+export type Project = z.infer<typeof ProjectSchema>;
 export type Task = z.infer<typeof TaskSchema>;
 export type FocusSession = z.infer<typeof FocusSessionSchema>;
 export type DailyPlan = z.infer<typeof DailyPlanSchema>;

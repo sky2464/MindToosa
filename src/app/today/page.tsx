@@ -1,20 +1,20 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/auth";
+import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import { taskService } from "@/server/services/taskService";
+import { spaceService } from "@/server/services/spaceService";
 import TaskInput from "./TaskInput";
 import FocusTimer from "./FocusTimer";
-import AmbientBackground from "@/components/ui/AmbientBackground";
-import TaskListClient from "./TaskListClient"; // Use a client component for interactivity
+import FlowBoard from "@/components/FlowBoard";
+import QuestDisplay from "@/components/QuestDisplay";
 
 export default async function TodayPage() {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session?.user?.email) {
         redirect("/api/auth/signin");
     }
 
     const userId = session.user.email;
-    const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
-    const isoDate = new Date().toISOString().split("T")[0];
+    const today = new Date().toISOString().split("T")[0];
 
     // Ensure a default space exists for adding tasks
     let defaultSpace;
@@ -22,53 +22,48 @@ export default async function TodayPage() {
         defaultSpace = await spaceService.ensureDefaultSpace(userId);
     } catch (e) {
         console.error("Failed to ensure default space", e);
-        return <div className="p-8 text-destructive">Error loading application data. Please contact support.</div>;
+        return <div className="p-4 text-red-500">Error loading application data. Please contact support.</div>;
     }
 
     if (!defaultSpace?.id) {
-        return <div className="p-8 text-destructive">Error: Default space has no ID.</div>;
+        return <div className="p-4 text-red-500">Error: Default space has no ID.</div>;
     }
 
     // Fetch tasks
-    const tasks = await taskService.getTasks(userId, { date: isoDate });
+    const tasks = await taskService.getTasks(userId, { date: today });
 
-    // Determine active task (first non-completed that is essential/important or just first)
+    // Determine active task (first non-completed task)
     const activeTask = tasks.find(t => t.status !== 'done' && t.status !== 'cancelled' && t.status !== 'migrated');
 
     return (
-        <div className="min-h-screen relative text-foreground overflow-x-hidden">
-            {/* Immersive Background */}
-            <AmbientBackground />
+        <div className="max-w-4xl mx-auto p-4 space-y-6 pb-20">
+            <header className="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                <div>
+                    <h1 className="text-2xl font-bold text-gray-800">Today's Flow</h1>
+                    <div className="text-sm text-gray-500">{today}</div>
+                </div>
+                {/* Future: Add Toggle for List/Flow View if requested */}
+            </header>
 
-            <div className="max-w-xl mx-auto p-6 md:p-12 pb-32 space-y-10 relative z-10">
-                <header className="flex justify-between items-end">
-                    <div>
-                        <h1 className="text-4xl font-bold tracking-tight text-white mb-2">Today</h1>
-                        <p className="text-muted-foreground font-medium text-lg">{today}</p>
-                    </div>
-                </header>
+            {/* Gamification Stats */}
+            <QuestDisplay />
 
-                {/* Focus Timer */}
-                <section>
-                    <FocusTimer
-                        activeTaskId={activeTask?.id}
-                        activeTaskTitle={activeTask?.title}
-                    />
-                </section>
+            {/* Focus Timer (Top for easy access) */}
+            <div className="max-w-md mx-auto">
+                <FocusTimer
+                    activeTaskId={activeTask?.id}
+                    activeTaskTitle={activeTask?.title}
+                />
+            </div>
 
-                {/* Add Task Input */}
-                <section>
-                    <TaskInput spaceId={defaultSpace.id} />
-                </section>
+            {/* Visual Flow Board */}
+            <div className="h-[500px]">
+                <FlowBoard tasks={tasks} activeTaskId={activeTask?.id} />
+            </div>
 
-                {/* Tasks List - Moved to Client Component for interactivity */}
-                <section>
-                    <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Up Next ({tasks.length})</h3>
-                    </div>
-
-                    <TaskListClient tasks={tasks} />
-                </section>
+            {/* Quick Add */}
+            <div className="max-w-md mx-auto">
+                <TaskInput spaceId={defaultSpace.id} />
             </div>
         </div>
     )

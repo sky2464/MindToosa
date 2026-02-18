@@ -1,6 +1,6 @@
-import { createGenAI } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { env } from "./env";
-import { DailyPlanSchema, DailyPlan, Task, Goal } from "@/core/planTypes";
+import { DailyPlanSchema, DailyPlan, Task, Goal, Project } from "@/core/planTypes";
 
 export interface PlanContext {
     date: string;
@@ -11,14 +11,17 @@ export interface PlanContext {
     notes?: string;
 }
 
+export interface ProjectContext {
+    project: Project;
+    tasks: Task[];
+}
+
 export const llmClient = {
     async generateDailyPlan(context: PlanContext): Promise<DailyPlan> {
-        if (!env.AI_PROVIDER_API_KEY) {
-            throw new Error("AI_PROVIDER_API_KEY is not set.");
-        }
+        if (!env.AI_PROVIDER_API_KEY) throw new Error("AI_PROVIDER_API_KEY is not set.");
 
-        const genAI = createGenAI({ apiKey: env.AI_PROVIDER_API_KEY });
-        const model = "gemini-1.5-flash";
+        const genAI = new GoogleGenerativeAI(env.AI_PROVIDER_API_KEY);
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
         const prompt = `
         You are an expert productivity coach. Create a realistic daily plan for me.
@@ -53,20 +56,10 @@ export const llmClient = {
         `;
 
         try {
-            const result = await genAI.models.generateContent({
-                model,
-                contents: [{ role: "user", parts: [{ text: prompt }] }]
-            });
+            const result = await model.generateContent(prompt);
             const text = result.response.text();
-
-            console.log("LLM Raw Response:", text); // Debugging
-
-            // Clean up code blocks if present
             const cleanText = text.replace(/```json/g, "").replace(/```/g, "").trim();
-
             const json = JSON.parse(cleanText);
-
-            // Validate with Zod
             const parsed = DailyPlanSchema.safeParse(json);
 
             if (!parsed.success) {
@@ -79,6 +72,51 @@ export const llmClient = {
         } catch (error) {
             console.error("LLM Generation Error:", error);
             throw new Error("Failed to generate plan.");
+        }
+    },
+
+    async suggestSubtasks(taskTitle: string): Promise<string[]> {
+        if (!env.AI_PROVIDER_API_KEY) return ["Analyze requirements", "Draft outline", "Review and refine"];
+
+        const genAI = new GoogleGenerativeAI(env.AI_PROVIDER_API_KEY);
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+        const prompt = `Break down the task "${taskTitle}" into 3-5 actionable micro-steps. Return ONLY a JSON array of strings. Example: ["Step 1", "Step 2"]`;
+
+        try {
+            const result = await model.generateContent(prompt);
+            const text = result.response.text();
+            const cleanText = text.replace(/```json/g, "").replace(/```/g, "").trim();
+            return JSON.parse(cleanText);
+        } catch (error) {
+            console.error("Error suggesting subtasks:", error);
+            return ["Define requirements", "Execute task", "Verify output"];
+        }
+    },
+
+    async chatWithProject(context: ProjectContext, message: string): Promise<string> {
+        if (!env.AI_PROVIDER_API_KEY) return "I can only help if the API Key is set.";
+
+        const genAI = new GoogleGenerativeAI(env.AI_PROVIDER_API_KEY);
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+        const systemPrompt = `
+        You are a project assistant for the project "${context.project.title}".
+        Description: ${context.project.description || "N/A"}
+        Status: ${context.project.status}
+
+        Tasks:
+        ${context.tasks.map(t => `- ${t.title} (${t.status})`).join("\n")}
+
+        Answer the user's question accurately based on this context. Keep answers concise.
+        `;
+
+        try {
+            const result = await model.generateContent(systemPrompt + "\n\nUser Question: " + message);
+            return result.response.text();
+        } catch (error) {
+            console.error("Error chatting with project:", error);
+            return "Sorry, I couldn't process your request.";
         }
     }
 };

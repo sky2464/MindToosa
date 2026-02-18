@@ -59,6 +59,8 @@ This document serves as the primary context and rulebook for the MindToosa codeb
 - **Error Handling:** Use `catch (error: unknown)` and check `if (error instanceof Error)`.
 - **Interfaces:** Prefer `interface` over `type` for object definitions.
 - **Validation:** All external data (API params, Environment variables) MUST be validated with Zod.
+- **Accessibility**: Icon-only buttons MUST have `aria-label` or `title`.
+- **HTML Layout**: `<ul>` and `<ol>` MUST only directly contain `<li>` elements.
 
 ### React Hooks
 

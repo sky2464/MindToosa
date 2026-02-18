@@ -1,12 +1,15 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/auth";
+import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 import { focusService } from "@/server/services/focusService";
 
 export async function POST(request: Request) {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
 
-    if (!session?.user?.id) {
+    // Use email as ID to prevent foreign key errors if UUID was expected but not available in session
+    // focus table uses text for user_id so email is fine.
+    const userId = session?.user?.email;
+
+    if (!userId) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -18,7 +21,7 @@ export async function POST(request: Request) {
             body.started_at = new Date(body.started_at);
         }
 
-        const savedSession = await focusService.createSession(session.user.id, body);
+        const savedSession = await focusService.createSession(userId, body);
         return NextResponse.json(savedSession);
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : "An unknown error occurred";
@@ -27,14 +30,15 @@ export async function POST(request: Request) {
 }
 
 export async function GET() {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
+    const userId = session?.user?.email;
 
-    if (!session?.user?.id) {
+    if (!userId) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     try {
-        const sessions = await focusService.getSessions(session.user.id);
+        const sessions = await focusService.getSessions(userId);
         return NextResponse.json(sessions);
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : "An unknown error occurred";

@@ -1,10 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Play, Pause, RotateCcw, Maximize2, Minimize2 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useSoundEffects } from "@/hooks/useSoundEffects"; // Ensure this hook exists or mock it if needed
+import { useState, useEffect } from "react";
 
 interface FocusTimerProps {
     activeTaskId?: string;
@@ -12,15 +8,11 @@ interface FocusTimerProps {
 }
 
 export default function FocusTimer({ activeTaskId, activeTaskTitle }: FocusTimerProps) {
-    const [timeLeft, setTimeLeft] = useState(25 * 60);
+    const [timeLeft, setTimeLeft] = useState(25 * 60); // 25 minutes in seconds
     const [isActive, setIsActive] = useState(false);
     const [mode, setMode] = useState<"idle" | "running" | "paused" | "completed">("idle");
-    const [zenMode, setZenMode] = useState(false);
 
-    // Sound hooks
-    const { playStart, playPause, playComplete, playClick } = useSoundEffects();
-
-    const saveSession = useCallback(async () => {
+    const saveSession = async () => {
         try {
             await fetch("/api/focus", {
                 method: "POST",
@@ -33,13 +25,13 @@ export default function FocusTimer({ activeTaskId, activeTaskTitle }: FocusTimer
                 }),
             });
 
-            // Gamification endpoints (fire and forget)
-            fetch("/api/gamification", {
+            // Gamification: Award XP and Update Streak
+            await fetch("/api/gamification", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ action: "add_xp", amount: 25 }),
+                body: JSON.stringify({ action: "add_xp", amount: 25 }), // 1 XP per minute
             });
-            fetch("/api/gamification", {
+            await fetch("/api/gamification", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ action: "update_streak" }),
@@ -48,7 +40,7 @@ export default function FocusTimer({ activeTaskId, activeTaskTitle }: FocusTimer
         } catch (error) {
             console.error("Error saving focus session:", error);
         }
-    }, [activeTaskId]);
+    };
 
     useEffect(() => {
         let interval: NodeJS.Timeout | null = null;
@@ -58,41 +50,30 @@ export default function FocusTimer({ activeTaskId, activeTaskTitle }: FocusTimer
                 setTimeLeft((prev) => prev - 1);
             }, 1000);
         } else if (timeLeft === 0 && isActive) {
-            Promise.resolve().then(() => {
-                setIsActive(false);
-                setMode("completed");
-                playComplete();
-                saveSession();
-            });
+            setIsActive(false);
+            setMode("completed");
+            saveSession();
         }
 
         return () => {
             if (interval) clearInterval(interval);
         };
-    }, [isActive, timeLeft, playComplete, saveSession]);
+    }, [isActive, timeLeft]);
 
     const startTimer = () => {
         setIsActive(true);
         setMode("running");
-        playStart();
     };
 
     const pauseTimer = () => {
         setIsActive(false);
         setMode("paused");
-        playPause();
     };
 
     const resetTimer = () => {
         setIsActive(false);
         setMode("idle");
         setTimeLeft(25 * 60);
-        playClick();
-    };
-
-    const toggleZenMode = () => {
-        setZenMode(!zenMode);
-        playClick();
     };
 
     const formatTime = (seconds: number) => {
@@ -101,142 +82,61 @@ export default function FocusTimer({ activeTaskId, activeTaskTitle }: FocusTimer
         return `${m}:${s.toString().padStart(2, "0")}`;
     };
 
-    const progress = ((25 * 60 - timeLeft) / (25 * 60)) * 100;
-
-    return (
-        <AnimatePresence>
-            {zenMode && isActive && (
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm flex flex-col items-center justify-center p-8"
+    if (mode === "idle") {
+        return (
+            <section className="bg-blue-50 p-6 rounded-xl text-center space-y-4">
+                <h2 className="text-lg font-semibold text-blue-900">
+                    {activeTaskTitle ? `Ready to focus on "${activeTaskTitle}"?` : "Ready to focus?"}
+                </h2>
+                <button
+                    onClick={startTimer}
+                    className="bg-blue-600 text-white px-6 py-3 rounded-full font-medium hover:bg-blue-700 transition w-full shadow-md hover:shadow-lg"
                 >
-                    <TimerDisplay
-                        timeLeft={timeLeft}
-                        progress={progress}
-                        mode={mode}
-                        isActive={isActive}
-                        formatTime={formatTime}
-                    />
-                    <div className="mt-12 flex gap-6">
-                        <ControlButton onClick={pauseTimer} icon={<Pause className="w-6 h-6" />} label="Pause" />
-                        <ControlButton onClick={toggleZenMode} icon={<Minimize2 className="w-6 h-6" />} label="Exit Zen" />
-                    </div>
-                </motion.div>
-            )}
+                    Start 25m Sprint
+                </button>
+            </section>
+        );
+    }
 
-            <div className={cn(
-                "relative p-8 rounded-3xl transition-all duration-500 overflow-hidden",
-                mode === 'running' ? "bg-primary/10 border border-primary/20 shadow-2xl shadow-primary/10" : "bg-card border border-border shadow-lg"
-            )}>
-                {/* Breathing Background Effect */}
-                {isActive && (
-                    <motion.div
-                        animate={{ opacity: [0.3, 0.6, 0.3], scale: [0.95, 1.05, 0.95] }}
-                        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                        className="absolute inset-0 bg-gradient-to-tr from-primary/20 via-transparent to-accent/20 blur-3xl -z-10"
-                    />
-                )}
-
-                <div className="flex justify-between items-start mb-8">
-                    <h2 className="text-xl font-semibold text-foreground/90">
-                        {mode === "completed" ? "Session Complete!" : mode === "paused" ? "Focus Paused" : "Deep Focus"}
-                    </h2>
-                    {isActive && (
-                        <button onClick={toggleZenMode} className="text-muted-foreground hover:text-primary transition">
-                            <Maximize2 className="w-5 h-5" />
-                        </button>
-                    )}
-                </div>
-
-                <div className="flex flex-col items-center justify-center py-6">
-                    <div className="relative mb-8">
-                        {/* Circular Progress (Visual only for now, can be SVG) */}
-                        <div className="w-64 h-64 rounded-full border-4 border-muted/20 flex items-center justify-center relative">
-                            {isActive && (
-                                <motion.div
-                                    animate={{ scale: [1, 1.02, 1] }}
-                                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                                    className="absolute inset-0 rounded-full border-4 border-primary/50 opacity-50"
-                                />
-                            )}
-                            <div className="text-7xl font-bold font-mono tracking-tighter text-foreground">
-                                {formatTime(timeLeft)}
-                            </div>
-                        </div>
-                    </div>
-
-                    {activeTaskTitle && mode !== "completed" && (
-                        <motion.div
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="bg-secondary/50 px-4 py-2 rounded-full text-sm text-secondary-foreground/80 mb-8 border border-white/5"
-                        >
-                            Focusing on: <span className="font-medium text-primary-foreground">{activeTaskTitle}</span>
-                        </motion.div>
-                    )}
-
-                    <div className="flex gap-4">
-                        {mode === "idle" || mode === "paused" ? (
-                            <ControlButton
-                                onClick={startTimer}
-                                icon={<Play className="w-6 h-6 ml-1" />}
-                                label={mode === "idle" ? "Start Sprint" : "Resume"}
-                                primary
-                            />
-                        ) : mode === "running" ? (
-                            <ControlButton
-                                onClick={pauseTimer}
-                                icon={<Pause className="w-6 h-6" />}
-                                label="Pause"
-                            />
-                        ) : null}
-
-                        {(mode !== "idle") && (
-                            <ControlButton
-                                onClick={resetTimer}
-                                icon={mode === "completed" ? <RotateCcw className="w-5 h-5" /> : <RotateCcw className="w-5 h-5" />}
-                                label={mode === "completed" ? "New Session" : "Stop"}
-                            />
-                        )}
-                    </div>
-                </div>
-            </div>
-        </AnimatePresence>
-    );
-}
-
-function TimerDisplay({ timeLeft, formatTime, isActive }: { timeLeft: number; formatTime: (s: number) => string; isActive: boolean }) {
     return (
-        <div className="relative">
-            {isActive && (
-                <motion.div
-                    animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.8, 0.5] }}
-                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                    className="absolute inset-0 bg-primary/20 blur-3xl rounded-full"
-                />
+        <section className={`p-6 rounded-xl text-center space-y-4 transition-colors duration-500 ${mode === 'running' ? 'bg-blue-900 text-white' : 'bg-blue-50 text-blue-900'}`}>
+            <h2 className="text-lg font-semibold opacity-90">
+                {mode === "completed" ? "Session Complete!" : mode === "paused" ? "Paused" : "Focus Mode"}
+            </h2>
+            {activeTaskTitle && mode !== "completed" && (
+                <p className="text-sm opacity-80">Focusing on: {activeTaskTitle}</p>
             )}
-            <div className="text-9xl font-bold font-mono text-foreground tracking-tighter">
+
+            <div className="text-6xl font-bold tracking-tight font-mono my-4">
                 {formatTime(timeLeft)}
             </div>
-        </div>
-    )
-}
 
-function ControlButton({ onClick, icon, label, primary }: { onClick: () => void; icon: React.ReactNode; label: string; primary?: boolean }) {
-    return (
-        <button
-            onClick={onClick}
-            className={cn(
-                "flex items-center gap-2 px-6 py-3 rounded-full font-medium transition-all duration-200 active:scale-95",
-                primary
-                    ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/25"
-                    : "bg-secondary text-secondary-foreground hover:bg-secondary/80 hover:text-foreground"
-            )}
-        >
-            {icon}
-            <span>{label}</span>
-        </button>
-    )
+            <div className="flex justify-center gap-3">
+                {mode === "running" && (
+                    <button
+                        onClick={pauseTimer}
+                        className="bg-white/20 hover:bg-white/30 text-white px-6 py-2 rounded-full font-medium transition"
+                    >
+                        Pause
+                    </button>
+                )}
+
+                {mode === "paused" && (
+                    <button
+                        onClick={startTimer}
+                        className="bg-blue-600 text-white px-6 py-2 rounded-full font-medium hover:bg-blue-700 transition"
+                    >
+                        Resume
+                    </button>
+                )}
+
+                <button
+                    onClick={resetTimer}
+                    className={`${mode === 'running' ? 'text-white/60 hover:text-white' : 'text-gray-500 hover:text-gray-700'} px-4 py-2 text-sm font-medium transition`}
+                >
+                    {mode === "completed" ? "New Session" : "Stop"}
+                </button>
+            </div>
+        </section>
+    );
 }

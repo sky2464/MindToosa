@@ -316,10 +316,10 @@ Sprint B (25 min) — real
 Definition of done (MVP):
 
 - [x] Google login works.
-- [x] User has General Space auto-created.
 - [x] User can create optional Spaces.
 - [x] User can create goals/tasks in a Space.
 - [x] User can generate a daily plan (mock or AI), apply it, and start a Focus Sprint.
+- [x] Fixed audio 404s by providing local MP3 assets in `public/sounds/`.
 
 ---
 

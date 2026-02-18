@@ -6,49 +6,25 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
-    "postinstall": "node scripts/patch-ajv.js"
+    "lint": "eslint"
   },
   "dependencies": {
-    "@google/genai": "^1.41.0",
-    "@supabase/ssr": "^0.8.0",
-    "@supabase/supabase-js": "^2.96.0",
-    "framer-motion": "^12.34.1",
-    "lucide-react": "^0.574.0",
+    "@google/generative-ai": "0.24.1",
+    "@supabase/ssr": "0.8.0",
+    "@supabase/supabase-js": "2.96.0",
+    "lucide-react": "0.574.0",
     "next": "16.1.6",
-    "next-auth": "4.24.13",
+    "next-auth": "5.0.0-beta.30",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "tailwind-merge": "^3.0.1",
-    "zod": "^4.3.6"
+    "zod": "4.3.6"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.1.18",
-    "@types/node": "^25.2.3",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "ajv-draft-04": "^1.0.0",
-    "eslint": "^10.0.0",
-    "eslint-config-next": "16.1.6",
-    "postcss": "^8.5.6",
-    "tailwindcss": "^4.1.18",
-    "typescript": "^5.9.3"
-  },
-  "overrides": {
-    "cross-spawn": "file:./scripts/cross-spawn-shim",
-    "ajv": "^8.18.0",
-    "@eslint-community/eslint-utils": "^4.9.1",
-    "eslint-plugin-import": {
-      "eslint": "^10.0.0"
-    },
-    "eslint-plugin-jsx-a11y": {
-      "eslint": "^10.0.0"
-    },
-    "eslint-plugin-react": {
-      "eslint": "^10.0.0"
-    },
-    "eslint-plugin-react-hooks": {
-      "eslint": "^10.0.0"
-    }
+    "@tailwindcss/postcss": "4.1.18",
+    "@types/node": "25.2.3",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "tailwindcss": "4.1.18",
+    "typescript": "5.9.3"
   }
 }

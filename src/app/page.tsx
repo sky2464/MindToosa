@@ -13,6 +13,9 @@ export default function Home() {
           <Link href="/today" className="bg-black text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-800 transition">
             Go to Today
           </Link>
+          <Link href="/projects" className="bg-white border border-gray-200 text-gray-900 px-6 py-3 rounded-lg font-medium hover:bg-gray-50 transition">
+            Manage Projects
+          </Link>
           <Link href="/api/auth/signin" className="text-sm text-gray-500 hover:underline">
             Sign In with Google
           </Link>
