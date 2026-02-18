@@ -64,14 +64,16 @@ const TaskInput = ({ spaceId }: { spaceId: string }) => {
       if (!res.ok) {
         const error = await res.json();
         console.error("Failed to add task", error);
-        alert("Failed code: " + res.status);
+        alert(`Failed to add task: ${error.error || "Unknown error"} (${res.status})`);
         return;
       }
 
       setTitle("");
       router.refresh(); // Tells Next.js to re-fetch server components
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Failed to add task", error);
+      const message = error instanceof Error ? error.message : "Unknown error";
+      alert(`Error submitting task: ${message}`);
     } finally {
       setIsLoading(false); // Use setIsLoading
     }
