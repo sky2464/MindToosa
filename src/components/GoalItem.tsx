@@ -46,10 +46,11 @@ export default function GoalItem({ goal }: GoalItemProps) {
                     onClick={handleToggleArchive}
                     disabled={isArchiving}
                     className={`p-1.5 rounded-lg transition-colors disabled:opacity-50 ${goal.archived
-                            ? "text-emerald-500 hover:bg-emerald-500/10"
-                            : "text-zinc-600 hover:text-red-400 hover:bg-red-400/10"
+                        ? "text-emerald-500 hover:bg-emerald-500/10"
+                        : "text-zinc-600 hover:text-red-400 hover:bg-red-400/10"
                         }`}
                     title={goal.archived ? "Restore North Star" : "Archive North Star"}
+                    aria-label={goal.archived ? "Restore North Star" : "Archive North Star"}
                 >
                     {isArchiving ? (
                         <Loader2 size={16} className="animate-spin" />

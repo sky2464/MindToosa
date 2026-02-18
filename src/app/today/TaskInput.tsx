@@ -15,6 +15,7 @@ const TaskInput = ({ spaceId }: { spaceId: string }) => {
 
     setIsLoading(true);
     try {
+      const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD format
       const task = {
         title,
         scheduled_for: today,

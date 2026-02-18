@@ -31,13 +31,10 @@ export async function POST(req: Request) {
 
   try {
     const json = await req.json();
-    console.log("POST /api/tasks received payload:", JSON.stringify(json, null, 2));
     const task = await taskService.createTask(userId, json);
-    console.log("Task created successfully:", task);
     return NextResponse.json(task);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "An unknown error occurred";
-    console.error("POST /api/tasks error:", message);
     return NextResponse.json({ error: message }, { status: 400 });
   }
 }

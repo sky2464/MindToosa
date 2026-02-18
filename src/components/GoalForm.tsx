@@ -61,6 +61,7 @@ export default function GoalForm({ spaceId, onSuccess, onCancel }: GoalFormProps
                         type="button"
                         onClick={onCancel}
                         className="text-zinc-500 hover:text-white"
+                        aria-label="Close form"
                     >
                         <X size={20} />
                     </button>
@@ -81,8 +82,9 @@ export default function GoalForm({ spaceId, onSuccess, onCancel }: GoalFormProps
 
             <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                    <label className="text-xs font-medium text-zinc-500 uppercase tracking-wider">Time Horizon</label>
+                    <label htmlFor="horizon-select" className="text-xs font-medium text-zinc-500 uppercase tracking-wider">Time Horizon</label>
                     <select
+                        id="horizon-select"
                         value={horizon}
                         onChange={(e) => setHorizon(e.target.value as any)}
                         className="w-full rounded-lg border border-zinc-800 bg-zinc-950 p-2.5 text-white focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"

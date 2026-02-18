@@ -89,6 +89,7 @@ export default function FlowBoard({ tasks: initialTasks }: FlowBoardProps) {
         onClick={() => setZenMode(!zenMode)}
         className={`absolute ${zenMode ? "top-8 right-8" : "-top-12 right-0"} z-50 rounded-full p-2 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white`}
         title={zenMode ? "Exit Focus Mode" : "Enter Focus Mode"}
+        aria-label={zenMode ? "Exit Focus Mode" : "Enter Focus Mode"}
       >
         {zenMode ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
       </button>
@@ -105,15 +106,11 @@ export default function FlowBoard({ tasks: initialTasks }: FlowBoardProps) {
                 key={task.id}
                 draggable
                 onDragStart={(e) => handleDragStart(e, task.id!)}
-                className="group relative cursor-grab rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 transition-all hover:translate-x-1 hover:border-zinc-700 hover:bg-zinc-800 active:cursor-grabbing [transform:scale(var(--scale))_translateY(var(--translate-y))] z-[var(--z-index)]"
-                // eslint-disable-next-line react-dom/no-unsafe-inline-style
-                style={
-                  {
-                    "--scale": 1 - i * 0.02,
-                    "--translate-y": `${i * 4}px`,
-                    "--z-index": 10 - i,
-                  } as React.CSSProperties
-                }
+                className="group relative cursor-grab rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 transition-all hover:translate-x-1 hover:border-zinc-700 hover:bg-zinc-800 active:cursor-grabbing"
+                style={{
+                  transform: `scale(${1 - i * 0.02}) translateY(${i * 4}px)`,
+                  zIndex: 10 - i,
+                }}
               >
                 <h4 className="line-clamp-2 text-sm font-medium text-zinc-300 transition-colors group-hover:text-white">
                   {task.title}

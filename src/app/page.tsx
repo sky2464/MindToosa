@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ArrowRight, Layout, Zap, Target } from "lucide-react";
 
 export default function Home() {

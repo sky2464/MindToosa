@@ -2,6 +2,17 @@ import { auth } from "@/auth";
 import { taskService } from "@/server/services/taskService";
 import { DailyPlanSchema } from "@/core/planTypes";
 import { NextResponse } from "next/server";
+import { z } from "zod";
+
+/**
+ * Enhanced validation schema for daily plan application
+ * Adds security constraints on top of the base DailyPlanSchema
+ */
+const ApplyPlanSchema = DailyPlanSchema.extend({
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format"),
+  mustDo: z.array(z.any()).max(50, "Cannot schedule more than 50 must-do tasks per day"),
+  optional: z.array(z.any()).max(50, "Cannot schedule more than 50 optional tasks per day"),
+});
 
 export async function POST(req: Request) {
   const session = await auth();
@@ -12,13 +23,31 @@ export async function POST(req: Request) {
 
   try {
     const json = await req.json();
-    const result = DailyPlanSchema.safeParse(json);
+    const result = ApplyPlanSchema.safeParse(json);
 
     if (!result.success) {
-      return NextResponse.json({ error: result.error }, { status: 400 });
+      return NextResponse.json(
+        {
+          error: "Invalid input",
+          details: result.error.format()
+        },
+        { status: 400 }
+      );
     }
 
     const { date, mustDo, optional } = result.data;
+
+    // Validate date is not too far in the past or future
+    const planDate = new Date(date);
+    const today = new Date();
+    const daysDiff = Math.abs((planDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
+    if (daysDiff > 365) {
+      return NextResponse.json(
+        { error: "Date must be within one year of today" },
+        { status: 400 }
+      );
+    }
 
     // 1. Prepare tasks for upsert
     // - Set scheduled_for to the plan date

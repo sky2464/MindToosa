@@ -1,19 +1,15 @@
-import { createClient } from "@supabase/supabase-js";
+import { db } from "@/server/db";
 
-// We use the service role key for admin tasks if needed,
-// but here we might just need a client that can carry the user's session
-// OR we use the admin client to safely update stats without trusting the client.
-// Given the architecture in init.md mentions "server/db.ts", let's check if that exists or we create a standard client.
-// For now, I'll assume we use a direct Supabase client with the service role for safe updates.
-
-const supabaseUrl = process.env.SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+/**
+ * Gamification Service
+ * 
+ * Manages user stats, XP, levels, and streaks for the gamification system.
+ * Uses the centralized database client from @/server/db.
+ */
 
 export const gamificationService = {
   async getStats(userId: string) {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from("user_stats")
       .select("*")
       .eq("user_id", userId)
@@ -29,7 +25,7 @@ export const gamificationService = {
   },
 
   async createStats(userId: string) {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from("user_stats")
       .insert([{ user_id: userId, xp: 0, level: 1, current_streak: 0 }])
       .select()
@@ -55,7 +51,7 @@ export const gamificationService = {
     }
 
     // 3. Update DB
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from("user_stats")
       .update({ xp: newXP, level: newLevel })
       .eq("user_id", userId)
@@ -87,7 +83,7 @@ export const gamificationService = {
       newStreak = 1; // Reset streak if missed a day (or first day)
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from("user_stats")
       .update({
         current_streak: newStreak,

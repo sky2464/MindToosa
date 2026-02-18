@@ -68,3 +68,71 @@ description: Best practices for developing with Next.js 16 App Router, Server Ac
     return { title: `Project ${id}` };
   }
   ```
+
+## 6. Proxy (Formerly Middleware)
+
+> [!WARNING]
+> **Middleware Renamed to Proxy**: As of Next.js 16, `middleware.ts` has been renamed to `proxy.ts`. The term "middleware" was confusing (often mistaken for Express middleware), and "proxy" better describes its purpose: running code at the network boundary before requests reach your app.
+
+### When to Use Proxy
+
+- **Use as Last Resort**: Only use proxy when no other Next.js API can solve your problem.
+- **Common Use Cases**: Authentication checks, redirects, rewrites, setting headers, CORS handling.
+- **Avoid**: Business logic, data fetching, complex computations (use Server Actions or Route Handlers instead).
+
+### Migration from Middleware
+
+If you have an existing `middleware.ts` file, migrate using the official codemod:
+
+```bash
+npx @next/codemod@canary middleware-to-proxy .
+```
+
+This will:
+
+- Rename `middleware.ts` → `proxy.ts`
+- Rename `export function middleware()` → `export function proxy()`
+
+### Basic Proxy Structure
+
+```typescript
+// src/proxy.ts
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+
+export function proxy(request: NextRequest) {
+  // Your logic here
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: [
+    // Exclude API routes, static files, images
+    "/((?!api|_next/static|_next/image|favicon.ico).*)",
+  ],
+};
+```
+
+### Using with NextAuth
+
+For authentication, wrap the `auth()` function from NextAuth:
+
+```typescript
+// src/proxy.ts
+import { auth } from "@/auth";
+
+export default auth((req) => {
+  // Custom logic here (e.g., role-based redirects)
+});
+
+export const config = {
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+};
+```
+
+### Best Practices
+
+1. **Precise Matchers**: Use specific path matchers to avoid running proxy on every request.
+2. **Keep It Light**: Proxy runs on every matched request - keep logic minimal.
+3. **Edge Runtime**: Proxy defaults to Edge Runtime (fast, but limited Node.js APIs).
+4. **Prefer Alternatives**: Use Server Actions, Route Handlers, or `headers()`/`cookies()` when possible.
