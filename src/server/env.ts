@@ -69,7 +69,18 @@ function getEnv() {
   }
 
   try {
-    return envSchema.parse(rawEnv);
+    const parsed = envSchema.parse(rawEnv);
+
+    // Production safety check
+    if (parsed.NODE_ENV === "production" && parsed.AUTH_URL?.includes("localhost")) {
+      console.warn(
+        "\x1b[33m%s\x1b[0m",
+        "⚠️ WARNING: AUTH_URL is set to localhost in production. This will break authentication redirects."
+      );
+      console.warn("\x1b[33m%s\x1b[0m", "Please update AUTH_URL in your Vercel Project Settings to your production URL.");
+    }
+
+    return parsed;
   } catch (error) {
     if (error instanceof z.ZodError) {
       console.error("\x1b[31m%s\x1b[0m", "❌ INVALID ENVIRONMENT VARIABLES:");
