@@ -238,7 +238,7 @@ export default function TaskEditModal({ task, onClose }: TaskEditModalProps) {
             <div className="w-full max-w-lg rounded-3xl border border-white/10 bg-zinc-950 shadow-2xl shadow-indigo-500/10 max-h-[85vh] flex flex-col">
                 {/* Header */}
                 <div className="flex items-center justify-between border-b border-white/5 px-6 py-4 shrink-0">
-                    <h2 className="font-bold text-white">Edit Task</h2>
+                    <h2 className="font-bold text-white">Edit Task (Recurrence Added)</h2>
                     <button
                         onClick={onClose}
                         className="rounded-lg p-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300 transition-colors"
@@ -331,6 +331,7 @@ export default function TaskEditModal({ task, onClose }: TaskEditModalProps) {
                                 </label>
                                 <select
                                     value={recurrence}
+                                    title="Recurrence Rule"
                                     onChange={(e) => setRecurrence(e.target.value)}
                                     className="w-full rounded-xl border border-zinc-700 bg-zinc-900/50 px-4 py-2.5 text-sm text-white outline-none focus:border-indigo-500/50"
                                 >

@@ -65,14 +65,16 @@ export const llmClient = {
     try {
       const response = await ai.models.generateContent({
         model: MODEL,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: DailyPlanSchema, // Optional: if SDK supports Zod schema directly, otherwise just JSON mode
+        },
         contents: prompt,
       });
       const text = response.text ?? "";
-      const cleanText = text
-        .replace(/```json/g, "")
-        .replace(/```/g, "")
-        .trim();
-      const json = JSON.parse(cleanText);
+
+      // With JSON mode, we don't need regex cleaning usually, but safe to keep a simple parse
+      const json = JSON.parse(text);
       const parsed = DailyPlanSchema.safeParse(json);
 
       if (!parsed.success) {

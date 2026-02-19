@@ -57,7 +57,15 @@ function getEnv() {
 
   if (process.env.SKIP_ENV_VALIDATION === "true") {
     console.log("\x1b[33m%s\x1b[0m", "⚠️ Skipping environment validation (SKIP_ENV_VALIDATION=true)");
-    return rawEnv as Env;
+    return {
+      ...rawEnv,
+      SUPABASE_URL: rawEnv.SUPABASE_URL || "https://example.com",
+      SUPABASE_SERVICE_ROLE_KEY: rawEnv.SUPABASE_SERVICE_ROLE_KEY || "mock-key",
+      AUTH_SECRET: rawEnv.AUTH_SECRET || "mock-secret-at-least-32-chars-long-1234567890", // Must be >= 32 chars
+      GOOGLE_CLIENT_ID: rawEnv.GOOGLE_CLIENT_ID || "mock-client-id",
+      GOOGLE_CLIENT_SECRET: rawEnv.GOOGLE_CLIENT_SECRET || "mock-client-secret",
+      NODE_ENV: rawEnv.NODE_ENV || "production",
+    } as Env;
   }
 
   try {
