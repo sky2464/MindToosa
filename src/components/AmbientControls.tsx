@@ -141,6 +141,7 @@ export default function AmbientControls() {
         onClick={() => toggleSound("white")}
         className={`rounded-full p-2 transition-colors ${activeSound === "white" ? "bg-indigo-600 text-white" : "text-zinc-400 hover:bg-zinc-800 hover:text-white"}`}
         title="White Noise (Focus)"
+        aria-label="Toggle White Noise"
       >
         <Wind size={18} />
       </button>
@@ -148,6 +149,7 @@ export default function AmbientControls() {
         onClick={() => toggleSound("pink")}
         className={`rounded-full p-2 transition-colors ${activeSound === "pink" ? "bg-indigo-600 text-white" : "text-zinc-400 hover:bg-zinc-800 hover:text-white"}`}
         title="Pink Noise (Relax)"
+        aria-label="Toggle Pink Noise"
       >
         <Waves size={18} />
       </button>
@@ -155,6 +157,7 @@ export default function AmbientControls() {
         onClick={() => toggleSound("rain")}
         className={`rounded-full p-2 transition-colors ${activeSound === "rain" ? "bg-indigo-600 text-white" : "text-zinc-400 hover:bg-zinc-800 hover:text-white"}`}
         title="Rain (Calm)"
+        aria-label="Toggle Rain Sound"
       >
         <CloudRain size={18} />
       </button>

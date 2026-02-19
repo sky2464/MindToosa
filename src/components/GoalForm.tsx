@@ -65,8 +65,9 @@ export default function GoalForm({ spaceId, onSuccess, onCancel }: GoalFormProps
                 </div>
 
                 <div className="space-y-2">
-                    <label className="text-xs font-medium text-zinc-500 uppercase tracking-wider">Title</label>
+                    <label htmlFor="goal-title" className="text-xs font-medium text-zinc-500 uppercase tracking-wider">Title</label>
                     <input
+                        id="goal-title"
                         type="text"
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
@@ -94,8 +95,9 @@ export default function GoalForm({ spaceId, onSuccess, onCancel }: GoalFormProps
                 </div>
 
                 <div className="space-y-2">
-                    <label className="text-xs font-medium text-zinc-500 uppercase tracking-wider">The "Why"</label>
+                    <label htmlFor="goal-why" className="text-xs font-medium text-zinc-500 uppercase tracking-wider">The "Why"</label>
                     <textarea
+                        id="goal-why"
                         value={why}
                         onChange={(e) => setWhy(e.target.value)}
                         placeholder="Why does this matter?"

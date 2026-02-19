@@ -41,7 +41,7 @@ export default function NavBar() {
 
             {/* Desktop sidebar */}
             <div className="hidden md:flex flex-col items-center gap-2 h-full border-r border-white/5 bg-zinc-950/80 backdrop-blur-xl w-16 py-6">
-                <Link href="/" className="mb-4 flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600 shadow-lg shadow-indigo-600/30">
+                <Link href="/" aria-label="Home" className="mb-4 flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600 shadow-lg shadow-indigo-600/30">
                     <Zap size={18} className="fill-current text-white" />
                 </Link>
 
@@ -56,6 +56,7 @@ export default function NavBar() {
                             key={href}
                             href={href}
                             title={label}
+                            aria-label={label}
                             className={`group relative flex h-10 w-10 items-center justify-center rounded-xl transition-all ${isActive
                                 ? "bg-indigo-600/20 text-indigo-400 shadow-[0_0_12px_rgba(99,102,241,0.2)]"
                                 : "text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"

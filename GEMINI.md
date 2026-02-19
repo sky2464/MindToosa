@@ -105,8 +105,24 @@ To maintain a secure and state-of-the-art codebase, the following rules are **MA
 - **Images**: Use `next/image` for all images to leverage automatic optimization.
 - **Secrets**: NEVER commit `.env` files or secrets to Git.
 
-## 7. 🧪 Workflow
+## 7. 🧪 Workflow & Quality Standards
 
-- **Empty State Accessibility**: Ensure buttons have `aria-label` or `title` if they don't contain visible text (e.g., icon-only buttons).
-- **HTML Structure**: Strictly follow nesting rules (e.g., `<ul>` must only contain `<li>` as direct children).
-- **Type Checking**: Ensure no TypeScript errors exist.
+### ♿ Accessibility (A11y)
+
+- **Discernible Text**: Buttons without visible text MUST have an `aria-label` or `title`. Links with only icons MUST also have an `aria-label`.
+- **Form Labels**: Use `<label htmlFor="id">` paired with `<input id="id">` (or similar for `textarea`/`select`) for ALL form elements. Never rely solely on placeholders or non-associated text.
+- **Icon-Only Interactive Elements**: MUST include an `aria-label` that describes the action (e.g., `aria-label="Close modal"`, `aria-label="Send message"`).
+- **Icon Buttons**: When using Lucide or other icons inside buttons, ensure the button itself has a descriptive label for screen readers.
+- **Color Contrast**: Ensure text has sufficient contrast against background colors.
+- **Screen Reader Navigation**: Use semantic HTML and ARIA landmarks where appropriate to facilitate easy navigation.
+
+### 🏗️ HTML Structure
+
+- Strictly follow nesting rules (e.g., `<ul>` must only contain `<li>` as direct children).
+- Use semantic elements (`<header>`, `<main>`, `<section>`, `<article>`, `<footer>`) to improve document structure.
+
+### 🔍 Validation & Type Checking
+
+- **No TypeScript Errors**: Ensure no TypeScript errors exist (`npm run type-check`).
+- **Consistent Casing**: `forceConsistentCasingInFileNames: true` is enabled in `tsconfig.json` to prevent issues across different OS environments.
+- **Runtime Validation**: Use Zod for all external data boundaries.

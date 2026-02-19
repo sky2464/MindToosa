@@ -272,10 +272,11 @@ export default function TaskEditModal({ task, onClose }: TaskEditModalProps) {
                         <div className="space-y-5">
                             {/* Title */}
                             <div>
-                                <label className="mb-2 block text-xs font-bold tracking-widest text-zinc-500 uppercase">
+                                <label htmlFor="task-title-edit" className="mb-2 block text-xs font-bold tracking-widest text-zinc-500 uppercase">
                                     Task Title
                                 </label>
                                 <textarea
+                                    id="task-title-edit"
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
                                     rows={2}
@@ -381,6 +382,7 @@ export default function TaskEditModal({ task, onClose }: TaskEditModalProps) {
 
                                     <div className="flex gap-2">
                                         <input
+                                            aria-label="New subtask title"
                                             value={newSubtaskTitle}
                                             onChange={(e) => setNewSubtaskTitle(e.target.value)}
                                             onKeyDown={(e) => e.key === "Enter" && handleAddSubtask()}
@@ -424,6 +426,7 @@ export default function TaskEditModal({ task, onClose }: TaskEditModalProps) {
 
                             <div className="flex gap-2">
                                 <input
+                                    aria-label="Write a comment"
                                     value={newComment}
                                     onChange={(e) => setNewComment(e.target.value)}
                                     onKeyDown={(e) => e.key === "Enter" && handleAddComment()}

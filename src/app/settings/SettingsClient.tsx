@@ -107,6 +107,7 @@ export default function SettingsClient({ userEmail }: SettingsClientProps) {
                                     <button
                                         key={t}
                                         onClick={() => setSettings(prev => ({ ...prev, theme: t }))}
+                                        aria-pressed={settings.theme === t}
                                         className={`flex-1 py-1.5 rounded-lg text-sm font-medium transition-all ${settings.theme === t ? "bg-indigo-600 text-white shadow-lg" : "text-zinc-400 hover:text-white"
                                             }`}
                                     >
@@ -119,8 +120,9 @@ export default function SettingsClient({ userEmail }: SettingsClientProps) {
                         {/* Working Hours */}
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-xs font-bold text-zinc-500 uppercase mb-2">Start Time</label>
+                                <label htmlFor="working_hours_start" className="block text-xs font-bold text-zinc-500 uppercase mb-2">Start Time</label>
                                 <input
+                                    id="working_hours_start"
                                     type="time"
                                     value={settings.working_hours_start}
                                     onChange={(e) => setSettings(prev => ({ ...prev, working_hours_start: e.target.value }))}
@@ -128,8 +130,9 @@ export default function SettingsClient({ userEmail }: SettingsClientProps) {
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-zinc-500 uppercase mb-2">End Time</label>
+                                <label htmlFor="working_hours_end" className="block text-xs font-bold text-zinc-500 uppercase mb-2">End Time</label>
                                 <input
+                                    id="working_hours_end"
                                     type="time"
                                     value={settings.working_hours_end}
                                     onChange={(e) => setSettings(prev => ({ ...prev, working_hours_end: e.target.value }))}
@@ -145,6 +148,7 @@ export default function SettingsClient({ userEmail }: SettingsClientProps) {
                                 onClick={() => setSettings(prev => ({ ...prev, notifications_enabled: !prev.notifications_enabled }))}
                                 className={`w-12 h-6 rounded-full transition-colors relative ${settings.notifications_enabled ? "bg-emerald-500" : "bg-zinc-700"
                                     }`}
+                                aria-label={settings.notifications_enabled ? "Disable Notifications" : "Enable Notifications"}
                             >
                                 <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${settings.notifications_enabled ? "left-7" : "left-1"
                                     }`} />
