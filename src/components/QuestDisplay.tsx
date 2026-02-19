@@ -49,8 +49,7 @@ export default function QuestDisplay() {
           <div className="mt-2 flex items-center gap-2">
             <div className="h-2 w-32 overflow-hidden rounded-full bg-zinc-800">
               <div
-                className="h-full bg-gradient-to-r from-indigo-500 to-fuchsia-500 transition-all duration-1000"
-                style={{ width: `var(--progress, ${progress}%)` } as React.CSSProperties}
+                className={`h-full bg-gradient-to-r from-indigo-500 to-fuchsia-500 transition-all duration-1000 w-[${progress}%]`}
               />
             </div>
             <span className="font-mono text-xs text-zinc-500">{stats.xp} XP</span>

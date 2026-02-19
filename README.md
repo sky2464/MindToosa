@@ -18,9 +18,43 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🐳 Docker Deployment
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+This project includes a best-practice, multi-stage Docker setup for both development and production.
+
+### Development (Hot Module Replacement)
+
+Run the app inside a container with live code syncing:
+
+```bash
+docker compose -f docker-compose.dev.yml up --build
+```
+
+The app will be accessible at [http://localhost:3001](http://localhost:3001).
+
+### Production
+
+Build and run the optimized standalone production image:
+
+```bash
+# Build the image
+docker build -t mindtoosa:latest .
+
+# Run the container (Recommended via Compose)
+docker compose up -d
+```
+
+The app will be accessible at [http://localhost:3000](http://localhost:3000).
+
+### Manual Run (Docker Run)
+
+If you prefer to run the container without Docker Compose, ensure you pass the environment variables and map the port:
+
+```bash
+docker run -p 3000:3000 --env-file .env.local mindtoosa:latest
+```
+
+---
 
 ## Learn More
 

@@ -18,12 +18,11 @@ export function TaskCard({ task, index, onDragStart, onEdit, isDraggable = true 
         <div
             draggable={isDraggable}
             onDragStart={(e) => onDragStart(e, task.id!)}
-            className={`group relative cursor-grab rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 transition-all hover:translate-x-1 hover:border-zinc-700 hover:bg-zinc-800 active:cursor-grabbing ${index === 0 ? "scale-100 translate-y-0" :
+            className={`group relative cursor-grab rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 transition-all hover:translate-x-1 hover:border-zinc-700 hover:bg-zinc-800 active:cursor-grabbing z-[var(--z-index,calc(10-${index}))] ${index === 0 ? "scale-100 translate-y-0" :
                 index === 1 ? "scale-[0.98] translate-y-1" :
                     index === 2 ? "scale-[0.96] translate-y-2" :
                         "scale-[0.94] translate-y-3"
                 }`}
-            style={{ zIndex: `var(--z-index, ${10 - index})` } as React.CSSProperties}
         >
             <div className="mb-1.5 flex items-start justify-between gap-2">
                 <PriorityBadge priority={task.priority} />

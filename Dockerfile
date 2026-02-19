@@ -1,5 +1,5 @@
 # Stage 1: Base
-FROM node:22-alpine AS base
+FROM node:25-alpine AS base
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
@@ -23,12 +23,8 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Dummy env vars for build-time Zod validation
-ENV SUPABASE_URL=http://placeholder.url
-ENV SUPABASE_SERVICE_ROLE_KEY=placeholder-key
-ENV AUTH_SECRET=placeholder-secret-placeholder-secret-32
-ENV GOOGLE_CLIENT_ID=placeholder-id
-ENV GOOGLE_CLIENT_SECRET=placeholder-secret
+# Skip env validation during build
+ENV SKIP_ENV_VALIDATION=true
 ENV NODE_ENV=production
 
 RUN npm run build
@@ -38,6 +34,8 @@ FROM base AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
+
+# Environment variables should be passed at runtime using --env-file or compose
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
