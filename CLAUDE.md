@@ -8,7 +8,7 @@ This document serves as the primary context source for Claude-based AI agents wo
 - **Language**: TypeScript 5.9.3 (`StrictMode` enabled)
 - **Styling**: Tailwind CSS 4.1.18 (Midnight Glass dark theme — see `globals.css` for design tokens)
 - **Database & Auth**: Supabase (PostgreSQL via service-role key), NextAuth.js v5 Beta 30 (Google OAuth)
-- **AI**: Google GenAI SDK (`@google/genai` v0.24.1)
+- **AI**: Google GenAI SDK (`@google/genai` v1.42.0)
 - **Validation**: Zod v4.3.6
 - **Icons**: Lucide React v0.574.0
 - **Runtime**: ESM, Node.js

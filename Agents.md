@@ -4,18 +4,19 @@ This document serves as the primary context and rulebook for the MindToosa codeb
 
 ## 1. 🛠️ Technology Stack & Context
 
-| Category | Technology | Version / Note |
-|Base| **Next.js** | v16 (App Router) |
-|Language| **TypeScript** | v5+ (Strict Mode) |
-|Styling| **Tailwind CSS** | v4 |
-|Database| **Supabase** | PostgreSQL |
-|Auth| **NextAuth.js** | v5 Beta |
-|AI| **Google Generative AI** | SDK |
-|Validation| **Zod** | For all inputs/env vars |
-|Icons| **Lucide React** | |
-|Linting| **ESLint** | v10.0.0 (Flat Config) |
+| Category   | Technology               | Version / Note          |
+| ---------- | ------------------------ | ----------------------- |
+| Base       | **Next.js**              | v16.1.6 (App Router)    |
+| Language   | **TypeScript**           | v5.9.3 (Strict Mode)    |
+| Styling    | **Tailwind CSS**         | v4.1.18                 |
+| Database   | **Supabase**             | PostgreSQL              |
+| Auth       | **NextAuth.js**          | v5.0.0-beta.30          |
+| AI         | **Google Generative AI** | SDK v1.42.0             |
+| Validation | **Zod**                  | v4.3.6                  |
+| Icons      | **Lucide React**         | v0.574.0                |
+| Linting    | **ESLint**               | Removed (Security Risk) |
 
-**Note:** ESLint 10 requires specific `overrides` in `package.json` for Next.js plugin compatibility and explicit React version setting in `eslint.config.mjs` for React 19 detection.
+**Note:** ESLint has been removed due to transitive dependency vulnerabilities in v10+ (`ajv` < 8.18.0). We rely on TypeScript's strict mode for type safety until the ecosystem resolves these issues.
 
 ### Project Structure
 

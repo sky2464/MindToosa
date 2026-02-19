@@ -8,7 +8,7 @@ This document serves as the primary context source for AI agents working on the 
 - **Language**: TypeScript 5.9.3 (`StrictMode` enabled)
 - **Styling**: Tailwind CSS 4.1.18
 - **Database & Auth**: Supabase (PostgreSQL), NextAuth.js (v5 Beta 30)
-- **AI Integration**: Google GenAI SDK (`@google/genai` v0.24.1)
+- **AI Integration**: Google GenAI SDK (`@google/genai` v1.42.0)
 - **Validation**: Zod (v4.3.6)
 - **Icons**: Lucide React (v0.574.0)
 - **Environment**: ESM (postcss 8.4.45)
