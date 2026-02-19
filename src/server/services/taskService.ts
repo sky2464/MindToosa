@@ -102,6 +102,31 @@ export const taskService = {
       throw new AuthError("Task not found or access denied");
     }
 
+    // Check dependencies if completing
+    if (updates.status === "done") {
+      const { count } = await db
+        .from("task_dependencies")
+        .select("blocking_task_id", { count: "exact", head: true })
+        .eq("task_id", taskId)
+        .neq("blocking_task:tasks.status", "done"); // Requires join, or separate check.
+      // Supabase/PostgREST 'count' with filter on joined table is tricky.
+      // Let's do a direct join query.
+
+      const { data: blockers } = await db
+        .from("task_dependencies")
+        .select(`
+                blocking_task:tasks!task_dependencies_blocking_task_id_fkey (
+                    status
+                )
+            `)
+        .eq("task_id", taskId);
+
+      const hasOpenBlockers = blockers?.some((d: any) => d.blocking_task?.status !== "done");
+      if (hasOpenBlockers) {
+        throw new ValidationError("Cannot complete task: Waiting on dependencies.");
+      }
+    }
+
     // 2. Check for recurrence completion
     if (updates.status === "done" && currentTask.recurrence_rule) {
       // It's a recurring task! Spawn the next one.
@@ -198,5 +223,115 @@ export const taskService = {
 
     if (error) throw new AppError(error.message, "DB_ERROR");
     return true;
+  },
+
+  // Dependencies
+  async getDependencies(userId: string, taskId: string) {
+    if (!UUIDSchema.safeParse(taskId).success) throw new ValidationError("Invalid task ID");
+    // Get tasks that block this task
+    const { data, error } = await db
+      .from("task_dependencies")
+      .select(`
+        blocking_task_id,
+        blocking_task:tasks!task_dependencies_blocking_task_id_fkey (*)
+      `)
+      .eq("task_id", taskId);
+
+    if (error) throw new AppError(error.message, "DB_ERROR");
+    // Flatten result
+    return data.map((d: any) => d.blocking_task) as Task[];
+  },
+
+  async addDependency(userId: string, taskId: string, blockingTaskId: string) {
+    if (!UUIDSchema.safeParse(taskId).success) throw new ValidationError("Invalid task ID");
+    if (!UUIDSchema.safeParse(blockingTaskId).success) throw new ValidationError("Invalid blocking task ID");
+    if (taskId === blockingTaskId) throw new ValidationError("Task cannot depend on itself");
+
+    // Verify ownership of both
+    const { count } = await db
+      .from("tasks")
+      .select("id", { count: "exact", head: true })
+      .in("id", [taskId, blockingTaskId])
+      .eq("user_id", userId);
+
+    if (count !== 2) throw new AuthError("Tasks not found or access denied");
+
+    // Check for circular dependency (simple 1-level check for now, handling deep cycles requires recursive CTEs or app logic)
+    // For MVP, just preventing direct cycle
+    const { data: reverse } = await db.from("task_dependencies").select("*").eq("task_id", blockingTaskId).eq("blocking_task_id", taskId).single();
+    if (reverse) throw new ValidationError("Circular dependency detected");
+
+    const { data, error } = await db
+      .from("task_dependencies")
+      .insert({ task_id: taskId, blocking_task_id: blockingTaskId })
+      .select()
+      .single();
+
+    if (error) throw new AppError(error.message, "DB_ERROR");
+    return data;
+  },
+
+  async removeDependency(userId: string, taskId: string, blockingTaskId: string) {
+    // Verify ownership via RLS mainly, but good to be explicit
+    const { error } = await db
+      .from("task_dependencies")
+      .delete()
+      .eq("task_id", taskId)
+      .eq("blocking_task_id", blockingTaskId);
+    // RLS ensures we can only delete if we own the tasks (via policies)
+
+    if (error) throw new AppError(error.message, "DB_ERROR");
+    return true;
+  },
+  async removeDependency(userId: string, taskId: string, blockingTaskId: string) {
+    const { error } = await db
+      .from("task_dependencies")
+      .delete()
+      .eq("task_id", taskId)
+      .eq("blocking_task_id", blockingTaskId);
+
+    if (error) throw new AppError(error.message, "DB_ERROR");
+    return true;
+  },
+
+  // Dependencies
+  async getDependencies(userId: string, taskId: string) {
+    if (!UUIDSchema.safeParse(taskId).success) throw new ValidationError("Invalid task ID");
+    const { data, error } = await db
+      .from("task_dependencies")
+      .select(`
+        blocking_task_id,
+        blocking_task:tasks!task_dependencies_blocking_task_id_fkey (*)
+      `)
+      .eq("task_id", taskId);
+
+    if (error) throw new AppError(error.message, "DB_ERROR");
+    return data.map((d: any) => d.blocking_task) as Task[];
+  },
+
+  async addDependency(userId: string, taskId: string, blockingTaskId: string) {
+    if (!UUIDSchema.safeParse(taskId).success) throw new ValidationError("Invalid task ID");
+    if (!UUIDSchema.safeParse(blockingTaskId).success) throw new ValidationError("Invalid blocking task ID");
+    if (taskId === blockingTaskId) throw new ValidationError("Task cannot depend on itself");
+
+    const { count } = await db
+      .from("tasks")
+      .select("id", { count: "exact", head: true })
+      .in("id", [taskId, blockingTaskId])
+      .eq("user_id", userId);
+
+    if (count !== 2) throw new AuthError("Tasks not found or access denied");
+
+    const { data: reverse } = await db.from("task_dependencies").select("*").eq("task_id", blockingTaskId).eq("blocking_task_id", taskId).single();
+    if (reverse) throw new ValidationError("Circular dependency detected");
+
+    const { data, error } = await db
+      .from("task_dependencies")
+      .insert({ task_id: taskId, blocking_task_id: blockingTaskId })
+      .select()
+      .single();
+
+    if (error) throw new AppError(error.message, "DB_ERROR");
+    return data;
   },
 };

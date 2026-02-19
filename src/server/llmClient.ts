@@ -101,14 +101,18 @@ export const llmClient = {
     try {
       const response = await ai.models.generateContent({
         model: MODEL,
+        config: {
+          responseMimeType: "application/json",
+        },
         contents: prompt,
       });
-      const text = response.text ?? "";
-      const cleanText = text
-        .replace(/```json/g, "")
-        .replace(/```/g, "")
-        .trim();
-      return JSON.parse(cleanText);
+      const text = response.text ?? "[]";
+      const json = JSON.parse(text);
+
+      if (!Array.isArray(json)) {
+        return ["Define requirements", "Execute task", "Verify output"];
+      }
+      return json;
     } catch (error) {
       console.error("Error suggesting subtasks:", error);
       return ["Define requirements", "Execute task", "Verify output"];

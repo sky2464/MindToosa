@@ -9,18 +9,48 @@ interface SettingsClientProps {
 }
 
 export default function SettingsClient({ userEmail }: SettingsClientProps) {
-    const [aiEnabled, setAiEnabled] = useState(true);
-    const router = useRouter();
+    const [settings, setSettings] = useState({
+        theme: "system",
+        working_hours_start: "09:00",
+        working_hours_end: "17:00",
+        notifications_enabled: false,
+    });
+    const [loadingSettings, setLoadingSettings] = useState(true);
+    const [saving, setSaving] = useState(false);
 
     useEffect(() => {
+        // Fetch AI settings
         const stored = localStorage.getItem("mindtoosa_ai_enabled");
         if (stored !== null) setAiEnabled(stored === "true");
+
+        // Fetch User Settings
+        import("@/lib/apiClient").then(({ apiClient }) => {
+            apiClient.get<typeof settings>("/api/settings")
+                .then(data => {
+                    setSettings(data);
+                    setLoadingSettings(false);
+                })
+                .catch(() => setLoadingSettings(false));
+        });
     }, []);
 
     const toggleAI = () => {
         const next = !aiEnabled;
         setAiEnabled(next);
         localStorage.setItem("mindtoosa_ai_enabled", String(next));
+    };
+
+    const handleSaveSettings = async () => {
+        setSaving(true);
+        try {
+            const { apiClient } = await import("@/lib/apiClient");
+            await apiClient.patch("/api/settings", settings);
+            router.refresh();
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setSaving(false);
+        }
     };
 
     const signOut = async () => {
@@ -36,7 +66,7 @@ export default function SettingsClient({ userEmail }: SettingsClientProps) {
                 <p className="mt-1 text-zinc-500">Manage your account and preferences.</p>
             </header>
 
-            <div className="space-y-4">
+            <div className="space-y-6">
                 {/* Account */}
                 <section className="rounded-2xl border border-zinc-800 bg-zinc-900/30 p-6">
                     <h2 className="mb-4 flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-zinc-400">
@@ -53,6 +83,78 @@ export default function SettingsClient({ userEmail }: SettingsClientProps) {
                         >
                             <LogOut size={16} />
                             Sign Out
+                        </button>
+                    </div>
+                </section>
+
+                {/* Preferences */}
+                <section className="rounded-2xl border border-zinc-800 bg-zinc-900/30 p-6">
+                    <div className="flex items-center justify-between mb-4">
+                        <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-zinc-400">
+                            Preferences
+                        </h2>
+                        {loadingSettings && <span className="text-xs text-zinc-600 animate-pulse">Loading...</span>}
+                    </div>
+
+                    <div className="space-y-6">
+                        {/* Theme */}
+                        <div>
+                            <label className="block text-xs font-bold text-zinc-500 uppercase mb-2">Theme</label>
+                            <div className="flex gap-2 bg-zinc-900/50 p-1 rounded-xl">
+                                {(["light", "dark", "system"] as const).map((t) => (
+                                    <button
+                                        key={t}
+                                        onClick={() => setSettings(prev => ({ ...prev, theme: t }))}
+                                        className={`flex-1 py-1.5 rounded-lg text-sm font-medium transition-all ${settings.theme === t ? "bg-indigo-600 text-white shadow-lg" : "text-zinc-400 hover:text-white"
+                                            }`}
+                                    >
+                                        <span className="capitalize">{t}</span>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Working Hours */}
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-xs font-bold text-zinc-500 uppercase mb-2">Start Time</label>
+                                <input
+                                    type="time"
+                                    value={settings.working_hours_start}
+                                    onChange={(e) => setSettings(prev => ({ ...prev, working_hours_start: e.target.value }))}
+                                    className="w-full rounded-xl border border-zinc-700 bg-zinc-900/50 px-4 py-2 text-white outline-none focus:border-indigo-500"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-bold text-zinc-500 uppercase mb-2">End Time</label>
+                                <input
+                                    type="time"
+                                    value={settings.working_hours_end}
+                                    onChange={(e) => setSettings(prev => ({ ...prev, working_hours_end: e.target.value }))}
+                                    className="w-full rounded-xl border border-zinc-700 bg-zinc-900/50 px-4 py-2 text-white outline-none focus:border-indigo-500"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Notifications */}
+                        <div className="flex items-center justify-between">
+                            <label className="text-sm text-zinc-300">Enable Notifications</label>
+                            <button
+                                onClick={() => setSettings(prev => ({ ...prev, notifications_enabled: !prev.notifications_enabled }))}
+                                className={`w-12 h-6 rounded-full transition-colors relative ${settings.notifications_enabled ? "bg-emerald-500" : "bg-zinc-700"
+                                    }`}
+                            >
+                                <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${settings.notifications_enabled ? "left-7" : "left-1"
+                                    }`} />
+                            </button>
+                        </div>
+
+                        <button
+                            onClick={handleSaveSettings}
+                            disabled={saving}
+                            className="w-full rounded-xl bg-indigo-600 py-2.5 font-bold text-white shadow-lg shadow-indigo-600/20 hover:bg-indigo-500 disabled:opacity-50 transition-all"
+                        >
+                            {saving ? "Saving..." : "Save Preferences"}
                         </button>
                     </div>
                 </section>
@@ -74,8 +176,8 @@ export default function SettingsClient({ userEmail }: SettingsClientProps) {
                         <button
                             onClick={toggleAI}
                             className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold transition-all ${aiEnabled
-                                    ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20 hover:bg-indigo-500"
-                                    : "border border-zinc-700 bg-zinc-800/50 text-zinc-400 hover:border-zinc-600 hover:text-zinc-300"
+                                ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20 hover:bg-indigo-500"
+                                : "border border-zinc-700 bg-zinc-800/50 text-zinc-400 hover:border-zinc-600 hover:text-zinc-300"
                                 }`}
                         >
                             {aiEnabled ? <Brain size={16} /> : <BrainCircuit size={16} />}

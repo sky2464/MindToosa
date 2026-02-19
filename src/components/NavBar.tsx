@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Zap, Target, Calendar, Layers, Settings, FolderKanban } from "lucide-react";
+import NotificationsPanel from "./NotificationsPanel";
 
 const navItems = [
     { href: "/today", label: "Today", icon: Zap },
@@ -40,9 +41,14 @@ export default function NavBar() {
 
             {/* Desktop sidebar */}
             <div className="hidden md:flex flex-col items-center gap-2 h-full border-r border-white/5 bg-zinc-950/80 backdrop-blur-xl w-16 py-6">
-                <Link href="/" className="mb-6 flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600 shadow-lg shadow-indigo-600/30">
+                <Link href="/" className="mb-4 flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600 shadow-lg shadow-indigo-600/30">
                     <Zap size={18} className="fill-current text-white" />
                 </Link>
+
+                <div className="mb-2">
+                    <NotificationsPanel />
+                </div>
+
                 {navItems.map(({ href, label, icon: Icon }) => {
                     const isActive = pathname === href || pathname.startsWith(href + "/");
                     return (

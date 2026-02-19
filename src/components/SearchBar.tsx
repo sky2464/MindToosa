@@ -90,6 +90,7 @@ export default function SearchBar() {
                     onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
                     onFocus={() => setOpen(true)}
                     placeholder="Search tasks, projects, goals... ⌘K"
+                    aria-label="Search"
                     className="w-full rounded-xl border border-zinc-700 bg-zinc-900/50 py-2 pl-10 pr-8 text-sm text-white placeholder-zinc-600 outline-none transition focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30"
                 />
                 {query && (
