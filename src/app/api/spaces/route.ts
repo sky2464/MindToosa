@@ -3,6 +3,7 @@ import { spaceService } from "@/server/services/spaceService";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { handleRouteError } from "@/lib/routeError";
+import { jsonEnvelope } from "@/lib/apiEnvelope";
 
 const SpaceCreateSchema = z.object({ name: z.string().min(1) });
 
@@ -15,7 +16,7 @@ export async function GET() {
 
   try {
     const spaces = await spaceService.getSpaces(userId);
-    return NextResponse.json(spaces.filter((s) => !s.archived));
+    return jsonEnvelope(spaces.filter((s) => !s.archived));
   } catch (error: unknown) {
     return handleRouteError(error);
   }

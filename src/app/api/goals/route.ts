@@ -2,6 +2,7 @@ import { auth } from "@auth";
 import { goalService } from "@/server/services/goalService";
 import { NextResponse } from "next/server";
 import { handleRouteError } from "@/lib/routeError";
+import { jsonEnvelope } from "@/lib/apiEnvelope";
 
 export async function GET(req: Request) {
     const session = await auth();
@@ -16,7 +17,7 @@ export async function GET(req: Request) {
 
     try {
         const goals = await goalService.getGoals(userId, { archived, spaceId });
-        return NextResponse.json(goals);
+        return jsonEnvelope(goals);
     } catch (error: unknown) {
         return handleRouteError(error);
     }

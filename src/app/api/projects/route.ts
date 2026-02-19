@@ -3,6 +3,7 @@ import { projectService } from "@/server/services/projectService";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { handleRouteError } from "@/lib/routeError";
+import { jsonEnvelope } from "@/lib/apiEnvelope";
 
 const ProjectCreateSchema = z
   .object({
@@ -21,7 +22,7 @@ export async function GET() {
 
   try {
     const projects = await projectService.getProjects(userId);
-    return NextResponse.json(projects);
+    return jsonEnvelope(projects);
   } catch (error: unknown) {
     return handleRouteError(error);
   }

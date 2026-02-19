@@ -64,6 +64,17 @@ export const taskService = {
     const { data, error } = await db.from("tasks").insert(validation.data).select().single();
 
     if (error) throw new AppError(error.message, "DB_ERROR");
+
+    // If this is a root recurring task (no parent), stamp its own id as series_id
+    if (
+      validation.data.recurrence_rule &&
+      !validation.data.parent_recurring_task_id &&
+      data?.id
+    ) {
+      await db.from("tasks").update({ series_id: data.id }).eq("id", data.id);
+      (data as Task).series_id = data.id;
+    }
+
     return data as Task;
   },
 

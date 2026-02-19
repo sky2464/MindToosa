@@ -2,10 +2,33 @@ import type { NextConfig } from "next";
 
 const isDev = process.env.NODE_ENV === "development";
 
+// Routes exposed under the versioned prefix (/api/v1/)
+// New external clients should use /api/v1/; /api/ remains for internal use.
+const API_ROUTES = [
+  "tasks", "tasks/:taskId", "tasks/:taskId/subtasks", "tasks/:taskId/dependencies",
+  "goals", "goals/:id",
+  "projects", "projects/:id",
+  "spaces", "spaces/:id",
+  "labels", "labels/:id",
+  "trash",
+  "notifications",
+  "search",
+  "focus",
+  "gamification",
+  "plan/daily",
+  "support",
+];
+
 const nextConfig: NextConfig = {
   output: 'standalone',
   turbopack: {
     root: __dirname,
+  },
+  async rewrites() {
+    return API_ROUTES.map((route) => ({
+      source: `/api/v1/${route}`,
+      destination: `/api/${route}`,
+    }));
   },
   async headers() {
     return [

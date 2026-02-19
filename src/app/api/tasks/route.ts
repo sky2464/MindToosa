@@ -3,6 +3,7 @@ import { taskService } from "@/server/services/taskService";
 import { NextResponse } from "next/server";
 import { handleRouteError } from "@/lib/routeError";
 import { createTracer } from "@/lib/logger";
+import { jsonEnvelope } from "@/lib/apiEnvelope";
 
 export async function GET(req: Request) {
   const session = await auth();
@@ -23,7 +24,7 @@ export async function GET(req: Request) {
   try {
     const tasks = await taskService.getTasks(userId, { spaceId, date, parentId, limit: pageSize, offset });
     tracer.end(200, { count: tasks.length });
-    return NextResponse.json(tasks);
+    return jsonEnvelope(tasks, { page, pageSize, total: tasks.length });
   } catch (error: unknown) {
     tracer.error(error);
     return handleRouteError(error);
