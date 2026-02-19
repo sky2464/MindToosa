@@ -20,14 +20,10 @@ export default function ProjectProgress({ tasks }: ProjectProgressProps) {
             {/* Progress bar */}
             <div className="flex items-center gap-2">
                 <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-zinc-800">
-// Define style outside to avoid inline style warning if possible, or just ignore for dynamic value
-                    const progressStyle = {'--progress': `${percent}%` } as React.CSSProperties;
-                    return (
                     <div
                         className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-emerald-500 transition-all duration-500 w-[var(--progress)]"
-                        style={progressStyle}
+                        style={{ '--progress': `${percent}%` } as React.CSSProperties}
                     />
-                    );
                 </div>
                 <span className="font-mono text-[10px] font-bold text-zinc-500">{percent}%</span>
             </div>
