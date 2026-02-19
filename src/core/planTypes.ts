@@ -50,6 +50,8 @@ export const TaskSchema = z.object({
   scheduled_for: z.string().date().optional(), // YYYY-MM-DD
   status: TaskStatusSchema.default("todo"),
   micro_steps: z.array(MicroStepSchema).default([]),
+  recurrence_rule: z.string().optional(), // RFC 5545
+  parent_recurring_task_id: z.string().uuid().optional().nullable(),
   created_at: z.date().optional(),
 });
 

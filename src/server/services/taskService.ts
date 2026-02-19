@@ -86,6 +86,50 @@ export const taskService = {
 
   async updateTask(userId: string, taskId: string, updates: Partial<Task>) {
     if (!UUIDSchema.safeParse(taskId).success) throw new ValidationError("Invalid task ID");
+
+    // Check if task is being completed
+    if (updates.status === "done") {
+      const { data: currentTask } = await db
+        .from("tasks")
+        .select("recurrence_rule, scheduled_for")
+        .eq("id", taskId)
+        .single();
+
+      if (currentTask && currentTask.recurrence_rule) {
+        // It's a recurring task! Spawn the next one.
+        const { recurrenceService } = await import("./recurrenceService");
+        const lastDate = currentTask.scheduled_for ? new Date(currentTask.scheduled_for) : new Date();
+        const nextDate = recurrenceService.getNextDueDate(currentTask.recurrence_rule, lastDate);
+
+        if (nextDate) {
+          const nextDateStr = nextDate.toISOString().split("T")[0];
+          // Create the next task
+          await this.createTask(userId, {
+            ...updates, // Copy other updates like title if passed, but usually we copy from original
+            // Actually we need the original task data to clone it
+          });
+
+          // Better approach: fetch full task to clone it
+          const { data: fullTask } = await db.from("tasks").select("*").eq("id", taskId).single();
+          if (fullTask) {
+            await this.createTask(userId, {
+              title: fullTask.title,
+              space_id: fullTask.space_id,
+              project_id: fullTask.project_id,
+              goal_id: fullTask.goal_id,
+              priority: fullTask.priority,
+              estimated_minutes: fullTask.estimated_minutes,
+              micro_steps: fullTask.micro_steps, // Should we clone subtasks? Maybe reset them?
+              recurrence_rule: fullTask.recurrence_rule,
+              parent_recurring_task_id: fullTask.parent_recurring_task_id || fullTask.id, // Chain it
+              scheduled_for: nextDateStr,
+              status: "todo"
+            });
+          }
+        }
+      }
+    }
+
     const { data, error } = await db
       .from("tasks")
       .update(updates)

@@ -55,6 +55,7 @@ export default function TaskEditModal({ task, onClose }: TaskEditModalProps) {
     const [deleting, setDeleting] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [error, setError] = useState("");
+    const [recurrence, setRecurrence] = useState(task.recurrence_rule ?? "");
 
     // Subtasks state
     const [subtasks, setSubtasks] = useState<Task[]>([]);
@@ -127,6 +128,7 @@ export default function TaskEditModal({ task, onClose }: TaskEditModalProps) {
                 title: title.trim(),
                 priority,
                 estimated_minutes: estimatedMinutes,
+                recurrence_rule: recurrence || null,
             });
             router.refresh();
             onClose();
@@ -320,6 +322,24 @@ export default function TaskEditModal({ task, onClose }: TaskEditModalProps) {
                                         </button>
                                     ))}
                                 </div>
+                            </div>
+
+                            {/* Recurrence */}
+                            <div>
+                                <label className="mb-2 block text-xs font-bold tracking-widest text-zinc-500 uppercase">
+                                    Repeat
+                                </label>
+                                <select
+                                    value={recurrence}
+                                    onChange={(e) => setRecurrence(e.target.value)}
+                                    className="w-full rounded-xl border border-zinc-700 bg-zinc-900/50 px-4 py-2.5 text-sm text-white outline-none focus:border-indigo-500/50"
+                                >
+                                    <option value="">Don't repeat</option>
+                                    <option value="FREQ=DAILY">Daily</option>
+                                    <option value="FREQ=WEEKLY">Weekly</option>
+                                    <option value="FREQ=MONTHLY">Monthly</option>
+                                    <option value="FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR">Weekdays (M-F)</option>
+                                </select>
                             </div>
                         </div>
                     )}
