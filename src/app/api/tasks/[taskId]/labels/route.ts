@@ -2,6 +2,7 @@ import { auth } from "@auth";
 import { NextResponse } from "next/server";
 import { labelService } from "@/server/services/labelService";
 import { z } from "zod";
+import { handleRouteError } from "@/lib/routeError";
 
 const LabelAssignSchema = z.object({
     label_id: z.string().uuid("Invalid label ID"),

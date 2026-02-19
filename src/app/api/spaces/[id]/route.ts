@@ -1,6 +1,15 @@
 import { auth } from "@auth";
+import { spaceService } from "@/server/services/spaceService";
 import { NextResponse } from "next/server";
-import { db } from "@/server/db";
+import { z } from "zod";
+import { handleRouteError } from "@/lib/routeError";
+
+const SpacePatchSchema = z
+  .object({
+    name: z.string().min(1).optional(),
+    archived: z.boolean().optional(),
+  })
+  .strict();
 
 export async function PATCH(
     req: Request,
@@ -10,26 +19,33 @@ export async function PATCH(
     const userId = session?.user?.email;
     if (!userId) return new NextResponse("Unauthorized", { status: 401 });
 
-    const { id } = await params;
-    const body = await req.json();
+    try {
+        const { id } = await params;
+        const json = await req.json();
+        const parsed = SpacePatchSchema.safeParse(json);
+        if (!parsed.success) {
+            return NextResponse.json(
+                { error: "Validation failed", details: parsed.error.flatten() },
+                { status: 400 }
+            );
+        }
 
-    // Only allow updating name and archived fields
-    const allowed: Record<string, unknown> = {};
-    if (typeof body.name === "string") allowed.name = body.name;
-    if (typeof body.archived === "boolean") allowed.archived = body.archived;
+        const { name, archived } = parsed.data;
+        if (name === undefined && archived === undefined) {
+            return NextResponse.json({ error: "No valid fields to update" }, { status: 400 });
+        }
 
-    if (Object.keys(allowed).length === 0) {
-        return NextResponse.json({ error: "No valid fields to update" }, { status: 400 });
+        let space;
+        if (name !== undefined) {
+            space = await spaceService.updateSpace(userId, id, { name });
+        }
+        if (archived !== undefined) {
+            space = await spaceService.archiveSpace(userId, id, archived);
+        }
+
+        return NextResponse.json(space);
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : "An unknown error occurred";
+        return NextResponse.json({ error: message }, { status: 500 });
     }
-
-    const { data, error } = await db
-        .from("spaces")
-        .update(allowed)
-        .eq("id", id)
-        .eq("user_id", userId)
-        .select()
-        .single();
-
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    return NextResponse.json(data);
 }

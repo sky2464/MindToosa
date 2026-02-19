@@ -1,6 +1,7 @@
 import { auth } from "@auth";
 import { NextResponse } from "next/server";
 import { labelService } from "@/server/services/labelService";
+import { handleRouteError } from "@/lib/routeError";
 
 export async function DELETE(
     _req: Request,

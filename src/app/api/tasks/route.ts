@@ -1,6 +1,7 @@
 import { auth } from "@auth";
 import { taskService } from "@/server/services/taskService";
 import { NextResponse } from "next/server";
+import { handleRouteError } from "@/lib/routeError";
 
 export async function GET(req: Request) {
   const session = await auth();

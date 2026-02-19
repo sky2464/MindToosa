@@ -1,6 +1,7 @@
 import { auth } from "@auth";
 import { userService } from "@/server/services/userService";
 import { NextResponse } from "next/server";
+import { handleRouteError } from "@/lib/routeError";
 
 export async function GET() {
     const session = await auth();

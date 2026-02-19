@@ -12,7 +12,7 @@ const UUIDSchema = z.string().uuid("Invalid UUID format");
  * Schema for allowed goal update fields
  * Only specific fields can be updated to prevent arbitrary modifications
  */
-const GoalUpdateSchema = z.object({
+export const GoalUpdateSchema = z.object({
     title: z.string().optional(),
     horizon: z.string().optional(),
     why: z.string().optional(),

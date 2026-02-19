@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, Keyboard } from "lucide-react";
 
 const SHORTCUTS = [
@@ -12,10 +12,18 @@ const SHORTCUTS = [
 export default function ShortcutsDialog() {
     const [open, setOpen] = useState(false);
 
-    // Listen for ? key to open
-    if (typeof window !== "undefined") {
-        // This is handled by useKeyboardShortcuts in the parent
-    }
+    useEffect(() => {
+        const handler = (e: KeyboardEvent) => {
+            const target = e.target as HTMLElement;
+            const isTyping = target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable;
+            if (e.key === "?" && !e.metaKey && !e.ctrlKey && !isTyping) {
+                setOpen(true);
+            }
+            if (e.key === "Escape") setOpen(false);
+        };
+        window.addEventListener("keydown", handler);
+        return () => window.removeEventListener("keydown", handler);
+    }, []);
 
     if (!open) {
         return (

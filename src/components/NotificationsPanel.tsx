@@ -13,7 +13,7 @@ interface Notification {
     read: boolean;
 }
 
-export default function NotificationsPanel() {
+export default function NotificationsPanel({ direction = "down" }: { direction?: "up" | "down" }) {
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [isOpen, setIsOpen] = useState(false);
     const router = useRouter();
@@ -71,7 +71,7 @@ export default function NotificationsPanel() {
             {isOpen && (
                 <>
                     <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
-                    <div className="absolute right-0 mt-2 w-80 z-50 rounded-xl border border-zinc-800 bg-zinc-950 shadow-2xl overflow-hidden">
+                    <div className={`absolute right-0 ${direction === "up" ? "bottom-full mb-2" : "mt-2"} w-80 z-50 rounded-xl border border-zinc-800 bg-zinc-950 shadow-2xl overflow-hidden`}>
                         <div className="flex items-center justify-between p-3 border-b border-zinc-800 bg-zinc-900/50">
                             <h3 className="text-sm font-bold text-zinc-300">Notifications</h3>
                             {notifications.length > 0 && (

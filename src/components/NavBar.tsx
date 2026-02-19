@@ -1,9 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Zap, Target, Calendar, Layers, Settings, FolderKanban, CircleHelp, BookOpen, Info, MessageCircle } from "lucide-react";
+import { Zap, Target, Calendar, Layers, Settings, FolderKanban, CircleHelp, BookOpen, Info, MessageCircle, Search, X } from "lucide-react";
 import NotificationsPanel from "./NotificationsPanel";
+import SearchBar from "./SearchBar";
+import ShortcutsDialog from "./ShortcutsDialog";
 
 const navItems = [
     { href: "/today", label: "Today", icon: Zap },
@@ -23,11 +26,46 @@ const resourceItems = [
 
 export default function NavBar() {
     const pathname = usePathname();
+    const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
     return (
-        <nav className="fixed bottom-0 left-0 right-0 z-50 md:top-0 md:bottom-auto md:left-0 md:right-auto md:h-screen md:w-16 md:flex md:flex-col md:items-center md:py-6">
+        <>
+            {/* Global keyboard shortcuts dialog */}
+            <ShortcutsDialog />
+
+            {/* Persistent search bar — desktop only (top-right, always in DOM for Cmd+K) */}
+            <div className="fixed top-4 right-4 z-40 hidden md:block w-72">
+                <SearchBar />
+            </div>
+
+            {/* Mobile search overlay */}
+            {mobileSearchOpen && (
+                <div className="fixed inset-0 z-50 flex flex-col gap-3 bg-zinc-950/95 p-4 pt-10 backdrop-blur-sm md:hidden">
+                    <SearchBar />
+                    <button
+                        onClick={() => setMobileSearchOpen(false)}
+                        className="flex items-center gap-2 self-start text-sm text-zinc-400 hover:text-white"
+                    >
+                        <X size={16} /> Close
+                    </button>
+                </div>
+            )}
+
+            <nav className="fixed bottom-0 left-0 right-0 z-50 md:top-0 md:bottom-auto md:left-0 md:right-auto md:h-screen md:w-16 md:flex md:flex-col md:items-center md:py-6">
             {/* Mobile bottom bar */}
             <div className="flex md:hidden items-center justify-around border-t border-white/5 bg-zinc-950/90 backdrop-blur-xl px-2 py-2 overflow-x-auto">
+                <button
+                    onClick={() => setMobileSearchOpen(true)}
+                    className="flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-all flex-shrink-0 text-zinc-500 hover:text-zinc-300"
+                    aria-label="Search"
+                >
+                    <Search size={20} />
+                    <span className="text-[10px] font-medium tracking-wide">Search</span>
+                </button>
+                <div className="flex flex-col items-center gap-1 flex-shrink-0">
+                    <NotificationsPanel direction="up" />
+                    <span className="text-[10px] font-medium tracking-wide text-zinc-500">Alerts</span>
+                </div>
                 {navItems.map(({ href, label, icon: Icon }) => {
                     const isActive = pathname === href || pathname.startsWith(href + "/");
                     return (
@@ -105,5 +143,6 @@ export default function NavBar() {
                 })}
             </div>
         </nav>
+        </>
     );
 }

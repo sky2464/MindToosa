@@ -3,6 +3,7 @@ import { taskService } from "@/server/services/taskService";
 import { DailyPlanSchema } from "@/core/planTypes";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { handleRouteError } from "@/lib/routeError";
 
 /**
  * Enhanced validation schema for daily plan application

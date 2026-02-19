@@ -1,6 +1,7 @@
 import { auth } from "@auth";
 import { NextResponse } from "next/server";
 import { focusService } from "@/server/services/focusService";
+import { handleRouteError } from "@/lib/routeError";
 
 export async function POST(request: Request) {
   const session = await auth();

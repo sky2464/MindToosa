@@ -39,8 +39,11 @@ export default async function WeekPage() {
         dateTo: days[6],
     });
 
-    // Also fetch past incomplete tasks for carry-forward
+    // Also fetch past incomplete tasks for carry-forward (30-day window to avoid unbounded query)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     const pastIncompleteCandidates = await taskService.getTasks(userId, {
+        dateFrom: thirtyDaysAgo.toISOString().split("T")[0],
         dateTo: today,
     });
     const allTasks = [...weekTasks, ...pastIncompleteCandidates.filter(

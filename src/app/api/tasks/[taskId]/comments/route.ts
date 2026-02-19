@@ -2,6 +2,7 @@ import { auth } from "@auth";
 import { taskService } from "@/server/services/taskService";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { handleRouteError } from "@/lib/routeError";
 
 const CommentCreateSchema = z.object({
     content: z.string().min(1, "Comment cannot be empty"),

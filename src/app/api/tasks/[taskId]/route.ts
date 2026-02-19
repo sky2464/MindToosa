@@ -3,6 +3,7 @@ import { taskService } from "@/server/services/taskService";
 import { NextResponse } from "next/server";
 import { TaskStatusSchema, TaskPrioritySchema } from "@/core/planTypes";
 import { z } from "zod";
+import { handleRouteError } from "@/lib/routeError";
 
 /** Only fields a client is allowed to update */
 const TaskUpdateSchema = z

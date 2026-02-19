@@ -1,6 +1,7 @@
 import { auth } from "@auth";
-import { goalService } from "@/server/services/goalService";
+import { goalService, GoalUpdateSchema } from "@/server/services/goalService";
 import { NextResponse } from "next/server";
+import { handleRouteError } from "@/lib/routeError";
 
 export async function PATCH(
     req: Request,
@@ -15,7 +16,14 @@ export async function PATCH(
     try {
         const { id } = await params;
         const json = await req.json();
-        const updatedGoal = await goalService.updateGoal(userId, id, json);
+        const parsed = GoalUpdateSchema.safeParse(json);
+        if (!parsed.success) {
+            return NextResponse.json(
+                { error: "Validation failed", details: parsed.error.flatten() },
+                { status: 400 }
+            );
+        }
+        const updatedGoal = await goalService.updateGoal(userId, id, parsed.data);
         return NextResponse.json(updatedGoal);
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : "An unknown error occurred";

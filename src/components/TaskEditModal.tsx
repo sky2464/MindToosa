@@ -5,10 +5,11 @@ import { Task } from "@/core/planTypes";
 import { useRouter } from "next/navigation";
 import {
     X, Trash2, Archive, Save, Loader2, AlertCircle,
-    MessageSquare, ListTree, Tag, Plus, Send, ChevronDown, ChevronRight
+    MessageSquare, ListTree, Tag, Plus, Send, ChevronDown, ChevronRight, Sparkles
 } from "lucide-react";
 import { apiClient } from "@/lib/apiClient";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { suggestSubtasksAction } from "@/app/projects/actions";
 
 interface TaskEditModalProps {
     task: Task;
@@ -61,6 +62,7 @@ export default function TaskEditModal({ task, onClose }: TaskEditModalProps) {
     const [subtasks, setSubtasks] = useState<Task[]>([]);
     const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
     const [subtasksExpanded, setSubtasksExpanded] = useState(true);
+    const [suggesting, setSuggesting] = useState(false);
 
     // Comments state
     const [comments, setComments] = useState<Comment[]>([]);
@@ -193,6 +195,31 @@ export default function TaskEditModal({ task, onClose }: TaskEditModalProps) {
             router.refresh();
         } catch {
             setError("Failed to add subtask");
+        }
+    };
+
+    const handleSuggestSubtasks = async () => {
+        if (!task.id || suggesting) return;
+        setSuggesting(true);
+        setError("");
+        try {
+            const suggestions = await suggestSubtasksAction(task.title);
+            await Promise.all(
+                suggestions.map((title) =>
+                    apiClient.post("/api/tasks", {
+                        title,
+                        parent_task_id: task.id,
+                        space_id: task.space_id,
+                        priority: "normal",
+                    })
+                )
+            );
+            fetchSubtasks();
+            router.refresh();
+        } catch {
+            setError("Failed to suggest subtasks");
+        } finally {
+            setSuggesting(false);
         }
     };
 
@@ -359,6 +386,15 @@ export default function TaskEditModal({ task, onClose }: TaskEditModalProps) {
                                 <span className="text-xs font-bold tracking-widest text-zinc-500 uppercase">
                                     Subtasks ({subtasks.length})
                                 </span>
+                                <button
+                                    onClick={handleSuggestSubtasks}
+                                    disabled={suggesting}
+                                    className="ml-auto flex items-center gap-1.5 rounded-xl border border-indigo-500/30 bg-indigo-500/10 px-3 py-1.5 text-xs font-bold text-indigo-400 transition hover:bg-indigo-500/20 disabled:opacity-50"
+                                    title="AI-suggest subtasks"
+                                >
+                                    {suggesting ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+                                    AI Suggest
+                                </button>
                             </div>
 
                             {subtasksExpanded && (
