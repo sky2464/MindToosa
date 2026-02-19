@@ -497,7 +497,7 @@ export default function TaskEditModal({ task, onClose }: TaskEditModalProps) {
                             Archive
                         </button>
                         <button
-                            onClick={handleDelete}
+                            onClick={() => setShowDeleteConfirm(true)}
                             disabled={saving || deleting}
                             className="flex items-center gap-1.5 rounded-xl border border-red-500/20 bg-red-500/5 px-3 py-2 text-xs font-medium text-red-400 transition hover:bg-red-500/10 hover:text-red-300 disabled:opacity-50"
                             title="Permanently delete task"
@@ -517,6 +517,15 @@ export default function TaskEditModal({ task, onClose }: TaskEditModalProps) {
                     </div>
                 </div>
             </div>
+            <ConfirmDialog
+                isOpen={showDeleteConfirm}
+                title="Delete Task"
+                message={`Permanently delete "${task.title}"? This cannot be undone.`}
+                confirmLabel="Delete"
+                variant="danger"
+                onConfirm={handleDelete}
+                onCancel={() => setShowDeleteConfirm(false)}
+            />
         </div>
     );
 }

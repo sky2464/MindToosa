@@ -1,4 +1,5 @@
 import { db } from "@/server/db";
+import { AppError } from "@/lib/errors";
 
 /**
  * Gamification Service
@@ -20,7 +21,7 @@ export const gamificationService = {
       return this.createStats(userId);
     }
 
-    if (error) throw error;
+    if (error) throw new AppError(error.message, "DB_ERROR");
     return data;
   },
 
@@ -31,7 +32,7 @@ export const gamificationService = {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) throw new AppError(error.message, "DB_ERROR");
     return data;
   },
 
@@ -58,7 +59,7 @@ export const gamificationService = {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) throw new AppError(error.message, "DB_ERROR");
     return data;
   },
 
@@ -94,7 +95,7 @@ export const gamificationService = {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) throw new AppError(error.message, "DB_ERROR");
     return data;
   },
 };

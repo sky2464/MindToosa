@@ -1,11 +1,15 @@
 import { db } from "@/server/db";
 import { Space, SpaceSchema } from "@/core/planTypes";
+import { AppError, ValidationError } from "@/lib/errors";
+import { z } from "zod";
+
+const UUIDSchema = z.string().uuid("Invalid UUID format");
 
 export const spaceService = {
   async getSpaces(userId: string) {
     const { data, error } = await db.from("spaces").select("*").eq("user_id", userId);
 
-    if (error) throw new Error(error.message);
+    if (error) throw new AppError(error.message, "DB_ERROR");
     return data as Space[];
   },
 
@@ -17,11 +21,11 @@ export const spaceService = {
     };
 
     const validation = SpaceSchema.safeParse(spaceData);
-    if (!validation.success) throw new Error("Validation failed");
+    if (!validation.success) throw new ValidationError("Validation failed");
 
     const { data, error } = await db.from("spaces").insert(validation.data).select().single();
 
-    if (error) throw new Error(error.message);
+    if (error) throw new AppError(error.message, "DB_ERROR");
     return data as Space;
   },
 
@@ -33,6 +37,7 @@ export const spaceService = {
   },
 
   async updateSpace(userId: string, spaceId: string, updates: { name?: string }) {
+    if (!UUIDSchema.safeParse(spaceId).success) throw new ValidationError("Invalid space ID");
     const { data, error } = await db
       .from("spaces")
       .update(updates)
@@ -41,11 +46,12 @@ export const spaceService = {
       .select()
       .single();
 
-    if (error) throw new Error(error.message);
+    if (error) throw new AppError(error.message, "DB_ERROR");
     return data as Space;
   },
 
   async archiveSpace(userId: string, spaceId: string, archived: boolean = true) {
+    if (!UUIDSchema.safeParse(spaceId).success) throw new ValidationError("Invalid space ID");
     const { data, error } = await db
       .from("spaces")
       .update({ archived })
@@ -54,7 +60,7 @@ export const spaceService = {
       .select()
       .single();
 
-    if (error) throw new Error(error.message);
+    if (error) throw new AppError(error.message, "DB_ERROR");
     return data as Space;
   },
 };

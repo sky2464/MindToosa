@@ -6,6 +6,7 @@ import { chatWithProjectAction } from "@/app/projects/actions";
 import { Send, Bot, User, Loader2 } from "lucide-react";
 
 interface Message {
+  id: string;
   role: "user" | "assistant";
   content: string;
 }
@@ -13,6 +14,7 @@ interface Message {
 export default function AIChat({ project, tasks }: { project: Project; tasks: Task[] }) {
   const [messages, setMessages] = useState<Message[]>([
     {
+      id: "init",
       role: "assistant",
       content: `Hi! I'm here to help you with "${project.title}". Ask me anything about your tasks or goals.`,
     },
@@ -33,17 +35,17 @@ export default function AIChat({ project, tasks }: { project: Project; tasks: Ta
 
     const userMsg = input.trim();
     setInput("");
-    setMessages((prev) => [...prev, { role: "user", content: userMsg }]);
+    setMessages((prev) => [...prev, { id: crypto.randomUUID(), role: "user", content: userMsg }]);
     setLoading(true);
 
     try {
       const response = await chatWithProjectAction(project.id!, userMsg);
-      setMessages((prev) => [...prev, { role: "assistant", content: response }]);
+      setMessages((prev) => [...prev, { id: crypto.randomUUID(), role: "assistant", content: response }]);
     } catch (error) {
       console.error(error);
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: "Sorry, I encountered an error. Please try again." },
+        { id: crypto.randomUUID(), role: "assistant", content: "Sorry, I encountered an error. Please try again." },
       ]);
     } finally {
       setLoading(false);
@@ -53,20 +55,20 @@ export default function AIChat({ project, tasks }: { project: Project; tasks: Ta
   return (
     <div className="flex h-full flex-col bg-card">
       <div className="flex-1 space-y-4 overflow-y-auto p-4" ref={scrollRef}>
-        {messages.map((m, i) => (
-          <div key={i} className={`flex gap-3 ${m.role === "user" ? "flex-row-reverse" : ""}`}>
+        {messages.map((m) => (
+          <div key={m.id} className={`flex gap-3 ${m.role === "user" ? "flex-row-reverse" : ""}`}>
             <div
               className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${m.role === "assistant"
-                  ? "bg-indigo-500/10 text-indigo-400"
-                  : "bg-zinc-800 text-zinc-400"
+                ? "bg-indigo-500/10 text-indigo-400"
+                : "bg-zinc-800 text-zinc-400"
                 }`}
             >
               {m.role === "assistant" ? <Bot size={16} /> : <User size={16} />}
             </div>
             <div
               className={`max-w-[85%] rounded-2xl px-4 py-2 text-sm ${m.role === "assistant"
-                  ? "rounded-tl-none bg-secondary text-foreground"
-                  : "rounded-tr-none bg-indigo-600 text-white"
+                ? "rounded-tl-none bg-secondary text-foreground"
+                : "rounded-tr-none bg-indigo-600 text-white"
                 }`}
             >
               {m.content}

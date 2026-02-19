@@ -1,6 +1,10 @@
 import { db } from "@/server/db";
 import { Task, TaskSchema } from "@/core/planTypes";
 import { z } from "zod";
+import { AppError, ValidationError, AuthError } from "@/lib/errors";
+
+const UUIDSchema = z.string().uuid("Invalid UUID format");
+const UUIDOptionalSchema = z.string().uuid("Invalid UUID format").optional();
 
 export const taskService = {
   async getTasks(
@@ -10,6 +14,7 @@ export const taskService = {
     let query = db.from("tasks").select("*").eq("user_id", userId);
 
     if (options.spaceId) {
+      if (!UUIDSchema.safeParse(options.spaceId).success) throw new ValidationError("Invalid space ID");
       query = query.eq("space_id", options.spaceId);
     }
 
@@ -26,11 +31,12 @@ export const taskService = {
     }
 
     if (options.projectId) {
+      if (!UUIDSchema.safeParse(options.projectId).success) throw new ValidationError("Invalid project ID");
       query = query.eq("project_id", options.projectId);
     }
 
     const { data, error } = await query;
-    if (error) throw new Error(error.message);
+    if (error) throw new AppError(error.message, "DB_ERROR");
     return data as Task[];
   },
 
@@ -40,19 +46,20 @@ export const taskService = {
     const validation = TaskSchema.safeParse(payload);
 
     if (!validation.success) {
-      throw new Error("Validation failed: " + JSON.stringify(validation.error.format()));
+      throw new ValidationError("Validation failed", undefined, validation.error.format());
     }
 
     const { data, error } = await db.from("tasks").insert(validation.data).select().single();
 
-    if (error) throw new Error(error.message);
+    if (error) throw new AppError(error.message, "DB_ERROR");
     return data as Task;
   },
 
   async deleteTask(userId: string, taskId: string) {
+    if (!UUIDSchema.safeParse(taskId).success) throw new ValidationError("Invalid task ID");
     const { error } = await db.from("tasks").delete().eq("id", taskId).eq("user_id", userId);
 
-    if (error) throw new Error(error.message);
+    if (error) throw new AppError(error.message, "DB_ERROR");
     return true;
   },
 
@@ -67,17 +74,18 @@ export const taskService = {
     const validatedTasks = tasks.map((t) => {
       const result = UpsertTaskSchema.safeParse(t);
       if (!result.success) {
-        throw new Error(`Task validation failed: ${result.error.message}`);
+        throw new ValidationError(`Task validation failed: ${result.error.message}`, undefined, result.error.format());
       }
       return { ...result.data, user_id: userId };
     });
 
     const { data, error } = await db.from("tasks").upsert(validatedTasks).select();
-    if (error) throw new Error(error.message);
+    if (error) throw new AppError(error.message, "DB_ERROR");
     return data as Task[];
   },
 
   async updateTask(userId: string, taskId: string, updates: Partial<Task>) {
+    if (!UUIDSchema.safeParse(taskId).success) throw new ValidationError("Invalid task ID");
     const { data, error } = await db
       .from("tasks")
       .update(updates)
@@ -86,11 +94,12 @@ export const taskService = {
       .select()
       .single();
 
-    if (error) throw new Error(error.message);
+    if (error) throw new AppError(error.message, "DB_ERROR");
     return data as Task;
   },
 
   async getSubtasks(userId: string, parentTaskId: string): Promise<Task[]> {
+    if (!UUIDSchema.safeParse(parentTaskId).success) throw new ValidationError("Invalid parent task ID");
     const { data, error } = await db
       .from("tasks")
       .select("*")
@@ -98,11 +107,12 @@ export const taskService = {
       .eq("parent_task_id", parentTaskId)
       .order("created_at", { ascending: true });
 
-    if (error) throw new Error(error.message);
+    if (error) throw new AppError(error.message, "DB_ERROR");
     return data as Task[];
   },
 
   async getComments(userId: string, taskId: string) {
+    if (!UUIDSchema.safeParse(taskId).success) throw new ValidationError("Invalid task ID");
     // Verify the task belongs to this user before fetching comments
     const { data: task, error: taskError } = await db
       .from("tasks")
@@ -111,7 +121,7 @@ export const taskService = {
       .eq("user_id", userId)
       .single();
 
-    if (taskError || !task) throw new Error("Task not found or access denied");
+    if (taskError || !task) throw new AuthError("Task not found or access denied");
 
     const { data, error } = await db
       .from("task_comments")
@@ -119,29 +129,31 @@ export const taskService = {
       .eq("task_id", taskId)
       .order("created_at", { ascending: true });
 
-    if (error) throw new Error(error.message);
+    if (error) throw new AppError(error.message, "DB_ERROR");
     return data;
   },
 
   async createComment(userId: string, taskId: string, content: string) {
+    if (!UUIDSchema.safeParse(taskId).success) throw new ValidationError("Invalid task ID");
     const { data, error } = await db
       .from("task_comments")
       .insert({ user_id: userId, task_id: taskId, content })
       .select()
       .single();
 
-    if (error) throw new Error(error.message);
+    if (error) throw new AppError(error.message, "DB_ERROR");
     return data;
   },
 
   async deleteComment(userId: string, commentId: string) {
+    if (!UUIDSchema.safeParse(commentId).success) throw new ValidationError("Invalid comment ID");
     const { error } = await db
       .from("task_comments")
       .delete()
       .eq("id", commentId)
       .eq("user_id", userId);
 
-    if (error) throw new Error(error.message);
+    if (error) throw new AppError(error.message, "DB_ERROR");
     return true;
   },
 };

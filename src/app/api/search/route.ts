@@ -1,49 +1,31 @@
 import { auth } from "@/auth";
 import { NextResponse, NextRequest } from "next/server";
-import { db } from "@/server/db";
+import { searchService } from "@/server/services/searchService";
+import { rateLimit } from "@/server/rateLimit";
 
 export async function GET(request: NextRequest) {
     const session = await auth();
-    const userId = session?.user?.email;
-    if (!userId) return new NextResponse("Unauthorized", { status: 401 });
+    const userEmail = session?.user?.email;
+    if (!userEmail) return new NextResponse("Unauthorized", { status: 401 });
+
+    // In this app, we use email as user_id or look up user by email.
+    // The previous code used session.user.email as user_id.
+    // Assuming email is the ID for now as per previous implementation.
+    const userId = userEmail;
+
+    // Rate limiting: 20 requests per minute per user/IP
+    // Using userId as key since we are authenticated
+    if (!rateLimit(userId, { limit: 20, windowMs: 60000 })) {
+        return new NextResponse("Too Many Requests", { status: 429 });
+    }
 
     const q = request.nextUrl.searchParams.get("q") ?? "";
-    if (!q.trim()) return NextResponse.json([]);
 
-    const term = `%${q}%`;
-
-    // Search across tasks, projects, and goals in parallel
-    const [tasksResult, projectsResult, goalsResult] = await Promise.all([
-        db.from("tasks").select("id, title, status").eq("user_id", userId).ilike("title", term).limit(10),
-        db.from("projects").select("id, title, status").eq("user_id", userId).ilike("title", term).limit(5),
-        db.from("goals").select("id, title, status").eq("user_id", userId).ilike("title", term).limit(5),
-    ]);
-
-    type SearchResult = { id: string; type: string; title: string; href: string; status: string };
-
-    const results: SearchResult[] = [
-        ...(tasksResult.data ?? []).map((t: Record<string, string>) => ({
-            id: t.id,
-            type: "task" as const,
-            title: t.title,
-            href: `/today`,
-            status: t.status,
-        })),
-        ...(projectsResult.data ?? []).map((p: Record<string, string>) => ({
-            id: p.id,
-            type: "project" as const,
-            title: p.title,
-            href: `/projects/${p.id}`,
-            status: p.status,
-        })),
-        ...(goalsResult.data ?? []).map((g: Record<string, string>) => ({
-            id: g.id,
-            type: "goal" as const,
-            title: g.title,
-            href: `/today`,
-            status: g.status,
-        })),
-    ];
-
-    return NextResponse.json(results);
+    try {
+        const results = await searchService.search(userId, q);
+        return NextResponse.json(results);
+    } catch (error) {
+        console.error("Search error:", error);
+        return NextResponse.json({ error: "Search failed" }, { status: 500 });
+    }
 }

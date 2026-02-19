@@ -51,6 +51,8 @@ export default function AmbientBackground() {
       });
     }
 
+    let animationId: number;
+
     const animate = () => {
       ctx.clearRect(0, 0, width, height);
 
@@ -72,10 +74,10 @@ export default function AmbientBackground() {
         ctx.fill();
       });
 
-      requestAnimationFrame(animate);
+      animationId = requestAnimationFrame(animate);
     };
 
-    const animationId = requestAnimationFrame(animate);
+    animationId = requestAnimationFrame(animate);
 
     return () => {
       window.removeEventListener("resize", resize);

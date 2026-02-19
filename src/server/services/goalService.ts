@@ -1,6 +1,7 @@
 import { db } from "@/server/db";
 import { Goal, GoalSchema } from "@/core/planTypes";
 import { z } from "zod";
+import { AppError, ValidationError } from "@/lib/errors";
 
 /**
  * UUID validation schema
@@ -31,14 +32,14 @@ export const goalService = {
             // Validate spaceId is a valid UUID
             const validation = UUIDSchema.safeParse(options.spaceId);
             if (!validation.success) {
-                throw new Error("Invalid space ID format");
+                throw new ValidationError("Invalid space ID format", "spaceId");
             }
             query = query.eq("space_id", options.spaceId);
         }
 
         const { data, error } = await query.order("created_at", { ascending: false });
 
-        if (error) throw new Error(error.message);
+        if (error) throw new AppError(error.message, "DB_ERROR");
         return data as Goal[];
     },
 
@@ -47,12 +48,12 @@ export const goalService = {
         const validation = GoalSchema.safeParse(payload);
 
         if (!validation.success) {
-            throw new Error("Validation failed: " + JSON.stringify(validation.error.format()));
+            throw new ValidationError("Validation failed", undefined, validation.error.format());
         }
 
         const { data, error } = await db.from("goals").insert(validation.data).select().single();
 
-        if (error) throw new Error(error.message);
+        if (error) throw new AppError(error.message, "DB_ERROR");
         return data as Goal;
     },
 
@@ -60,13 +61,13 @@ export const goalService = {
         // Validate goalId is a valid UUID
         const idValidation = UUIDSchema.safeParse(goalId);
         if (!idValidation.success) {
-            throw new Error("Invalid goal ID format");
+            throw new ValidationError("Invalid goal ID format", "goalId");
         }
 
         // Validate and sanitize updates to only allow specific fields
         const updateValidation = GoalUpdateSchema.safeParse(updates);
         if (!updateValidation.success) {
-            throw new Error("Invalid update fields: " + JSON.stringify(updateValidation.error.format()));
+            throw new ValidationError("Invalid update fields", undefined, updateValidation.error.format());
         }
 
         const { data, error } = await db
@@ -77,7 +78,7 @@ export const goalService = {
             .select()
             .single();
 
-        if (error) throw new Error(error.message);
+        if (error) throw new AppError(error.message, "DB_ERROR");
         return data as Goal;
     },
 
@@ -85,12 +86,12 @@ export const goalService = {
         // Validate goalId is a valid UUID
         const idValidation = UUIDSchema.safeParse(goalId);
         if (!idValidation.success) {
-            throw new Error("Invalid goal ID format");
+            throw new ValidationError("Invalid goal ID format", "goalId");
         }
 
         const { error } = await db.from("goals").delete().eq("id", goalId).eq("user_id", userId);
 
-        if (error) throw new Error(error.message);
+        if (error) throw new AppError(error.message, "DB_ERROR");
         return true;
     },
 };
