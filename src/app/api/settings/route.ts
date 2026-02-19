@@ -14,8 +14,7 @@ export async function GET() {
         const settings = await userService.getSettings(userId);
         return NextResponse.json(settings);
     } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : "An unknown error occurred";
-        return NextResponse.json({ error: message }, { status: 500 });
+        return handleRouteError(error);
     }
 }
 
@@ -31,7 +30,6 @@ export async function PATCH(req: Request) {
         const settings = await userService.updateSettings(userId, json);
         return NextResponse.json(settings);
     } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : "An unknown error occurred";
-        return NextResponse.json({ error: message }, { status: 400 });
+        return handleRouteError(error);
     }
 }

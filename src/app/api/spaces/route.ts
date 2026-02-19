@@ -17,8 +17,7 @@ export async function GET() {
     const spaces = await spaceService.getSpaces(userId);
     return NextResponse.json(spaces.filter((s) => !s.archived));
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "An unknown error occurred";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return handleRouteError(error);
   }
 }
 
@@ -41,7 +40,6 @@ export async function POST(req: Request) {
     const space = await spaceService.createSpace(userId, parsed.data.name);
     return NextResponse.json(space);
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "An unknown error occurred";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return handleRouteError(error);
   }
 }

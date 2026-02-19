@@ -23,8 +23,7 @@ export async function GET() {
     const projects = await projectService.getProjects(userId);
     return NextResponse.json(projects);
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "An unknown error occurred";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return handleRouteError(error);
   }
 }
 
@@ -45,7 +44,6 @@ export async function POST(req: Request) {
     const project = await projectService.createProject(userId, parsed.data);
     return NextResponse.json(project, { status: 201 });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "An unknown error occurred";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return handleRouteError(error);
   }
 }

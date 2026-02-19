@@ -25,8 +25,7 @@ export async function POST(request: Request) {
     const savedSession = await focusService.createSession(userId, body);
     return NextResponse.json(savedSession);
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "An unknown error occurred";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return handleRouteError(error);
   }
 }
 
@@ -42,7 +41,6 @@ export async function GET() {
     const sessions = await focusService.getSessions(userId);
     return NextResponse.json(sessions);
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "An unknown error occurred";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return handleRouteError(error);
   }
 }

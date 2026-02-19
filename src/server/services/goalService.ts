@@ -14,11 +14,13 @@ const UUIDSchema = z.string().uuid("Invalid UUID format");
  */
 export const GoalUpdateSchema = z.object({
     title: z.string().optional(),
-    horizon: z.string().optional(),
+    horizon: z.enum(["week", "month", "year", "life"]).optional(),
     why: z.string().optional(),
     archived: z.boolean().optional(),
     space_id: z.string().uuid().optional(),
 }).strict(); // Reject any fields not in this schema
+
+export type GoalUpdate = z.infer<typeof GoalUpdateSchema>;
 
 export const goalService = {
     async getGoals(userId: string, options: { archived?: boolean; spaceId?: string } = {}) {
@@ -57,22 +59,16 @@ export const goalService = {
         return data as Goal;
     },
 
-    async updateGoal(userId: string, goalId: string, updates: Partial<Goal>) {
+    async updateGoal(userId: string, goalId: string, updates: GoalUpdate) {
         // Validate goalId is a valid UUID
         const idValidation = UUIDSchema.safeParse(goalId);
         if (!idValidation.success) {
             throw new ValidationError("Invalid goal ID format", "goalId");
         }
 
-        // Validate and sanitize updates to only allow specific fields
-        const updateValidation = GoalUpdateSchema.safeParse(updates);
-        if (!updateValidation.success) {
-            throw new ValidationError("Invalid update fields", undefined, updateValidation.error.format());
-        }
-
         const { data, error } = await db
             .from("goals")
-            .update(updateValidation.data)
+            .update(updates)
             .eq("id", goalId)
             .eq("user_id", userId)
             .select()

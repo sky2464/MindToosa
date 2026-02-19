@@ -12,8 +12,7 @@ export async function GET() {
         const notifications = await notificationService.getUnread(userId);
         return NextResponse.json(notifications);
     } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : "An unknown error occurred";
-        return NextResponse.json({ error: message }, { status: 500 });
+        return handleRouteError(error);
     }
 }
 
@@ -31,7 +30,6 @@ export async function PATCH(req: Request) {
         }
         return NextResponse.json({ success: true });
     } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : "An unknown error occurred";
-        return NextResponse.json({ error: message }, { status: 400 });
+        return handleRouteError(error);
     }
 }

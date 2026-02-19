@@ -19,8 +19,7 @@ export async function GET(req: Request) {
     const tasks = await taskService.getTasks(userId, { spaceId, date, parentId });
     return NextResponse.json(tasks);
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "An unknown error occurred";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return handleRouteError(error);
   }
 }
 
@@ -36,7 +35,6 @@ export async function POST(req: Request) {
     const task = await taskService.createTask(userId, json);
     return NextResponse.json(task);
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "An unknown error occurred";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return handleRouteError(error);
   }
 }

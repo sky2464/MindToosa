@@ -22,8 +22,7 @@ export async function GET(
         const labels = await labelService.getTaskLabels(userId, taskId);
         return NextResponse.json(labels);
     } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : "Failed to fetch task labels";
-        return NextResponse.json({ error: message }, { status: 500 });
+        return handleRouteError(error);
     }
 }
 
@@ -50,7 +49,6 @@ export async function POST(
         await labelService.assignLabel(userId, taskId, parsed.data.label_id);
         return NextResponse.json({ success: true }, { status: 201 });
     } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : "Failed to assign label";
-        return NextResponse.json({ error: message }, { status: 500 });
+        return handleRouteError(error);
     }
 }

@@ -76,7 +76,6 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ applied: true, taskCount: allTasks.length });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "An unknown error occurred";
-    return NextResponse.json({ error: message || "Internal Error" }, { status: 500 });
+    return handleRouteError(error);
   }
 }

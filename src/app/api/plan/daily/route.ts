@@ -38,7 +38,6 @@ export async function POST(request: Request) {
     return NextResponse.json(plan);
   } catch (error: unknown) {
     console.error("Plan API Error:", error);
-    const message = error instanceof Error ? error.message : "An unknown error occurred";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return handleRouteError(error);
   }
 }

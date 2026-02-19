@@ -17,6 +17,7 @@ const TaskUpdateSchema = z
     project_id: z.string().uuid().optional().nullable(),
     micro_steps: z.array(z.string()).optional(),
     parent_task_id: z.string().uuid().optional().nullable(),
+    position: z.number().int().optional(),
   })
   .strict(); // reject unknown fields
 
@@ -47,8 +48,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ taskId
     const updatedTask = await taskService.updateTask(userId, taskId, cleanedData);
     return NextResponse.json(updatedTask);
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "An unknown error occurred";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return handleRouteError(error);
   }
 }
 
@@ -64,7 +64,6 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ taskI
     await taskService.deleteTask(userId, taskId);
     return new NextResponse(null, { status: 204 });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "An unknown error occurred";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return handleRouteError(error);
   }
 }

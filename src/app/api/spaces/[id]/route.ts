@@ -45,7 +45,6 @@ export async function PATCH(
 
         return NextResponse.json(space);
     } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : "An unknown error occurred";
-        return NextResponse.json({ error: message }, { status: 500 });
+        return handleRouteError(error);
     }
 }

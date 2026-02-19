@@ -52,6 +52,7 @@ export const TaskSchema = z.object({
   micro_steps: z.array(MicroStepSchema).default([]),
   recurrence_rule: z.string().optional(), // RFC 5545
   parent_recurring_task_id: z.string().uuid().optional().nullable(),
+  position: z.number().int().default(0).optional(),
   created_at: z.date().optional(),
 });
 

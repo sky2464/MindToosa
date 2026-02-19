@@ -22,8 +22,7 @@ export async function GET(
         const comments = await taskService.getComments(userId, taskId);
         return NextResponse.json(comments);
     } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : "Failed to fetch comments";
-        return NextResponse.json({ error: message }, { status: 500 });
+        return handleRouteError(error);
     }
 }
 
@@ -50,7 +49,6 @@ export async function POST(
         const comment = await taskService.createComment(userId, taskId, parsed.data.content);
         return NextResponse.json(comment, { status: 201 });
     } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : "Failed to create comment";
-        return NextResponse.json({ error: message }, { status: 500 });
+        return handleRouteError(error);
     }
 }

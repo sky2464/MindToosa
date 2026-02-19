@@ -9,7 +9,7 @@ const ProjectUpdateSchema = z
     title: z.string().min(1).optional(),
     description: z.string().optional(),
     status: z.enum(["active", "completed", "on_hold"]).optional(),
-    due_date: z.string().date().optional().nullable(),
+    due_date: z.string().date().optional(),
   })
   .strict();
 
@@ -27,8 +27,7 @@ export async function GET(
     if (!project) return new NextResponse("Not Found", { status: 404 });
     return NextResponse.json(project);
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "An unknown error occurred";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return handleRouteError(error);
   }
 }
 
@@ -54,8 +53,7 @@ export async function PATCH(
     const updated = await projectService.getProjectById(userId, id);
     return NextResponse.json(updated);
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "An unknown error occurred";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return handleRouteError(error);
   }
 }
 
@@ -72,7 +70,6 @@ export async function DELETE(
     await projectService.deleteProject(userId, id);
     return new NextResponse(null, { status: 204 });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "An unknown error occurred";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return handleRouteError(error);
   }
 }

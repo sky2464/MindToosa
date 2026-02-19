@@ -77,6 +77,28 @@ export default function FlowBoard({ tasks: initialTasks }: FlowBoardProps) {
     try {
       if (targetStatus === "done") {
         await apiClient.patch(`/api/tasks/${dragTaskId}`, { status: "done" });
+      } else if (targetStatus === "in_focus") {
+        // Persist new ordering: assign positions to all non-done tasks based on their new index
+        const activeTasks = updatedTasks.filter(
+          (t) => t.status !== "done" && t.status !== "cancelled" && t.status !== "migrated"
+        );
+        const positionUpdates = activeTasks
+          .map((t, i) => ({ id: t.id, newPosition: i * 1000, oldPosition: t.position ?? 0 }))
+          .filter((t) => t.newPosition !== t.oldPosition);
+
+        await Promise.all(
+          positionUpdates.map(({ id, newPosition }) =>
+            apiClient.patch(`/api/tasks/${id}`, { position: newPosition })
+          )
+        );
+
+        // Update local state with new positions
+        setTasks((prev) =>
+          prev.map((t) => {
+            const update = positionUpdates.find((u) => u.id === t.id);
+            return update ? { ...t, position: update.newPosition } : t;
+          })
+        );
       }
       router.refresh();
     } catch (error) {

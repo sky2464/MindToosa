@@ -17,7 +17,6 @@ export async function DELETE(
         await labelService.unassignLabel(userId, taskId, labelId);
         return new NextResponse(null, { status: 204 });
     } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : "Failed to unassign label";
-        return NextResponse.json({ error: message }, { status: 500 });
+        return handleRouteError(error);
     }
 }

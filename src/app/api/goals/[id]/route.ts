@@ -26,8 +26,7 @@ export async function PATCH(
         const updatedGoal = await goalService.updateGoal(userId, id, parsed.data);
         return NextResponse.json(updatedGoal);
     } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : "An unknown error occurred";
-        return NextResponse.json({ error: message }, { status: 400 });
+        return handleRouteError(error);
     }
 }
 
@@ -46,7 +45,6 @@ export async function DELETE(
         await goalService.deleteGoal(userId, id);
         return new NextResponse(null, { status: 204 });
     } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : "An unknown error occurred";
-        return NextResponse.json({ error: message }, { status: 400 });
+        return handleRouteError(error);
     }
 }

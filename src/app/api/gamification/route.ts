@@ -20,8 +20,7 @@ export async function GET() {
     const stats = await gamificationService.getStats(session.user.email);
     return NextResponse.json(stats);
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "An unknown error occurred";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return handleRouteError(error);
   }
 }
 
@@ -48,7 +47,6 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "An unknown error occurred";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return handleRouteError(error);
   }
 }

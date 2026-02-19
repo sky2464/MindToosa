@@ -18,8 +18,7 @@ export async function GET(req: Request) {
         const goals = await goalService.getGoals(userId, { archived, spaceId });
         return NextResponse.json(goals);
     } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : "An unknown error occurred";
-        return NextResponse.json({ error: message }, { status: 500 });
+        return handleRouteError(error);
     }
 }
 
@@ -35,7 +34,6 @@ export async function POST(req: Request) {
         const goal = await goalService.createGoal(userId, json);
         return NextResponse.json(goal);
     } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : "An unknown error occurred";
-        return NextResponse.json({ error: message }, { status: 400 });
+        return handleRouteError(error);
     }
 }
