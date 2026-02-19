@@ -1,4 +1,4 @@
-import { auth } from "@/auth";
+import { auth } from "@auth";
 import { notificationService } from "@/server/services/notificationService";
 import { NextResponse } from "next/server";
 

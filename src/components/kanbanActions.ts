@@ -1,7 +1,7 @@
 "use server";
 
 import { taskService } from "@/server/services/taskService";
-import { auth } from "@/auth";
+import { auth } from "@auth";
 import { type Task } from "@/core/planTypes";
 
 export async function handleTaskMove(taskId: string, newStatus: string) {

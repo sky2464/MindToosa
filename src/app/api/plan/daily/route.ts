@@ -1,4 +1,4 @@
-import { auth } from "@/auth";
+import { auth } from "@auth";
 import { taskService } from "@/server/services/taskService";
 import { goalService } from "@/server/services/goalService";
 import { llmClient } from "@/server/llmClient";

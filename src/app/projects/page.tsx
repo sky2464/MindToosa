@@ -1,4 +1,4 @@
-import { auth } from "@/auth";
+import { auth } from "@auth";
 import { projectService } from "@/server/services/projectService";
 import { spaceService } from "@/server/services/spaceService";
 import Link from "next/link";

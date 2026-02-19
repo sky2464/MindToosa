@@ -1,4 +1,4 @@
-import { auth } from "@/auth";
+import { auth } from "@auth";
 import { projectService } from "@/server/services/projectService";
 import { notFound, redirect } from "next/navigation";
 import KanbanBoard from "@/components/KanbanBoard";
@@ -32,8 +32,8 @@ export default async function ProjectDetailPage({ params }: Props) {
           <h1 className="text-xl font-bold text-foreground">{project.title}</h1>
           <span
             className={`rounded-full px-2 py-0.5 text-xs font-medium ${project.status === "active"
-                ? "bg-green-500/10 text-green-400"
-                : "bg-zinc-800 text-zinc-400"
+              ? "bg-green-500/10 text-green-400"
+              : "bg-zinc-800 text-zinc-400"
               }`}
           >
             {project.status}

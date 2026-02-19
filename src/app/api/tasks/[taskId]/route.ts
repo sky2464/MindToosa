@@ -1,4 +1,4 @@
-import { auth } from "@/auth";
+import { auth } from "@auth";
 import { taskService } from "@/server/services/taskService";
 import { NextResponse } from "next/server";
 import { TaskStatusSchema, TaskPrioritySchema } from "@/core/planTypes";

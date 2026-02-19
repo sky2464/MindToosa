@@ -76,7 +76,7 @@ function getEnv() {
       error.issues.forEach((issue) => {
         const path = issue.path.join(".");
         const value = (rawEnv as Record<string, unknown>)[path];
-        console.error("\x1b[31m%s\x1b[0m", `  - ${path}: ${issue.message} (Value: "${value}")`);
+        console.error("\x1b[31m%s\x1b[0m", `  - ${path}: ${issue.message}`);
       });
       console.error("\x1b[33m%s\x1b[0m", "\nTip: Check your .env.local file or Docker environment variables.");
       console.error("\x1b[33m%s\x1b[0m", "URLs must include protocol (e.g., https://)");

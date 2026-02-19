@@ -2,7 +2,7 @@
 
 import { projectService } from "@/server/services/projectService";
 import { revalidatePath } from "next/cache";
-import { auth } from "@/auth";
+import { auth } from "@auth";
 import { z } from "zod";
 import { llmClient } from "@/server/llmClient";
 

@@ -1,4 +1,4 @@
-import { auth } from "@/auth";
+import { auth } from "@auth";
 import { redirect } from "next/navigation";
 import { goalService } from "@/server/services/goalService";
 import { spaceService } from "@/server/services/spaceService";

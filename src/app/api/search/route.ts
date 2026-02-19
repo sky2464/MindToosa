@@ -1,4 +1,4 @@
-import { auth } from "@/auth";
+import { auth } from "@auth";
 import { NextResponse, NextRequest } from "next/server";
 import { searchService } from "@/server/services/searchService";
 import { rateLimit } from "@/server/rateLimit";

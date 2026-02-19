@@ -1,4 +1,4 @@
-import { auth } from "@/auth";
+import { auth } from "@auth";
 import { redirect } from "next/navigation";
 import { spaceService } from "@/server/services/spaceService";
 import { Layers, Globe } from "lucide-react";

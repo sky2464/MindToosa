@@ -19,7 +19,7 @@ vi.mock('@/server/rateLimit', () => ({
     rateLimit: vi.fn(),
 }));
 
-import { auth } from '@/auth';
+import { auth } from '@auth';
 
 describe('Search API Route', () => {
     beforeEach(() => {

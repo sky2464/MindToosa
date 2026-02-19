@@ -9,6 +9,7 @@ interface SettingsClientProps {
 }
 
 export default function SettingsClient({ userEmail }: SettingsClientProps) {
+    const router = useRouter();
     const [settings, setSettings] = useState({
         theme: "system",
         working_hours_start: "09:00",
@@ -17,6 +18,7 @@ export default function SettingsClient({ userEmail }: SettingsClientProps) {
     });
     const [loadingSettings, setLoadingSettings] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [aiEnabled, setAiEnabled] = useState(false);
 
     useEffect(() => {
         // Fetch AI settings

@@ -1,4 +1,4 @@
-import { auth } from "@/auth";
+import { auth } from "@auth";
 import { db } from "@/server/db";
 import { SpaceSchema } from "@/core/planTypes";
 import { NextResponse } from "next/server";
