@@ -1,10 +1,1 @@
-{
-  "functions": {
-    "app/**/*": {
-      "runtime": "nodejs24.x"
-    },
-    "api/**/*": {
-      "runtime": "nodejs24.x"
-    }
-  }
-}
+{}
