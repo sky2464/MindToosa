@@ -5,7 +5,7 @@ import { Task } from "@/core/planTypes";
 import { useRouter } from "next/navigation";
 import {
     X, Trash2, Archive, Save, Loader2, AlertCircle,
-    MessageSquare, ListTree, Tag, Plus, Send, ChevronDown, ChevronRight, Sparkles
+    MessageSquare, ListTree, Tag, Plus, Send, ChevronDown, ChevronRight, Sparkles, Link2, XCircle
 } from "lucide-react";
 import { apiClient } from "@/lib/apiClient";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
@@ -29,7 +29,7 @@ interface Label {
     color: string;
 }
 
-type TabId = "details" | "subtasks" | "comments" | "labels";
+type TabId = "details" | "subtasks" | "comments" | "labels" | "dependencies";
 
 const PRIORITY_OPTIONS: { value: Task["priority"]; label: string; color: string }[] = [
     { value: "must_do", label: "Must-do", color: "text-red-400 border-red-500/30 bg-red-500/10" },
@@ -42,6 +42,7 @@ const TABS: { id: TabId; label: string; icon: React.ReactNode }[] = [
     { id: "subtasks", label: "Subtasks", icon: <ListTree size={14} /> },
     { id: "comments", label: "Comments", icon: <MessageSquare size={14} /> },
     { id: "labels", label: "Labels", icon: <Tag size={14} /> },
+    { id: "dependencies", label: "Blocks", icon: <Link2 size={14} /> },
 ];
 
 export default function TaskEditModal({ task, onClose }: TaskEditModalProps) {
@@ -74,6 +75,11 @@ export default function TaskEditModal({ task, onClose }: TaskEditModalProps) {
     const [taskLabelIds, setTaskLabelIds] = useState<Set<string>>(new Set());
     const [newLabelName, setNewLabelName] = useState("");
     const [newLabelColor, setNewLabelColor] = useState("#6366f1");
+
+    // Dependencies state (tasks that block this task)
+    const [dependencies, setDependencies] = useState<Task[]>([]);
+    const [depSearch, setDepSearch] = useState("");
+    const [depResults, setDepResults] = useState<Task[]>([]);
 
     // Fetch subtasks
     const fetchSubtasks = useCallback(async () => {
@@ -115,11 +121,23 @@ export default function TaskEditModal({ task, onClose }: TaskEditModalProps) {
         }
     }, [task.id]);
 
+    // Fetch dependencies (tasks that block this task)
+    const fetchDependencies = useCallback(async () => {
+        if (!task.id) return;
+        try {
+            const data = await apiClient.get<Task[]>(`/api/tasks/${task.id}/dependencies`);
+            setDependencies(data);
+        } catch {
+            setDependencies([]);
+        }
+    }, [task.id]);
+
     useEffect(() => {
         if (activeTab === "subtasks") fetchSubtasks();
         if (activeTab === "comments") fetchComments();
         if (activeTab === "labels") fetchLabels();
-    }, [activeTab, fetchSubtasks, fetchComments, fetchLabels]);
+        if (activeTab === "dependencies") fetchDependencies();
+    }, [activeTab, fetchSubtasks, fetchComments, fetchLabels, fetchDependencies]);
 
     const handleSave = async () => {
         if (!title.trim()) return;
@@ -533,6 +551,71 @@ export default function TaskEditModal({ task, onClose }: TaskEditModalProps) {
                                 >
                                     <Plus size={16} />
                                 </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === "dependencies" && (
+                        <div className="space-y-4">
+                            <p className="text-xs font-bold tracking-widest text-zinc-500 uppercase">Blocked By</p>
+                            <p className="text-xs text-zinc-600">Tasks listed here must be completed before this task.</p>
+
+                            {/* Current dependencies */}
+                            <div className="space-y-2">
+                                {dependencies.length === 0 && (
+                                    <p className="text-sm text-zinc-600 italic py-2">No blocking tasks.</p>
+                                )}
+                                {dependencies.map((dep) => (
+                                    <div key={dep.id} className="flex items-center gap-3 rounded-xl border border-zinc-800 bg-zinc-900/30 px-4 py-2.5">
+                                        <span className="flex-1 text-sm text-zinc-300 truncate">{dep.title}</span>
+                                        <button
+                                            onClick={async () => {
+                                                try {
+                                                    await apiClient.delete(`/api/tasks/${task.id}/dependencies`, { blocking_task_id: dep.id });
+                                                    setDependencies((prev) => prev.filter((d) => d.id !== dep.id));
+                                                } catch { /* ignore */ }
+                                            }}
+                                            className="text-zinc-600 hover:text-red-400 transition-colors"
+                                            aria-label={`Remove dependency on ${dep.title}`}
+                                        >
+                                            <XCircle size={14} />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Search to add dependency */}
+                            <div className="border-t border-white/5 pt-3 space-y-2">
+                                <input
+                                    value={depSearch}
+                                    onChange={async (e) => {
+                                        setDepSearch(e.target.value);
+                                        if (e.target.value.trim().length < 2) { setDepResults([]); return; }
+                                        try {
+                                            const results = await apiClient.get<Task[]>(`/api/tasks?q=${encodeURIComponent(e.target.value)}`);
+                                            setDepResults(results.filter((t) => t.id !== task.id && !dependencies.some((d) => d.id === t.id)));
+                                        } catch { setDepResults([]); }
+                                    }}
+                                    placeholder="Search tasks to add as blocker…"
+                                    className="w-full rounded-xl border border-zinc-700 bg-zinc-900/50 px-4 py-2.5 text-sm text-white placeholder-zinc-600 outline-none focus:border-indigo-500/50"
+                                />
+                                {depResults.map((t) => (
+                                    <button
+                                        key={t.id}
+                                        onClick={async () => {
+                                            try {
+                                                await apiClient.post(`/api/tasks/${task.id}/dependencies`, { blocking_task_id: t.id });
+                                                setDependencies((prev) => [...prev, t]);
+                                                setDepResults((prev) => prev.filter((r) => r.id !== t.id));
+                                                setDepSearch("");
+                                            } catch { /* ignore */ }
+                                        }}
+                                        className="flex w-full items-center gap-2 rounded-xl border border-zinc-800 bg-zinc-900/30 px-4 py-2 text-sm text-zinc-400 hover:border-zinc-600 hover:text-white transition-all"
+                                    >
+                                        <Plus size={12} />
+                                        {t.title}
+                                    </button>
+                                ))}
                             </div>
                         </div>
                     )}

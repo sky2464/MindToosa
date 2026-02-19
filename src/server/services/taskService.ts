@@ -40,6 +40,9 @@ export const taskService = {
       query = query.eq("parent_task_id", options.parentId);
     }
 
+    // Exclude soft-deleted tasks from normal queries
+    query = query.is("soft_deleted_at", null);
+
     const { data, error } = await query;
     if (error) throw new AppError(error.message, "DB_ERROR");
     return data as Task[];
@@ -61,6 +64,43 @@ export const taskService = {
   },
 
   async deleteTask(userId: string, taskId: string) {
+    if (!UUIDSchema.safeParse(taskId).success) throw new ValidationError("Invalid task ID");
+    // Soft delete: set soft_deleted_at instead of removing the row
+    const { error } = await db
+      .from("tasks")
+      .update({ soft_deleted_at: new Date().toISOString() })
+      .eq("id", taskId)
+      .eq("user_id", userId);
+
+    if (error) throw new AppError(error.message, "DB_ERROR");
+    return true;
+  },
+
+  async getDeletedTasks(userId: string): Promise<Task[]> {
+    const { data, error } = await db
+      .from("tasks")
+      .select("*")
+      .eq("user_id", userId)
+      .not("soft_deleted_at", "is", null)
+      .order("soft_deleted_at", { ascending: false });
+
+    if (error) throw new AppError(error.message, "DB_ERROR");
+    return data as Task[];
+  },
+
+  async restoreTask(userId: string, taskId: string) {
+    if (!UUIDSchema.safeParse(taskId).success) throw new ValidationError("Invalid task ID");
+    const { error } = await db
+      .from("tasks")
+      .update({ soft_deleted_at: null })
+      .eq("id", taskId)
+      .eq("user_id", userId);
+
+    if (error) throw new AppError(error.message, "DB_ERROR");
+    return true;
+  },
+
+  async permanentlyDeleteTask(userId: string, taskId: string) {
     if (!UUIDSchema.safeParse(taskId).success) throw new ValidationError("Invalid task ID");
     const { error } = await db.from("tasks").delete().eq("id", taskId).eq("user_id", userId);
 

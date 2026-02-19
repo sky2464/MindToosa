@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Zap, Target, Calendar, Layers, Settings, FolderKanban, CircleHelp, BookOpen, Info, MessageCircle, Search, X } from "lucide-react";
+import { Zap, Target, Calendar, Layers, Settings, FolderKanban, CircleHelp, BookOpen, Info, MessageCircle, Search, X, Tag, Trash2 } from "lucide-react";
 import NotificationsPanel from "./NotificationsPanel";
 import SearchBar from "./SearchBar";
 import ShortcutsDialog from "./ShortcutsDialog";
@@ -14,7 +14,9 @@ const navItems = [
     { href: "/goals", label: "Goals", icon: Target },
     { href: "/projects", label: "Projects", icon: FolderKanban },
     { href: "/spaces", label: "Spaces", icon: Layers },
+    { href: "/labels", label: "Labels", icon: Tag },
     { href: "/settings", label: "Settings", icon: Settings },
+    { href: "/trash", label: "Trash", icon: Trash2 },
 ];
 
 const resourceItems = [
