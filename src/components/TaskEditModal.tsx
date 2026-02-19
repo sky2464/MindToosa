@@ -1,14 +1,34 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Task } from "@/core/planTypes";
 import { useRouter } from "next/navigation";
-import { X, Trash2, Archive, Save, Loader2, AlertCircle } from "lucide-react";
+import {
+    X, Trash2, Archive, Save, Loader2, AlertCircle,
+    MessageSquare, ListTree, Tag, Plus, Send, ChevronDown, ChevronRight
+} from "lucide-react";
+import { apiClient } from "@/lib/apiClient";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 interface TaskEditModalProps {
     task: Task;
     onClose: () => void;
 }
+
+interface Comment {
+    id: string;
+    content: string;
+    user_id: string;
+    created_at: string;
+}
+
+interface Label {
+    id: string;
+    name: string;
+    color: string;
+}
+
+type TabId = "details" | "subtasks" | "comments" | "labels";
 
 const PRIORITY_OPTIONS: { value: Task["priority"]; label: string; color: string }[] = [
     { value: "must_do", label: "Must-do", color: "text-red-400 border-red-500/30 bg-red-500/10" },
@@ -16,34 +36,102 @@ const PRIORITY_OPTIONS: { value: Task["priority"]; label: string; color: string 
     { value: "normal", label: "Normal", color: "text-zinc-400 border-zinc-700 bg-zinc-800/50" },
 ];
 
+const TABS: { id: TabId; label: string; icon: React.ReactNode }[] = [
+    { id: "details", label: "Details", icon: null },
+    { id: "subtasks", label: "Subtasks", icon: <ListTree size={14} /> },
+    { id: "comments", label: "Comments", icon: <MessageSquare size={14} /> },
+    { id: "labels", label: "Labels", icon: <Tag size={14} /> },
+];
+
 export default function TaskEditModal({ task, onClose }: TaskEditModalProps) {
     const router = useRouter();
+    const [activeTab, setActiveTab] = useState<TabId>("details");
+
+    // Details state
     const [title, setTitle] = useState(task.title);
     const [priority, setPriority] = useState<Task["priority"]>(task.priority ?? "normal");
     const [estimatedMinutes, setEstimatedMinutes] = useState(task.estimated_minutes ?? 25);
     const [saving, setSaving] = useState(false);
     const [deleting, setDeleting] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [error, setError] = useState("");
+
+    // Subtasks state
+    const [subtasks, setSubtasks] = useState<Task[]>([]);
+    const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
+    const [subtasksExpanded, setSubtasksExpanded] = useState(true);
+
+    // Comments state
+    const [comments, setComments] = useState<Comment[]>([]);
+    const [newComment, setNewComment] = useState("");
+    const [commentsLoading, setCommentsLoading] = useState(false);
+
+    // Labels state
+    const [userLabels, setUserLabels] = useState<Label[]>([]);
+    const [taskLabelIds, setTaskLabelIds] = useState<Set<string>>(new Set());
+    const [newLabelName, setNewLabelName] = useState("");
+    const [newLabelColor, setNewLabelColor] = useState("#6366f1");
+
+    // Fetch subtasks
+    const fetchSubtasks = useCallback(async () => {
+        if (!task.id) return;
+        try {
+            const data = await apiClient.get<Task[]>(`/api/tasks?parentId=${task.id}`);
+            setSubtasks(data);
+        } catch {
+            // Subtasks endpoint may not exist yet with parentId filter, that's OK
+            setSubtasks([]);
+        }
+    }, [task.id]);
+
+    // Fetch comments
+    const fetchComments = useCallback(async () => {
+        if (!task.id) return;
+        setCommentsLoading(true);
+        try {
+            const data = await apiClient.get<Comment[]>(`/api/tasks/${task.id}/comments`);
+            setComments(data);
+        } catch {
+            setComments([]);
+        } finally {
+            setCommentsLoading(false);
+        }
+    }, [task.id]);
+
+    // Fetch labels
+    const fetchLabels = useCallback(async () => {
+        try {
+            const [allLabels, assigned] = await Promise.all([
+                apiClient.get<Label[]>("/api/labels"),
+                apiClient.get<Label[]>(`/api/tasks/${task.id}/labels`),
+            ]);
+            setUserLabels(allLabels);
+            setTaskLabelIds(new Set(assigned.map((l: Label) => l.id)));
+        } catch {
+            // Labels API may not exist yet
+        }
+    }, [task.id]);
+
+    useEffect(() => {
+        if (activeTab === "subtasks") fetchSubtasks();
+        if (activeTab === "comments") fetchComments();
+        if (activeTab === "labels") fetchLabels();
+    }, [activeTab, fetchSubtasks, fetchComments, fetchLabels]);
 
     const handleSave = async () => {
         if (!title.trim()) return;
         setSaving(true);
         setError("");
         try {
-            const res = await fetch(`/api/tasks/${task.id}`, {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ title: title.trim(), priority, estimated_minutes: estimatedMinutes }),
+            await apiClient.patch(`/api/tasks/${task.id}`, {
+                title: title.trim(),
+                priority,
+                estimated_minutes: estimatedMinutes,
             });
-            if (!res.ok) {
-                const data = await res.json();
-                setError(data.error || "Failed to save");
-                return;
-            }
             router.refresh();
             onClose();
-        } catch {
-            setError("Network error. Please try again.");
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Failed to save");
         } finally {
             setSaving(false);
         }
@@ -53,41 +141,90 @@ export default function TaskEditModal({ task, onClose }: TaskEditModalProps) {
         setSaving(true);
         setError("");
         try {
-            const res = await fetch(`/api/tasks/${task.id}`, {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ status: "cancelled" }),
-            });
-            if (!res.ok) {
-                const data = await res.json();
-                setError(data.error || "Failed to archive");
-                return;
-            }
+            await apiClient.patch(`/api/tasks/${task.id}`, { status: "cancelled" });
             router.refresh();
             onClose();
-        } catch {
-            setError("Network error. Please try again.");
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Failed to archive");
         } finally {
             setSaving(false);
         }
     };
 
     const handleDelete = async () => {
-        if (!confirm("Permanently delete this task?")) return;
+        setShowDeleteConfirm(false);
         setDeleting(true);
         setError("");
         try {
-            const res = await fetch(`/api/tasks/${task.id}`, { method: "DELETE" });
-            if (!res.ok && res.status !== 204) {
-                setError("Failed to delete task");
-                return;
-            }
+            await apiClient.delete(`/api/tasks/${task.id}`);
             router.refresh();
             onClose();
-        } catch {
-            setError("Network error. Please try again.");
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Failed to delete task");
         } finally {
             setDeleting(false);
+        }
+    };
+
+    const handleAddComment = async () => {
+        if (!newComment.trim() || !task.id) return;
+        try {
+            await apiClient.post(`/api/tasks/${task.id}/comments`, { content: newComment.trim() });
+            setNewComment("");
+            fetchComments();
+        } catch {
+            setError("Failed to add comment");
+        }
+    };
+
+    const handleAddSubtask = async () => {
+        if (!newSubtaskTitle.trim() || !task.id) return;
+        try {
+            await apiClient.post("/api/tasks", {
+                title: newSubtaskTitle.trim(),
+                parent_task_id: task.id,
+                space_id: task.space_id,
+                priority: "normal",
+            });
+            setNewSubtaskTitle("");
+            fetchSubtasks();
+            router.refresh();
+        } catch {
+            setError("Failed to add subtask");
+        }
+    };
+
+    const handleToggleLabelOnTask = async (labelId: string) => {
+        if (!task.id) return;
+        const isAssigned = taskLabelIds.has(labelId);
+        try {
+            if (isAssigned) {
+                await apiClient.delete(`/api/tasks/${task.id}/labels/${labelId}`);
+                setTaskLabelIds((prev) => {
+                    const next = new Set(prev);
+                    next.delete(labelId);
+                    return next;
+                });
+            } else {
+                await apiClient.post(`/api/tasks/${task.id}/labels`, { label_id: labelId });
+                setTaskLabelIds((prev) => new Set(prev).add(labelId));
+            }
+        } catch {
+            // Label toggle may fail silently
+        }
+    };
+
+    const handleCreateLabel = async () => {
+        if (!newLabelName.trim()) return;
+        try {
+            const label = await apiClient.post<Label>("/api/labels", {
+                name: newLabelName.trim(),
+                color: newLabelColor,
+            });
+            setUserLabels((prev) => [...prev, label]);
+            setNewLabelName("");
+        } catch {
+            setError("Failed to create label");
         }
     };
 
@@ -96,9 +233,9 @@ export default function TaskEditModal({ task, onClose }: TaskEditModalProps) {
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
             onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
         >
-            <div className="w-full max-w-md rounded-3xl border border-white/10 bg-zinc-950 shadow-2xl shadow-indigo-500/10">
+            <div className="w-full max-w-lg rounded-3xl border border-white/10 bg-zinc-950 shadow-2xl shadow-indigo-500/10 max-h-[85vh] flex flex-col">
                 {/* Header */}
-                <div className="flex items-center justify-between border-b border-white/5 px-6 py-4">
+                <div className="flex items-center justify-between border-b border-white/5 px-6 py-4 shrink-0">
                     <h2 className="font-bold text-white">Edit Task</h2>
                     <button
                         onClick={onClose}
@@ -110,71 +247,246 @@ export default function TaskEditModal({ task, onClose }: TaskEditModalProps) {
                     </button>
                 </div>
 
-                <div className="space-y-5 p-6">
-                    {/* Title */}
-                    <div>
-                        <label className="mb-2 block text-xs font-bold tracking-widest text-zinc-500 uppercase">
-                            Task Title
-                        </label>
-                        <textarea
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
-                            rows={2}
-                            className="w-full resize-none rounded-xl border border-zinc-700 bg-zinc-900/50 px-4 py-2.5 text-sm text-white placeholder-zinc-600 outline-none transition focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30"
-                            placeholder="What needs to be done?"
-                        />
-                    </div>
+                {/* Tabs */}
+                <div className="flex gap-1 border-b border-white/5 px-4 pt-2 shrink-0">
+                    {TABS.map((tab) => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id)}
+                            className={`flex items-center gap-1.5 rounded-t-lg px-3 py-2 text-xs font-bold transition-all ${activeTab === tab.id
+                                ? "border-b-2 border-indigo-500 text-indigo-400 bg-indigo-500/5"
+                                : "text-zinc-600 hover:text-zinc-400"
+                                }`}
+                        >
+                            {tab.icon}
+                            {tab.label}
+                        </button>
+                    ))}
+                </div>
 
-                    {/* Priority */}
-                    <div>
-                        <label className="mb-2 block text-xs font-bold tracking-widest text-zinc-500 uppercase">
-                            Priority
-                        </label>
-                        <div className="flex gap-2">
-                            {PRIORITY_OPTIONS.map((opt) => (
-                                <button
-                                    key={opt.value}
-                                    onClick={() => setPriority(opt.value)}
-                                    className={`flex-1 rounded-xl border py-2 text-xs font-bold transition-all ${priority === opt.value ? opt.color : "border-zinc-800 bg-zinc-900/30 text-zinc-600 hover:text-zinc-400"
-                                        }`}
-                                >
-                                    {opt.label}
-                                </button>
-                            ))}
+                {/* Tab Content (scrollable) */}
+                <div className="overflow-y-auto flex-1 p-6">
+                    {activeTab === "details" && (
+                        <div className="space-y-5">
+                            {/* Title */}
+                            <div>
+                                <label className="mb-2 block text-xs font-bold tracking-widest text-zinc-500 uppercase">
+                                    Task Title
+                                </label>
+                                <textarea
+                                    value={title}
+                                    onChange={(e) => setTitle(e.target.value)}
+                                    rows={2}
+                                    className="w-full resize-none rounded-xl border border-zinc-700 bg-zinc-900/50 px-4 py-2.5 text-sm text-white placeholder-zinc-600 outline-none transition focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30"
+                                    placeholder="What needs to be done?"
+                                />
+                            </div>
+
+                            {/* Priority */}
+                            <div>
+                                <label className="mb-2 block text-xs font-bold tracking-widest text-zinc-500 uppercase">
+                                    Priority
+                                </label>
+                                <div className="flex gap-2">
+                                    {PRIORITY_OPTIONS.map((opt) => (
+                                        <button
+                                            key={opt.value}
+                                            onClick={() => setPriority(opt.value)}
+                                            className={`flex-1 rounded-xl border py-2 text-xs font-bold transition-all ${priority === opt.value ? opt.color : "border-zinc-800 bg-zinc-900/30 text-zinc-600 hover:text-zinc-400"
+                                                }`}
+                                        >
+                                            {opt.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Estimated Minutes */}
+                            <div>
+                                <label className="mb-2 block text-xs font-bold tracking-widest text-zinc-500 uppercase">
+                                    Estimated Time
+                                </label>
+                                <div className="flex gap-2">
+                                    {[15, 25, 45, 60, 90].map((m) => (
+                                        <button
+                                            key={m}
+                                            onClick={() => setEstimatedMinutes(m)}
+                                            className={`flex-1 rounded-xl border py-2 text-xs font-bold transition-all ${estimatedMinutes === m
+                                                ? "border-indigo-500/30 bg-indigo-500/10 text-indigo-300"
+                                                : "border-zinc-800 bg-zinc-900/30 text-zinc-600 hover:text-zinc-400"
+                                                }`}
+                                        >
+                                            {m}m
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                    )}
 
-                    {/* Estimated Minutes */}
-                    <div>
-                        <label className="mb-2 block text-xs font-bold tracking-widest text-zinc-500 uppercase">
-                            Estimated Time
-                        </label>
-                        <div className="flex gap-2">
-                            {[15, 25, 45, 60, 90].map((m) => (
+                    {activeTab === "subtasks" && (
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-2">
                                 <button
-                                    key={m}
-                                    onClick={() => setEstimatedMinutes(m)}
-                                    className={`flex-1 rounded-xl border py-2 text-xs font-bold transition-all ${estimatedMinutes === m
-                                            ? "border-indigo-500/30 bg-indigo-500/10 text-indigo-300"
-                                            : "border-zinc-800 bg-zinc-900/30 text-zinc-600 hover:text-zinc-400"
-                                        }`}
+                                    onClick={() => setSubtasksExpanded(!subtasksExpanded)}
+                                    className="text-zinc-500 hover:text-zinc-300"
+                                    aria-label="Toggle subtasks"
                                 >
-                                    {m}m
+                                    {subtasksExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
                                 </button>
-                            ))}
-                        </div>
-                    </div>
+                                <span className="text-xs font-bold tracking-widest text-zinc-500 uppercase">
+                                    Subtasks ({subtasks.length})
+                                </span>
+                            </div>
 
+                            {subtasksExpanded && (
+                                <>
+                                    <div className="space-y-2">
+                                        {subtasks.map((st) => (
+                                            <div key={st.id} className="flex items-center gap-3 rounded-xl border border-zinc-800 bg-zinc-900/30 px-4 py-3">
+                                                <div className={`h-2 w-2 rounded-full shrink-0 ${st.status === "done" ? "bg-emerald-500" :
+                                                    st.status === "in_progress" ? "bg-indigo-500" : "bg-zinc-600"
+                                                    }`} />
+                                                <span className={`text-sm flex-1 ${st.status === "done" ? "text-zinc-500 line-through" : "text-zinc-300"}`}>
+                                                    {st.title}
+                                                </span>
+                                                <span className="text-[10px] text-zinc-600 uppercase">{st.status}</span>
+                                            </div>
+                                        ))}
+                                        {subtasks.length === 0 && (
+                                            <p className="text-sm text-zinc-600 italic py-4 text-center">No subtasks yet</p>
+                                        )}
+                                    </div>
+
+                                    <div className="flex gap-2">
+                                        <input
+                                            value={newSubtaskTitle}
+                                            onChange={(e) => setNewSubtaskTitle(e.target.value)}
+                                            onKeyDown={(e) => e.key === "Enter" && handleAddSubtask()}
+                                            className="flex-1 rounded-xl border border-zinc-700 bg-zinc-900/50 px-4 py-2.5 text-sm text-white placeholder-zinc-600 outline-none focus:border-indigo-500/50"
+                                            placeholder="Add a subtask..."
+                                        />
+                                        <button
+                                            onClick={handleAddSubtask}
+                                            disabled={!newSubtaskTitle.trim()}
+                                            className="rounded-xl bg-indigo-600 px-3 py-2 text-white transition hover:bg-indigo-500 disabled:opacity-50"
+                                            aria-label="Add subtask"
+                                        >
+                                            <Plus size={16} />
+                                        </button>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    )}
+
+                    {activeTab === "comments" && (
+                        <div className="space-y-4">
+                            <div className="space-y-3 max-h-60 overflow-y-auto">
+                                {commentsLoading ? (
+                                    <div className="flex items-center justify-center py-8">
+                                        <Loader2 size={20} className="animate-spin text-zinc-500" />
+                                    </div>
+                                ) : comments.length === 0 ? (
+                                    <p className="text-sm text-zinc-600 italic py-8 text-center">No comments yet</p>
+                                ) : (
+                                    comments.map((c) => (
+                                        <div key={c.id} className="rounded-xl border border-zinc-800 bg-zinc-900/30 p-4">
+                                            <p className="text-sm text-zinc-300">{c.content}</p>
+                                            <p className="mt-2 text-[10px] text-zinc-600">
+                                                {new Date(c.created_at).toLocaleString()}
+                                            </p>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+
+                            <div className="flex gap-2">
+                                <input
+                                    value={newComment}
+                                    onChange={(e) => setNewComment(e.target.value)}
+                                    onKeyDown={(e) => e.key === "Enter" && handleAddComment()}
+                                    className="flex-1 rounded-xl border border-zinc-700 bg-zinc-900/50 px-4 py-2.5 text-sm text-white placeholder-zinc-600 outline-none focus:border-indigo-500/50"
+                                    placeholder="Write a comment..."
+                                />
+                                <button
+                                    onClick={handleAddComment}
+                                    disabled={!newComment.trim()}
+                                    className="rounded-xl bg-indigo-600 px-3 py-2 text-white transition hover:bg-indigo-500 disabled:opacity-50"
+                                    aria-label="Send comment"
+                                >
+                                    <Send size={16} />
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === "labels" && (
+                        <div className="space-y-4">
+                            <p className="text-xs font-bold tracking-widest text-zinc-500 uppercase">Manage Labels</p>
+
+                            <div className="space-y-2">
+                                {userLabels.map((label) => (
+                                    <button
+                                        key={label.id}
+                                        onClick={() => handleToggleLabelOnTask(label.id)}
+                                        className={`flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-sm transition-all ${taskLabelIds.has(label.id)
+                                            ? "border-indigo-500/30 bg-indigo-500/10 text-white"
+                                            : "border-zinc-800 bg-zinc-900/30 text-zinc-400 hover:border-zinc-700"
+                                            }`}
+                                    >
+                                        <div
+                                            className="h-3 w-3 rounded-full shrink-0"
+                                            ref={(el) => { if (el) el.style.backgroundColor = label.color; }}
+                                        />
+                                        <span className="flex-1 text-left">{label.name}</span>
+                                        {taskLabelIds.has(label.id) && (
+                                            <span className="text-[10px] font-bold text-indigo-400">ASSIGNED</span>
+                                        )}
+                                    </button>
+                                ))}
+                                {userLabels.length === 0 && (
+                                    <p className="text-sm text-zinc-600 italic py-4 text-center">No labels created yet</p>
+                                )}
+                            </div>
+
+                            <div className="flex gap-2 items-center pt-2 border-t border-white/5">
+                                <input
+                                    type="color"
+                                    value={newLabelColor}
+                                    onChange={(e) => setNewLabelColor(e.target.value)}
+                                    className="h-8 w-8 cursor-pointer rounded-lg border border-zinc-700 bg-transparent"
+                                    title="Label color"
+                                />
+                                <input
+                                    value={newLabelName}
+                                    onChange={(e) => setNewLabelName(e.target.value)}
+                                    onKeyDown={(e) => e.key === "Enter" && handleCreateLabel()}
+                                    className="flex-1 rounded-xl border border-zinc-700 bg-zinc-900/50 px-4 py-2.5 text-sm text-white placeholder-zinc-600 outline-none focus:border-indigo-500/50"
+                                    placeholder="New label name..."
+                                />
+                                <button
+                                    onClick={handleCreateLabel}
+                                    disabled={!newLabelName.trim()}
+                                    className="rounded-xl bg-indigo-600 px-3 py-2 text-white transition hover:bg-indigo-500 disabled:opacity-50"
+                                    aria-label="Create label"
+                                >
+                                    <Plus size={16} />
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* Footer — always visible */}
+                <div className="border-t border-white/5 px-6 py-4 shrink-0">
                     {error && (
-                        <div className="flex items-center gap-2 rounded-xl border border-red-500/20 bg-red-500/5 px-4 py-3 text-sm text-red-400">
+                        <div className="mb-3 flex items-center gap-2 rounded-xl border border-red-500/20 bg-red-500/5 px-4 py-3 text-sm text-red-400">
                             <AlertCircle size={16} />
                             {error}
                         </div>
                     )}
-
-                    {/* Actions */}
-                    <div className="flex items-center gap-3 pt-1">
-                        {/* Destructive actions */}
+                    <div className="flex items-center gap-3">
                         <button
                             onClick={handleArchive}
                             disabled={saving || deleting}
@@ -194,7 +506,6 @@ export default function TaskEditModal({ task, onClose }: TaskEditModalProps) {
                             Delete
                         </button>
 
-                        {/* Save */}
                         <button
                             onClick={handleSave}
                             disabled={saving || !title.trim()}

@@ -51,25 +51,23 @@ export default function AIChat({ project, tasks }: { project: Project; tasks: Ta
   }
 
   return (
-    <div className="flex h-full flex-col bg-white">
+    <div className="flex h-full flex-col bg-card">
       <div className="flex-1 space-y-4 overflow-y-auto p-4" ref={scrollRef}>
         {messages.map((m, i) => (
           <div key={i} className={`flex gap-3 ${m.role === "user" ? "flex-row-reverse" : ""}`}>
             <div
-              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
-                m.role === "assistant"
-                  ? "bg-indigo-100 text-indigo-600"
-                  : "bg-gray-200 text-gray-600"
-              }`}
+              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${m.role === "assistant"
+                  ? "bg-indigo-500/10 text-indigo-400"
+                  : "bg-zinc-800 text-zinc-400"
+                }`}
             >
               {m.role === "assistant" ? <Bot size={16} /> : <User size={16} />}
             </div>
             <div
-              className={`max-w-[85%] rounded-2xl px-4 py-2 text-sm ${
-                m.role === "assistant"
-                  ? "rounded-tl-none bg-gray-100 text-gray-800"
-                  : "rounded-tr-none bg-blue-600 text-white"
-              }`}
+              className={`max-w-[85%] rounded-2xl px-4 py-2 text-sm ${m.role === "assistant"
+                  ? "rounded-tl-none bg-secondary text-foreground"
+                  : "rounded-tr-none bg-indigo-600 text-white"
+                }`}
             >
               {m.content}
             </div>
@@ -77,28 +75,28 @@ export default function AIChat({ project, tasks }: { project: Project; tasks: Ta
         ))}
         {loading && (
           <div className="flex gap-3">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-indigo-600">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-500/10 text-indigo-400">
               <Bot size={16} />
             </div>
-            <div className="rounded-2xl rounded-tl-none bg-gray-100 px-4 py-2">
-              <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+            <div className="rounded-2xl rounded-tl-none bg-secondary px-4 py-2">
+              <Loader2 className="h-4 w-4 animate-spin text-zinc-500" />
             </div>
           </div>
         )}
       </div>
 
-      <div className="border-t border-gray-100 bg-gray-50/50 p-3">
+      <div className="border-t border-border bg-secondary/50 p-3">
         <form onSubmit={handleSubmit} className="relative">
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask AI..."
-            className="w-full rounded-full border-gray-200 py-2.5 pr-10 pl-4 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            className="w-full rounded-full border border-border bg-background py-2.5 pr-10 pl-4 text-sm text-foreground focus:border-indigo-500 focus:ring-indigo-500 focus:outline-none"
           />
           <button
             type="submit"
             disabled={!input.trim() || loading}
-            className="absolute top-1.5 right-1.5 rounded-full bg-indigo-600 p-1.5 text-white transition-colors hover:bg-indigo-700 disabled:opacity-50 disabled:hover:bg-indigo-600"
+            className="absolute top-1.5 right-1.5 rounded-full bg-indigo-600 p-1.5 text-white transition-colors hover:bg-indigo-500 disabled:opacity-50 disabled:hover:bg-indigo-600"
             aria-label="Send message"
           >
             <Send size={14} />

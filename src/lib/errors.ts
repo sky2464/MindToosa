@@ -15,7 +15,9 @@ export class AppError extends Error {
         super(message);
         this.name = this.constructor.name;
         Object.setPrototypeOf(this, new.target.prototype);
-        Error.captureStackTrace(this, this.constructor);
+        if (typeof Error.captureStackTrace === 'function') {
+            Error.captureStackTrace(this, this.constructor);
+        }
     }
 }
 

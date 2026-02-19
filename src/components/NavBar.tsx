@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Zap, Target, Calendar, Layers, Settings } from "lucide-react";
+import { Zap, Target, Calendar, Layers, Settings, FolderKanban } from "lucide-react";
 
 const navItems = [
     { href: "/today", label: "Today", icon: Zap },
     { href: "/week", label: "Week", icon: Calendar },
     { href: "/goals", label: "Goals", icon: Target },
+    { href: "/projects", label: "Projects", icon: FolderKanban },
     { href: "/spaces", label: "Spaces", icon: Layers },
     { href: "/settings", label: "Settings", icon: Settings },
 ];
@@ -26,8 +27,8 @@ export default function NavBar() {
                             key={href}
                             href={href}
                             className={`flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-all ${isActive
-                                    ? "text-indigo-400"
-                                    : "text-zinc-500 hover:text-zinc-300"
+                                ? "text-indigo-400"
+                                : "text-zinc-500 hover:text-zinc-300"
                                 }`}
                         >
                             <Icon size={20} className={isActive ? "drop-shadow-[0_0_6px_rgba(99,102,241,0.6)]" : ""} />
@@ -50,8 +51,8 @@ export default function NavBar() {
                             href={href}
                             title={label}
                             className={`group relative flex h-10 w-10 items-center justify-center rounded-xl transition-all ${isActive
-                                    ? "bg-indigo-600/20 text-indigo-400 shadow-[0_0_12px_rgba(99,102,241,0.2)]"
-                                    : "text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
+                                ? "bg-indigo-600/20 text-indigo-400 shadow-[0_0_12px_rgba(99,102,241,0.2)]"
+                                : "text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
                                 }`}
                         >
                             <Icon size={20} />

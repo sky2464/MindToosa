@@ -43,6 +43,7 @@ export const TaskSchema = z.object({
   space_id: z.string().uuid(),
   goal_id: z.string().uuid().optional().nullable(),
   project_id: z.string().uuid().optional().nullable(),
+  parent_task_id: z.string().uuid().optional().nullable(),
   title: z.string().min(1),
   priority: TaskPrioritySchema.default("normal"),
   estimated_minutes: z.number().int().min(1).default(25),
@@ -61,6 +62,22 @@ export const FocusSessionSchema = z.object({
   completed: z.boolean().default(false),
 });
 
+export const TaskLabelSchema = z.object({
+  id: z.string().uuid().optional(),
+  user_id: z.string().optional(),
+  name: z.string().min(1),
+  color: z.string().default("#6366f1"),
+  created_at: z.date().optional(),
+});
+
+export const TaskCommentSchema = z.object({
+  id: z.string().uuid().optional(),
+  task_id: z.string().uuid(),
+  user_id: z.string().optional(),
+  content: z.string().min(1),
+  created_at: z.date().optional(),
+});
+
 // Planning Objects (Input/Output for AI or API)
 export const DailyPlanSchema = z.object({
   date: z.string().date(), // YYYY-MM-DD
@@ -76,3 +93,6 @@ export type Project = z.infer<typeof ProjectSchema>;
 export type Task = z.infer<typeof TaskSchema>;
 export type FocusSession = z.infer<typeof FocusSessionSchema>;
 export type DailyPlan = z.infer<typeof DailyPlanSchema>;
+export type TaskLabel = z.infer<typeof TaskLabelSchema>;
+export type TaskComment = z.infer<typeof TaskCommentSchema>;
+

@@ -32,9 +32,20 @@ export default async function WeekPage() {
     const today = new Date().toISOString().split("T")[0];
     const days = getDaysOfWeek();
 
-    // Fetch tasks for the whole week
+    // Fetch tasks for the week range only (not all tasks)
     const defaultSpace = await spaceService.ensureDefaultSpace(userId);
-    const allTasks = await taskService.getTasks(userId, {});
+    const weekTasks = await taskService.getTasks(userId, {
+        dateFrom: days[0],
+        dateTo: days[6],
+    });
+
+    // Also fetch past incomplete tasks for carry-forward
+    const pastIncompleteCandidates = await taskService.getTasks(userId, {
+        dateTo: today,
+    });
+    const allTasks = [...weekTasks, ...pastIncompleteCandidates.filter(
+        (t) => !weekTasks.some((wt) => wt.id === t.id)
+    )];
 
     // Group tasks by date
     const tasksByDate: Record<string, typeof allTasks> = {};
@@ -94,10 +105,10 @@ export default async function WeekPage() {
                         <div
                             key={day}
                             className={`rounded-2xl border p-4 transition-all ${isToday
-                                    ? "border-indigo-500/40 bg-indigo-500/5 shadow-[0_0_20px_rgba(99,102,241,0.1)]"
-                                    : isPast
-                                        ? "border-zinc-800/50 bg-zinc-900/20 opacity-70"
-                                        : "border-zinc-800 bg-zinc-900/30"
+                                ? "border-indigo-500/40 bg-indigo-500/5 shadow-[0_0_20px_rgba(99,102,241,0.1)]"
+                                : isPast
+                                    ? "border-zinc-800/50 bg-zinc-900/20 opacity-70"
+                                    : "border-zinc-800 bg-zinc-900/30"
                                 }`}
                         >
                             <div className="mb-3 flex items-center justify-between">

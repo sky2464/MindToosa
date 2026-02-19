@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 import { env } from "./env";
 import { DailyPlanSchema, DailyPlan, Task, Goal, Project } from "@/core/planTypes";
 import { ApiError, ValidationError } from "@/lib/errors";
@@ -17,12 +17,18 @@ export interface ProjectContext {
   tasks: Task[];
 }
 
+function getClient(): GoogleGenAI {
+  if (!env.AI_PROVIDER_API_KEY) {
+    throw new ApiError("AI_PROVIDER_API_KEY is not set.", 500, "MISSING_CONFIG");
+  }
+  return new GoogleGenAI({ apiKey: env.AI_PROVIDER_API_KEY });
+}
+
+const MODEL = "gemini-2.0-flash";
+
 export const llmClient = {
   async generateDailyPlan(context: PlanContext): Promise<DailyPlan> {
-    if (!env.AI_PROVIDER_API_KEY) throw new ApiError("AI_PROVIDER_API_KEY is not set.", 500, "MISSING_CONFIG");
-
-    const genAI = new GoogleGenerativeAI(env.AI_PROVIDER_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const ai = getClient();
 
     const prompt = `
         You are an expert productivity coach. Create a realistic daily plan for me.
@@ -49,16 +55,19 @@ export const llmClient = {
         
         {
           "date": "YYYY-MM-DD",
-          "mustDo": [ { "title": "...", "estimated_minutes": 25, "priority": "must_do", "micro_steps": ["step 1", ...] } ],
-          "optional": [ { "title": "...", "priority": "optional", ... } ],
+          "mustDo": [ { "title": "...", "estimated_minutes": 25, "priority": "must_do", "micro_steps": ["step 1", ...], "space_id": "placeholder-uuid" } ],
+          "optional": [ { "title": "...", "priority": "optional", "space_id": "placeholder-uuid", ... } ],
           "constraints": ["..."],
           "notes": "..."
         }
         `;
 
     try {
-      const result = await model.generateContent(prompt);
-      const text = result.response.text();
+      const response = await ai.models.generateContent({
+        model: MODEL,
+        contents: prompt,
+      });
+      const text = response.text ?? "";
       const cleanText = text
         .replace(/```json/g, "")
         .replace(/```/g, "")
@@ -73,6 +82,7 @@ export const llmClient = {
 
       return parsed.data;
     } catch (error) {
+      if (error instanceof ValidationError) throw error;
       console.error("LLM Generation Error:", error);
       throw new ApiError("Failed to generate plan.", 500, "LLM_GENERATION_FAILED");
     }
@@ -82,14 +92,16 @@ export const llmClient = {
     if (!env.AI_PROVIDER_API_KEY)
       return ["Analyze requirements", "Draft outline", "Review and refine"];
 
-    const genAI = new GoogleGenerativeAI(env.AI_PROVIDER_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const ai = getClient();
 
     const prompt = `Break down the task "${taskTitle}" into 3-5 actionable micro-steps. Return ONLY a JSON array of strings. Example: ["Step 1", "Step 2"]`;
 
     try {
-      const result = await model.generateContent(prompt);
-      const text = result.response.text();
+      const response = await ai.models.generateContent({
+        model: MODEL,
+        contents: prompt,
+      });
+      const text = response.text ?? "";
       const cleanText = text
         .replace(/```json/g, "")
         .replace(/```/g, "")
@@ -104,8 +116,7 @@ export const llmClient = {
   async chatWithProject(context: ProjectContext, message: string): Promise<string> {
     if (!env.AI_PROVIDER_API_KEY) return "I can only help if the API Key is set.";
 
-    const genAI = new GoogleGenerativeAI(env.AI_PROVIDER_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const ai = getClient();
 
     const systemPrompt = `
         You are a project assistant for the project "${context.project.title}".
@@ -119,8 +130,11 @@ export const llmClient = {
         `;
 
     try {
-      const result = await model.generateContent(systemPrompt + "\n\nUser Question: " + message);
-      return result.response.text();
+      const response = await ai.models.generateContent({
+        model: MODEL,
+        contents: systemPrompt + "\n\nUser Question: " + message,
+      });
+      return response.text ?? "Sorry, I couldn't process your request.";
     } catch (error) {
       console.error("Error chatting with project:", error);
       return "Sorry, I couldn't process your request.";

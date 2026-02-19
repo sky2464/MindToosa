@@ -1,14 +1,8 @@
 import { db } from "@/server/db";
 import { Project, ProjectSchema, Task } from "@/core/planTypes";
-import { auth } from "@/auth";
-import { revalidatePath } from "next/cache";
 
 export const projectService = {
-  async getProjects(): Promise<Project[]> {
-    const session = await auth();
-    if (!session?.user?.email) return [];
-    const userId = session.user.email;
-
+  async getProjects(userId: string): Promise<Project[]> {
     const { data, error } = await db
       .from("projects")
       .select("*")
@@ -19,27 +13,19 @@ export const projectService = {
     return data as Project[];
   },
 
-  async getProjectById(id: string): Promise<Project | null> {
-    const session = await auth();
-    if (!session?.user?.email) return null;
-    const userId = session.user.email;
-
+  async getProjectById(userId: string, id: string): Promise<Project | null> {
     const { data, error } = await db
       .from("projects")
       .select("*")
       .eq("id", id)
-      .eq("user_id", userId) // Ensure ownership
+      .eq("user_id", userId)
       .single();
 
     if (error) return null;
     return data as Project;
   },
 
-  async createProject(project: Partial<Project>) {
-    const session = await auth();
-    if (!session?.user?.email) throw new Error("Unauthorized");
-    const userId = session.user.email;
-
+  async createProject(userId: string, project: Partial<Project>) {
     const newProject = {
       ...project,
       user_id: userId,
@@ -57,38 +43,22 @@ export const projectService = {
       throw error;
     }
 
-    revalidatePath("/projects");
     return data as Project;
   },
 
-  async updateProject(id: string, updates: Partial<Project>) {
-    const session = await auth();
-    if (!session?.user?.email) throw new Error("Unauthorized");
-    const userId = session.user.email;
-
+  async updateProject(userId: string, id: string, updates: Partial<Project>) {
     const { error } = await db.from("projects").update(updates).eq("id", id).eq("user_id", userId);
 
     if (error) throw error;
-    revalidatePath("/projects");
-    revalidatePath(`/projects/${id}`);
   },
 
-  async deleteProject(id: string) {
-    const session = await auth();
-    if (!session?.user?.email) throw new Error("Unauthorized");
-    const userId = session.user.email;
-
+  async deleteProject(userId: string, id: string) {
     const { error } = await db.from("projects").delete().eq("id", id).eq("user_id", userId);
 
     if (error) throw error;
-    revalidatePath("/projects");
   },
 
-  async getProjectTasks(projectId: string): Promise<Task[]> {
-    const session = await auth();
-    if (!session?.user?.email) throw new Error("Unauthorized");
-    const userId = session.user.email;
-
+  async getProjectTasks(userId: string, projectId: string): Promise<Task[]> {
     const { data, error } = await db
       .from("tasks")
       .select("*")

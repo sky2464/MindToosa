@@ -2,8 +2,9 @@
 
 import { projectService } from "@/server/services/projectService";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import { auth } from "@/auth";
 import { z } from "zod";
+import { llmClient } from "@/server/llmClient";
 
 const CreateProjectSchema = z.object({
   title: z.string().min(1),
@@ -11,7 +12,15 @@ const CreateProjectSchema = z.object({
   spaceId: z.string().uuid(),
 });
 
+async function getAuthUserId(): Promise<string> {
+  const session = await auth();
+  if (!session?.user?.email) throw new Error("Unauthorized");
+  return session.user.email;
+}
+
 export async function createProjectAction(formData: FormData) {
+  const userId = await getAuthUserId();
+
   const title = formData.get("title") as string;
   const description = formData.get("description") as string;
   const spaceId = formData.get("spaceId") as string;
@@ -20,7 +29,7 @@ export async function createProjectAction(formData: FormData) {
     throw new Error("Missing required fields");
   }
 
-  await projectService.createProject({
+  await projectService.createProject(userId, {
     title,
     description,
     space_id: spaceId,
@@ -31,21 +40,16 @@ export async function createProjectAction(formData: FormData) {
 }
 
 export async function deleteProjectAction(id: string) {
-  await projectService.deleteProject(id);
+  const userId = await getAuthUserId();
+  await projectService.deleteProject(userId, id);
   revalidatePath("/projects");
 }
 
-import { llmClient } from "@/server/llmClient";
-import { auth } from "@/auth";
-
 export async function chatWithProjectAction(projectId: string, message: string) {
-  const session = await auth();
-  if (!session?.user?.email) throw new Error("Unauthorized");
+  const userId = await getAuthUserId();
 
-  // We fetch fresh context here to ensure AI has latest state
-  // Optimization: Pass context from client if we trust it, but server-side fetch is safer/cleaner
-  const project = await projectService.getProjectById(projectId);
-  const tasks = await projectService.getProjectTasks(projectId);
+  const project = await projectService.getProjectById(userId, projectId);
+  const tasks = await projectService.getProjectTasks(userId, projectId);
 
   if (!project) throw new Error("Project not found");
 
@@ -53,7 +57,6 @@ export async function chatWithProjectAction(projectId: string, message: string) 
 }
 
 export async function suggestSubtasksAction(taskTitle: string) {
-  const session = await auth();
-  if (!session?.user?.email) throw new Error("Unauthorized");
+  await getAuthUserId(); // Verify auth
   return await llmClient.suggestSubtasks(taskTitle);
 }

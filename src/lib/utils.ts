@@ -5,7 +5,7 @@
  * This meets the project's zero-dependency requirement in GEMINI.md.
  */
 
-type ClassValue = string | number | boolean | undefined | null | { [key: string]: any } | ClassValue[];
+type ClassValue = string | number | boolean | undefined | null | { [key: string]: boolean | undefined } | ClassValue[];
 
 function toVal(mix: ClassValue): string {
   let str = '';
@@ -38,7 +38,7 @@ function toVal(mix: ClassValue): string {
 export function cn(...inputs: ClassValue[]): string {
   const classes = toVal(inputs).split(' ').filter(Boolean);
 
-  // Basic Tailind Merge Logic (simplified for internal use)
+  // Basic Tailwind Merge Logic (simplified for internal use)
   // We keep the last class for each unique prefix group (e.g., p-, m-, focus:, etc.)
   const result: string[] = [];
   const seen: Record<string, string> = {};

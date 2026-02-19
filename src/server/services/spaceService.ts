@@ -31,4 +31,30 @@ export const spaceService = {
 
     return await this.createSpace(userId, "General");
   },
+
+  async updateSpace(userId: string, spaceId: string, updates: { name?: string }) {
+    const { data, error } = await db
+      .from("spaces")
+      .update(updates)
+      .eq("id", spaceId)
+      .eq("user_id", userId)
+      .select()
+      .single();
+
+    if (error) throw new Error(error.message);
+    return data as Space;
+  },
+
+  async archiveSpace(userId: string, spaceId: string, archived: boolean = true) {
+    const { data, error } = await db
+      .from("spaces")
+      .update({ archived })
+      .eq("id", spaceId)
+      .eq("user_id", userId)
+      .select()
+      .single();
+
+    if (error) throw new Error(error.message);
+    return data as Space;
+  },
 };

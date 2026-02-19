@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Play, Pause, RotateCcw, CheckCircle2, Check, SkipForward } from "lucide-react";
 import useSoundEffects from "@/hooks/useSoundEffects";
 import { useRouter } from "next/navigation";
@@ -36,7 +36,7 @@ export default function FocusTimer({ activeTaskId, onComplete }: FocusTimerProps
     }
   }, [selectedMinutes, mode]);
 
-  const saveSession = async () => {
+  const saveSession = useCallback(async () => {
     try {
       playSound("complete");
       const actualMinutes = startedAtRef.current
@@ -69,7 +69,7 @@ export default function FocusTimer({ activeTaskId, onComplete }: FocusTimerProps
     } catch (error) {
       console.error("Error saving focus session:", error);
     }
-  };
+  }, [playSound, selectedMinutes, activeTaskId, onComplete]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
@@ -87,8 +87,7 @@ export default function FocusTimer({ activeTaskId, onComplete }: FocusTimerProps
     return () => {
       if (interval) clearInterval(interval);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isActive, timeLeft]);
+  }, [isActive, timeLeft, saveSession]);
 
   const startTimer = () => {
     playSound("start");
@@ -143,8 +142,8 @@ export default function FocusTimer({ activeTaskId, onComplete }: FocusTimerProps
               key={minutes}
               onClick={() => setSelectedMinutes(minutes)}
               className={`rounded-lg px-2.5 py-1 text-xs font-bold transition-all ${selectedMinutes === minutes
-                  ? "bg-indigo-600/30 text-indigo-300 border border-indigo-500/30"
-                  : "text-zinc-600 hover:text-zinc-400"
+                ? "bg-indigo-600/30 text-indigo-300 border border-indigo-500/30"
+                : "text-zinc-600 hover:text-zinc-400"
                 }`}
             >
               {label}
