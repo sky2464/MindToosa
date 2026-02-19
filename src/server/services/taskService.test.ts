@@ -128,7 +128,9 @@ describe('taskService', () => {
             const updates = { title: 'Updated' };
             const updatedTask = { id: taskId, title: 'Updated' };
 
-            mockSingle.mockResolvedValueOnce({ data: updatedTask, error: null });
+            mockSingle
+                .mockResolvedValueOnce({ data: { id: taskId, title: 'Old Title', user_id: userId, space_id: spaceId }, error: null }) // 1. Initial fetch
+                .mockResolvedValueOnce({ data: updatedTask, error: null }); // 2. Update result
 
             const result = await taskService.updateTask(userId, taskId, updates);
             expect(result).toEqual(updatedTask);
