@@ -54,7 +54,7 @@ export default function AIChat({ project, tasks }: { project: Project; tasks: Ta
 
   return (
     <div className="flex h-full flex-col bg-card">
-      <div className="flex-1 space-y-4 overflow-y-auto p-4" ref={scrollRef}>
+      <div className="flex-1 space-y-4 overflow-y-auto p-4" ref={scrollRef} role="log" aria-live="polite">
         {messages.map((m) => (
           <div key={m.id} className={`flex gap-3 ${m.role === "user" ? "flex-row-reverse" : ""}`}>
             <div

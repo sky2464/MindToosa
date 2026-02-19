@@ -143,7 +143,9 @@ body {
 }
 
 /* Firefox */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: #3f3f46 transparent;
+@supports (scrollbar-width: thin) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #3f3f46 transparent;
+  }
 }
