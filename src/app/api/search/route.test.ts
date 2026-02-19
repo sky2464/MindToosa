@@ -5,7 +5,7 @@ import { searchService } from '@/server/services/searchService';
 import { rateLimit } from '@/server/rateLimit';
 
 // Mock dependencies
-vi.mock('@/auth', () => ({
+vi.mock('@auth', () => ({
     auth: vi.fn(),
 }));
 

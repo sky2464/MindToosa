@@ -8,6 +8,7 @@ export default defineConfig({
         environment: 'jsdom',
         alias: {
             '@': resolve(__dirname, './src'),
+            '@auth': resolve(__dirname, './auth.ts'),
         },
         exclude: ['**/node_modules/**', '**/dist/**', '**/tests/e2e/**'],
     },

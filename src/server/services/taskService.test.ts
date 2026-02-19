@@ -133,8 +133,6 @@ describe('taskService', () => {
                 .mockResolvedValueOnce({ data: updatedTask, error: null }); // 2. Update result
 
             const result = await taskService.updateTask(userId, taskId, updates);
-            console.log('Update Task Result:', result);
-            console.log('Mock Single Calls:', mockSingle.mock.calls.length);
             expect(result).toEqual(updatedTask);
         });
     });
