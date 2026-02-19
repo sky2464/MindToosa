@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { auth } from "@auth";
 
 const SupportSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -8,6 +9,11 @@ const SupportSchema = z.object({
 });
 
 export async function POST(req: Request) {
+  const session = await auth();
+  if (!session?.user?.email) {
+    return new NextResponse("Unauthorized", { status: 401 });
+  }
+
   try {
     const body = await req.json();
     const parsed = SupportSchema.safeParse(body);

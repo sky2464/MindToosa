@@ -12,9 +12,10 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const spaceId = searchParams.get("spaceId") || undefined;
   const date = searchParams.get("date") || undefined;
+  const parentId = searchParams.get("parentId") || undefined;
 
   try {
-    const tasks = await taskService.getTasks(userId, { spaceId, date });
+    const tasks = await taskService.getTasks(userId, { spaceId, date, parentId });
     return NextResponse.json(tasks);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "An unknown error occurred";

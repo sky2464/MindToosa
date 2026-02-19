@@ -18,8 +18,7 @@ export default function QuestDisplay() {
       .then((data) => {
         setStats(data);
       })
-      // Fallback for demo if API fails or doesn't exist yet
-      .catch(() => setStats({ xp: 1250, level: 3, current_streak: 5 }));
+      .catch(() => setStats(null));
   }, []);
 
   if (!stats) return null;

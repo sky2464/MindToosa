@@ -9,7 +9,7 @@ const UUIDOptionalSchema = z.string().uuid("Invalid UUID format").optional();
 export const taskService = {
   async getTasks(
     userId: string,
-    options: { spaceId?: string; date?: string; dateFrom?: string; dateTo?: string; projectId?: string } = {}
+    options: { spaceId?: string; date?: string; dateFrom?: string; dateTo?: string; projectId?: string; parentId?: string } = {}
   ) {
     let query = db.from("tasks").select("*").eq("user_id", userId);
 
@@ -33,6 +33,11 @@ export const taskService = {
     if (options.projectId) {
       if (!UUIDSchema.safeParse(options.projectId).success) throw new ValidationError("Invalid project ID");
       query = query.eq("project_id", options.projectId);
+    }
+
+    if (options.parentId) {
+      if (!UUIDSchema.safeParse(options.parentId).success) throw new ValidationError("Invalid parent task ID");
+      query = query.eq("parent_task_id", options.parentId);
     }
 
     const { data, error } = await query;
@@ -104,14 +109,6 @@ export const taskService = {
 
     // Check dependencies if completing
     if (updates.status === "done") {
-      const { count } = await db
-        .from("task_dependencies")
-        .select("blocking_task_id", { count: "exact", head: true })
-        .eq("task_id", taskId)
-        .neq("blocking_task:tasks.status", "done"); // Requires join, or separate check.
-      // Supabase/PostgREST 'count' with filter on joined table is tricky.
-      // Let's do a direct join query.
-
       const { data: blockers } = await db
         .from("task_dependencies")
         .select(`
@@ -272,13 +269,23 @@ export const taskService = {
   },
 
   async removeDependency(userId: string, taskId: string, blockingTaskId: string) {
-    // Verify ownership via RLS mainly, but good to be explicit
+    if (!UUIDSchema.safeParse(taskId).success) throw new ValidationError("Invalid task ID");
+    if (!UUIDSchema.safeParse(blockingTaskId).success) throw new ValidationError("Invalid blocking task ID");
+
+    // Verify ownership of both tasks before deleting (service-role key bypasses RLS)
+    const { count } = await db
+      .from("tasks")
+      .select("id", { count: "exact", head: true })
+      .in("id", [taskId, blockingTaskId])
+      .eq("user_id", userId);
+
+    if (count !== 2) throw new AuthError("Tasks not found or access denied");
+
     const { error } = await db
       .from("task_dependencies")
       .delete()
       .eq("task_id", taskId)
       .eq("blocking_task_id", blockingTaskId);
-    // RLS ensures we can only delete if we own the tasks (via policies)
 
     if (error) throw new AppError(error.message, "DB_ERROR");
     return true;

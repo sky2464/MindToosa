@@ -4,6 +4,9 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Play, Pause, RotateCcw, CheckCircle2, Check, SkipForward } from "lucide-react";
 import useSoundEffects from "@/hooks/useSoundEffects";
 import { useRouter } from "next/navigation";
+import { apiClient } from "@/lib/apiClient";
+import { useToast } from "@/hooks/useToast";
+import { ToastContainer } from "@/components/ui/ToastContainer";
 
 interface FocusTimerProps {
   activeTaskId?: string;
@@ -28,6 +31,7 @@ export default function FocusTimer({ activeTaskId, onComplete }: FocusTimerProps
   const router = useRouter();
 
   const { playSound } = useSoundEffects();
+  const { toasts, addToast, dismissToast } = useToast();
 
   // Sync timeLeft when duration changes (only in idle mode)
   useEffect(() => {
@@ -43,33 +47,22 @@ export default function FocusTimer({ activeTaskId, onComplete }: FocusTimerProps
         ? Math.round((Date.now() - startedAtRef.current.getTime()) / 60000)
         : selectedMinutes;
 
-      await fetch("/api/focus", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          task_id: activeTaskId,
-          started_at: startedAtRef.current?.toISOString() ?? new Date().toISOString(),
-          duration_minutes: actualMinutes,
-          completed: true,
-        }),
+      await apiClient.post("/api/focus", {
+        task_id: activeTaskId,
+        started_at: startedAtRef.current?.toISOString() ?? new Date().toISOString(),
+        duration_minutes: actualMinutes,
+        completed: true,
       });
 
-      await fetch("/api/gamification", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "add_xp", amount: actualMinutes }),
-      });
-      await fetch("/api/gamification", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "update_streak" }),
-      });
+      await apiClient.post("/api/gamification", { action: "add_xp", amount: actualMinutes });
+      await apiClient.post("/api/gamification", { action: "update_streak" });
 
       if (onComplete) onComplete();
     } catch (error) {
       console.error("Error saving focus session:", error);
+      addToast("Could not save focus session. Please check your connection.", "error");
     }
-  }, [playSound, selectedMinutes, activeTaskId, onComplete]);
+  }, [playSound, selectedMinutes, activeTaskId, onComplete, addToast]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
@@ -134,6 +127,7 @@ export default function FocusTimer({ activeTaskId, onComplete }: FocusTimerProps
 
   return (
     <div className="flex w-full flex-col items-center gap-4">
+      <ToastContainer toasts={toasts} onDismiss={dismissToast} />
       {/* Duration Selector (only in idle mode) */}
       {mode === "idle" && (
         <div className="flex items-center gap-1.5">

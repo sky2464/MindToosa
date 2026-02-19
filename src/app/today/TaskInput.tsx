@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Plus, AlertCircle } from "lucide-react";
+import { apiClient } from "@/lib/apiClient";
+import { Task } from "@/core/planTypes";
 
 type Priority = "must_do" | "optional" | "normal";
 
@@ -34,17 +36,7 @@ const TaskInput = ({ spaceId }: { spaceId: string }) => {
         space_id: spaceId,
       };
 
-      const res = await fetch("/api/tasks", {
-        method: "POST",
-        body: JSON.stringify(task),
-        headers: { "Content-Type": "application/json" },
-      });
-
-      if (!res.ok) {
-        const data = await res.json();
-        setError(data.error || "Failed to add task");
-        return;
-      }
+      await apiClient.post<Task>("/api/tasks", task);
 
       setTitle("");
       router.refresh();

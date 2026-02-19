@@ -29,7 +29,7 @@ export const searchService = {
                     .ilike("title", term)
                     .limit(5),
                 db.from("goals")
-                    .select("id, title, status")
+                    .select("id, title, archived")
                     .eq("user_id", userId)
                     .ilike("title", term)
                     .limit(5),
@@ -59,8 +59,8 @@ export const searchService = {
                     id: g.id,
                     type: "goal" as const,
                     title: g.title,
-                    href: `/today`, // Goals are on the today/dashboard page
-                    status: g.status || "active",
+                    href: `/today`,
+                    status: g.archived ? "archived" : "active",
                 })),
             ];
 
