@@ -27,15 +27,23 @@ This document serves as the primary context source for Claude-based AI agents wo
 │   │   ├── goals/      # North Stars / long-term goals
 │   │   ├── projects/   # Project management + Kanban
 │   │   ├── spaces/     # Context organization
-│   │   └── settings/   # User preferences
+│   │   ├── settings/   # User preferences
+│   │   ├── help/       # Public: Help center (no auth via proxy.ts)
+│   │   ├── docs/       # Public: Documentation (no auth via proxy.ts)
+│   │   ├── about/      # Public: About Us (no auth via proxy.ts)
+│   │   └── support/    # Public: Support & contact (no auth via proxy.ts)
 │   ├── components/     # Reusable React components
+│   │   ├── NavBar.tsx  # Main + resource navigation (2-section sidebar)
+│   │   ├── FaqItem.tsx # Collapsible FAQ accordion
+│   │   ├── DocSection.tsx # Documentation section wrapper
+│   │   └── ContactCard.tsx # Contact/link card for support/about pages
 │   ├── core/           # Zod schemas + shared types (planTypes.ts)
 │   ├── hooks/          # Custom hooks (useSoundEffects)
 │   ├── lib/            # Utilities (cn, apiClient, confetti)
 │   ├── server/         # Services, DB client, LLM client, env validation
 │   │   └── services/   # Domain services (task, project, goal, space, focus, gamification)
 │   ├── auth.ts         # NextAuth config
-│   └── proxy.ts        # Next.js 16 proxy (auth gate for page routes)
+│   └── proxy.ts        # Next.js 16 proxy (auth gate for page routes, EXCLUDES public pages)
 ├── supabase/           # DB migrations (0000-0006)
 ├── public/             # Static assets + sounds
 └── .env.local          # Secrets (never commit)
@@ -77,7 +85,31 @@ Use `.glass-panel` and `.glass-card` classes for glassmorphism effects.
 
 ## 6. 📋 Key Patterns
 
-### API Route Pattern
+### Public Pages (No Authentication)
+
+Public pages (Help, Docs, About, Support) are NOT protected by `proxy.ts` and don't require authentication:
+
+```typescript
+// src/app/help/page.tsx (no auth needed)
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Help — MindToosa",
+  description: "Get help with MindToosa.",
+};
+
+export default function HelpPage() {
+  return (
+    <main className="min-h-screen bg-background px-4 py-8 md:px-8 md:ml-16">
+      {/* Content */}
+    </main>
+  );
+}
+```
+
+These pages are statically prerendered and globally accessible. Use `md:ml-16` padding on desktop to account for sidebar width.
+
+### API Route Pattern (Authenticated)
 
 ```typescript
 export async function POST(req: Request) {
@@ -105,6 +137,69 @@ export const myService = {
   },
 };
 ```
+
+### Public Form Pattern (Support Page)
+
+For public forms (no auth required), validate with Zod and return proper error feedback:
+
+```typescript
+// src/app/api/support/route.ts
+import { z } from "zod";
+
+const SupportSchema = z.object({
+  email: z.string().email("Invalid email"),
+  subject: z.string().min(3).max(100),
+  message: z.string().min(10).max(5000),
+});
+
+export async function POST(req: Request) {
+  try {
+    const json = await req.json();
+    const parsed = SupportSchema.safeParse(json);
+
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid input", details: parsed.error.flatten() },
+        { status: 400 }
+      );
+    }
+
+    // Process submission (TODO: send email via Resend/SendGrid)
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    return NextResponse.json({ error: "Failed to process" }, { status: 500 });
+  }
+}
+```
+
+The form uses client-side state management with `SupportPageClient.tsx` ('use client') for form interactivity and feedback UI.
+
+### Content Components (Help, Docs, About, Support)
+
+Use these reusable components for content-heavy pages:
+
+- **`FaqItem`** — Collapsible accordion. Includes `aria-expanded` for accessibility:
+  ```tsx
+  <FaqItem question="How do I...?" answer={<p>Step 1...</p>} isOpen={false} />
+  ```
+
+- **`DocSection`** — Section wrapper with heading and scroll anchoring:
+  ```tsx
+  <DocSection title="Getting Started" id="getting-started">
+    <p>Your content...</p>
+  </DocSection>
+  ```
+
+- **`ContactCard`** — Icon + link card for contact methods:
+  ```tsx
+  <ContactCard 
+    icon={Mail} 
+    title="Email Support" 
+    description="Contact us via email"
+    href="mailto:support@mindtoosa.com"
+    external={false}
+  />
+  ```
 
 ## 7. 🧪 Testing
 

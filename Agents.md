@@ -41,6 +41,20 @@ This document serves as the primary context and rulebook for the MindToosa codeb
 - **Dependency Rule:** `src/app` (UI/Page) -> `src/components` (UI) -> `src/lib` / `src/server` (Logic). Dependencies point inward.
 - **Keep it Simple:** Avoid over-engineering. Use Next.js conventions (Server Components, Actions) effectively.
 
+### Public Pages Pattern
+
+MindToosa includes public-facing pages (Help, Docs, About, Support) that:
+- Do NOT require authentication (not protected by `proxy.ts`)
+- Are statically prerendered for fast delivery
+- Use the Midnight Glass design system
+- Are accessible via sidebar navigation on both desktop and mobile
+- Follow SEO best practices with proper Metadata
+
+**Reusable components for content pages:**
+- `FaqItem` — Accordion for FAQs with `aria-expanded`
+- `DocSection` — Section wrapper with scroll anchoring
+- `ContactCard` — Icon + link cards for contact methods
+
 ### Next.js Specifics
 
 - **Server Components:** Default choice. Use for fetching data and rendering static content.
@@ -59,7 +73,9 @@ This document serves as the primary context and rulebook for the MindToosa codeb
 - **Strict Typing:** No `any`. Use `unknown` for error handlers and external data.
 - **Error Handling:** Use `catch (error: unknown)` and check `if (error instanceof Error)`.
 - **Interfaces:** Prefer `interface` over `type` for object definitions.
-- **Validation:** All external data (API params, Environment variables) MUST be validated with Zod.
+- **Validation:** All external data (API params, Environment variables, form inputs) MUST be validated with Zod.
+  - For public forms (no auth), return detailed validation errors as JSON: `{ error, details: parsed.error.flatten() }`
+  - For authenticated forms, validate and provide user-friendly error messages
 - **Accessibility**: Icon-only buttons MUST have `aria-label` or `title`.
 - **HTML Layout**: `<ul>` and `<ol>` MUST only directly contain `<li>` elements.
 

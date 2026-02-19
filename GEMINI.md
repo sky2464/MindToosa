@@ -21,7 +21,22 @@ This document serves as the primary context source for AI agents working on the 
 /
 ├── src/
 │   ├── app/            # Next.js App Router pages and layouts
+│   │   ├── today/      # Daily planning + focus timer
+│   │   ├── week/       # Weekly overview
+│   │   ├── goals/      # Goal management
+│   │   ├── projects/   # Project management + Kanban
+│   │   ├── spaces/     # Context/category organization
+│   │   ├── settings/   # User preferences
+│   │   ├── help/       # Public: Help center (no auth)
+│   │   ├── docs/       # Public: Documentation (no auth)
+│   │   ├── about/      # Public: About Us (no auth)
+│   │   ├── support/    # Public: Support & contact (no auth)
+│   │   └── api/        # REST API routes
 │   ├── components/     # Reusable React components
+│   │   ├── NavBar.tsx  # Navigation with main + resource sections
+│   │   ├── FaqItem.tsx # Accordion component for FAQs
+│   │   ├── DocSection.tsx # Documentation section wrapper
+│   │   └── ContactCard.tsx # Contact/link card component
 │   ├── lib/            # Shared utilities, constants, and helper functions
 │   ├── server/         # Server-side logic (Server Actions, DTOs)
 │   └── auth.ts         # NextAuth configuration
@@ -30,12 +45,36 @@ This document serves as the primary context source for AI agents working on the 
 └── .env.local          # Environment variables (do not commit secrets!)
 ```
 
+### Public Pages (No Authentication Required)
+MindToosa includes public-facing pages that are NOT protected by the `proxy.ts` auth middleware:
+- **`/help`** — Help center with FAQs, keyboard shortcuts, and getting started guides
+- **`/docs`** — Comprehensive feature documentation
+- **`/about`** — Mission statement, vision, and core values
+- **`/support`** — Contact form and support options
+
+These pages are statically prerendered and globally accessible.
+
 ## 3. 📐 Code Organization & Architecture
 
 ### Domain-Driven Design (Lightweight)
 
 - Organize code by **Feature/Domain** where possible within `src/app` or specific folders in `src/components` if they are highly specific.
 - Shared UI components belong in `src/components/ui` (if using shadcn-like structure) or `src/components`.
+
+### Navigation Architecture (NavBar.tsx)
+
+The `NavBar` component (`src/components/NavBar.tsx`) has two navigation sections:
+
+1. **Main Navigation** (protected pages) — Requires authentication via `proxy.ts`:
+   - Today, Week, Goals, Projects, Spaces, Settings
+
+2. **Resource Navigation** (public pages) — No authentication required:
+   - Help (CircleHelp icon)
+   - Docs (BookOpen icon)
+   - About (Info icon)
+   - Support (MessageCircle icon)
+
+Both sections appear on desktop (sidebar) with icons and tooltips, and on mobile (bottom nav) with truncated labels. A visual divider separates the two sections on desktop.
 
 ### Next.js App Router Best Practices
 
@@ -79,6 +118,27 @@ This document serves as the primary context source for AI agents working on the 
   - `src/hooks/useSoundEffects.ts`: Custom `useAudio` hook using native Browser API.
   - `public/sounds/`: Local royalty-free MP3 assets for timer and UI feedback.
   - `src/lib/confetti.ts`: Custom Canvas-based confetti implementation (replaces `canvas-confetti`).
+
+### Reusable Content Components
+
+For content-heavy pages (Help, Docs, About, Support), use these components:
+
+- **`FaqItem`** (`src/components/FaqItem.tsx`) — Collapsible accordion for FAQ sections. Includes `aria-expanded` for accessibility. Usage:
+  ```tsx
+  <FaqItem question="How do I start?" answer={<p>Click Today, then add a task.</p>} />
+  ```
+
+- **`DocSection`** (`src/components/DocSection.tsx`) — Semantic section wrapper with heading and content. Supports scroll-to anchoring with `id`. Usage:
+  ```tsx
+  <DocSection title="Getting Started" id="getting-started">
+    <p>Your content here...</p>
+  </DocSection>
+  ```
+
+- **`ContactCard`** (`src/components/ContactCard.tsx`) — Icon + link card for contact methods. Supports external links with proper `rel` attributes. Usage:
+  ```tsx
+  <ContactCard icon={Mail} title="Email" description="Support email" href="mailto:..." />
+  ```
 
 ## 5. 📦 Supply Chain Security & Build Integrity (SLSA)
 
