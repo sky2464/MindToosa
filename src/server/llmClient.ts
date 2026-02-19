@@ -2,6 +2,7 @@ import { GoogleGenAI } from "@google/genai";
 import { env } from "./env";
 import { DailyPlanSchema, DailyPlan, Task, Goal, Project } from "@/core/planTypes";
 import { ApiError, ValidationError } from "@/lib/errors";
+import { sanitizeLLMInput, sanitizeLLMArray } from "@/lib/sanitize";
 
 export interface PlanContext {
   date: string;
@@ -30,20 +31,26 @@ export const llmClient = {
   async generateDailyPlan(context: PlanContext): Promise<DailyPlan> {
     const ai = getClient();
 
+    // Sanitize all user-supplied strings before interpolation to prevent prompt injection
+    const safeNotes = sanitizeLLMInput(context.notes ?? "");
+    const safeConstraints = sanitizeLLMArray(context.constraints);
+    const safeGoalTitles = sanitizeLLMArray(context.activeGoals.map((g) => `${g.title} (${g.horizon || "general"})`));
+    const safeTaskTitles = sanitizeLLMArray(context.existingTasks.map((t) => `${t.title} (${t.status})`));
+
     const prompt = `
         You are an expert productivity coach. Create a realistic daily plan for me.
         
         Context:
         - Date: ${context.date}
         - Time Available: ${context.timeAvailableMinutes} minutes
-        - Constraints: ${context.constraints.join("; ")}
-        - User Notes: ${context.notes || "None"}
+        - Constraints: ${safeConstraints.join("; ")}
+        - User Notes: ${safeNotes || "None"}
         
         Goals:
-        ${context.activeGoals.length > 0 ? context.activeGoals.map((g) => `- ${g.title} (${g.horizon || "general"})`).join("\n") : "No specific goals set."}
+        ${safeGoalTitles.length > 0 ? safeGoalTitles.map((t) => `- ${t}`).join("\n") : "No specific goals set."}
         
         Existing Tasks:
-        ${context.existingTasks.length > 0 ? context.existingTasks.map((t) => `- ${t.title} (${t.status})`).join("\n") : "No existing tasks."}
+        ${safeTaskTitles.length > 0 ? safeTaskTitles.map((t) => `- ${t}`).join("\n") : "No existing tasks."}
         
         Rules:
         1. Select up to 3 Must-Do tasks.
@@ -124,13 +131,19 @@ export const llmClient = {
 
     const ai = getClient();
 
+    // Sanitize user-supplied message and project data
+    const safeMessage = sanitizeLLMInput(message, 1000);
+    const safeTitle = sanitizeLLMInput(context.project.title);
+    const safeDescription = sanitizeLLMInput(context.project.description ?? "N/A");
+    const safeTasks = sanitizeLLMArray(context.tasks.map((t) => `${t.title} (${t.status})`));
+
     const systemPrompt = `
-        You are a project assistant for the project "${context.project.title}".
-        Description: ${context.project.description || "N/A"}
+        You are a project assistant for the project "${safeTitle}".
+        Description: ${safeDescription}
         Status: ${context.project.status}
 
         Tasks:
-        ${context.tasks.map((t) => `- ${t.title} (${t.status})`).join("\n")}
+        ${safeTasks.map((t) => `- ${t}`).join("\n")}
 
         Answer the user's question accurately based on this context. Keep answers concise.
         `;
@@ -138,7 +151,7 @@ export const llmClient = {
     try {
       const response = await ai.models.generateContent({
         model: MODEL,
-        contents: systemPrompt + "\n\nUser Question: " + message,
+        contents: systemPrompt + "\n\nUser Question: " + safeMessage,
       });
       return response.text ?? "Sorry, I couldn't process your request.";
     } catch (error) {

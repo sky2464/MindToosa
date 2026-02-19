@@ -9,7 +9,7 @@ const UUIDOptionalSchema = z.string().uuid("Invalid UUID format").optional();
 export const taskService = {
   async getTasks(
     userId: string,
-    options: { spaceId?: string; date?: string; dateFrom?: string; dateTo?: string; projectId?: string; parentId?: string } = {}
+    options: { spaceId?: string; date?: string; dateFrom?: string; dateTo?: string; projectId?: string; parentId?: string; limit?: number; offset?: number } = {}
   ) {
     let query = db.from("tasks").select("*").eq("user_id", userId);
 
@@ -42,6 +42,10 @@ export const taskService = {
 
     // Exclude soft-deleted tasks from normal queries
     query = query.is("soft_deleted_at", null);
+
+    const limit = Math.min(options.limit ?? 200, 200);
+    const offset = options.offset ?? 0;
+    query = query.order("position", { ascending: true }).range(offset, offset + limit - 1);
 
     const { data, error } = await query;
     if (error) throw new AppError(error.message, "DB_ERROR");
@@ -164,9 +168,8 @@ export const taskService = {
       }
     }
 
-    // 2. Check for recurrence completion
+    // 2. Check for recurrence completion — use atomic RPC to prevent ghost tasks
     if (updates.status === "done" && currentTask.recurrence_rule) {
-      // It's a recurring task! Spawn the next one.
       const { recurrenceService } = await import("./recurrenceService");
       const lastDate = currentTask.scheduled_for ? new Date(currentTask.scheduled_for) : new Date();
       const nextDate = recurrenceService.getNextDueDate(currentTask.recurrence_rule, lastDate);
@@ -174,19 +177,25 @@ export const taskService = {
       if (nextDate) {
         const nextDateStr = nextDate.toISOString().split("T")[0];
 
-        await this.createTask(userId, {
-          title: currentTask.title,
-          space_id: currentTask.space_id,
-          project_id: currentTask.project_id,
-          goal_id: currentTask.goal_id,
-          priority: currentTask.priority,
-          estimated_minutes: currentTask.estimated_minutes,
-          micro_steps: currentTask.micro_steps,
-          recurrence_rule: currentTask.recurrence_rule,
-          parent_recurring_task_id: currentTask.parent_recurring_task_id || currentTask.id,
-          scheduled_for: nextDateStr,
-          status: "todo"
+        const { error: rpcError } = await db.rpc("complete_and_spawn", {
+          p_task_id: taskId,
+          p_user_id: userId,
+          p_next_title: currentTask.title,
+          p_next_date: nextDateStr,
+          p_space_id: currentTask.space_id,
+          p_project_id: currentTask.project_id ?? null,
+          p_goal_id: currentTask.goal_id ?? null,
+          p_priority: currentTask.priority ?? null,
+          p_estimated_minutes: currentTask.estimated_minutes ?? null,
+          p_micro_steps: currentTask.micro_steps ?? null,
+          p_recurrence_rule: currentTask.recurrence_rule,
         });
+
+        if (rpcError) throw new AppError(rpcError.message, "DB_ERROR");
+
+        // RPC already marked the task done — return the updated task
+        const { data: refreshed } = await db.from("tasks").select("*").eq("id", taskId).single();
+        return refreshed as Task;
       }
     }
 

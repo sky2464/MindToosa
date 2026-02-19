@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
 
     // Rate limiting: 20 requests per minute per user/IP
     // Using userId as key since we are authenticated
-    if (!rateLimit(userId, { limit: 20, windowMs: 60000 })) {
+    if (!(await rateLimit(userId, { limit: 20, windowMs: 60000 }))) {
         return new NextResponse("Too Many Requests", { status: 429 });
     }
 

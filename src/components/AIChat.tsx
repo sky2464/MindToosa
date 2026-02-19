@@ -94,6 +94,7 @@ export default function AIChat({ project, tasks }: { project: Project; tasks: Ta
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask AI..."
             aria-label="Chat input"
+            maxLength={1000}
             className="w-full rounded-full border border-border bg-background py-2.5 pr-10 pl-4 text-sm text-foreground focus:border-indigo-500 focus:ring-indigo-500 focus:outline-none"
           />
           <button

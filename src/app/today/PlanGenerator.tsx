@@ -216,6 +216,7 @@ export default function PlanGenerator({ spaceId }: PlanGeneratorProps) {
                                     value={constraints}
                                     onChange={(e) => setConstraints(e.target.value)}
                                     placeholder="e.g. Team meeting 2pm, School pickup 4pm"
+                                    maxLength={500}
                                     className="w-full rounded-xl border border-zinc-700 bg-zinc-900/50 px-4 py-2.5 text-sm text-white placeholder-zinc-600 outline-none transition focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30"
                                 />
                             </div>
@@ -230,6 +231,7 @@ export default function PlanGenerator({ spaceId }: PlanGeneratorProps) {
                                     onChange={(e) => setNotes(e.target.value)}
                                     placeholder="Anything else the AI should know..."
                                     rows={2}
+                                    maxLength={1000}
                                     className="w-full rounded-xl border border-zinc-700 bg-zinc-900/50 px-4 py-2.5 text-sm text-white placeholder-zinc-600 outline-none transition focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30 resize-none"
                                 />
                             </div>

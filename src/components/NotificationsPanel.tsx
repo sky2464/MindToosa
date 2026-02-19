@@ -29,9 +29,29 @@ export default function NotificationsPanel({ direction = "down" }: { direction?:
     };
 
     useEffect(() => {
-        fetchValidations();
-        const interval = setInterval(fetchValidations, 60000); // Poll every minute
-        return () => clearInterval(interval);
+        // Use SSE stream for real-time pushes; fall back to initial fetch if EventSource fails
+        const es = new EventSource("/api/notifications/stream");
+
+        es.onmessage = (event) => {
+            try {
+                const msg = JSON.parse(event.data as string);
+                if (msg.type === "notifications") {
+                    setNotifications(msg.data as Notification[]);
+                }
+            } catch {
+                // Malformed payload — ignore
+            }
+        };
+
+        es.onerror = () => {
+            // SSE failed (e.g., server restart); close and fall back to one-time fetch
+            es.close();
+            import("@/lib/apiClient").then(({ apiClient }) =>
+                apiClient.get<Notification[]>("/api/notifications").then(setNotifications).catch(console.error)
+            );
+        };
+
+        return () => es.close();
     }, []);
 
     const markAsRead = async (id: string) => {
