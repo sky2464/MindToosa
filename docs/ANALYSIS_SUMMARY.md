@@ -10,6 +10,7 @@
 | Document | Location | Scope |
 |---|---|---|
 | **This file** | `docs/ANALYSIS_SUMMARY.md` | Cross-cutting index & prioritized findings |
+| **Architecture Review R1** | `docs/arch-r1.md` | ⭐ **Confirmed bugs, security, future-proofing, full task backlog** |
 | **Frontend Analysis** | `docs/frontend-analyze.md` | Pages, components, client flows, dead code, frontend security |
 | **Backend Architecture** | `docs/backend-architecture.md` | Auth, API routes, service layer, data flows, DB schema |
 | **Inconsistencies & Gaps** | `docs/inconsistencies-and-gaps.md` | Deviations from patterns, missing infrastructure, DB issues |

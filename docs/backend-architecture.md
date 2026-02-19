@@ -805,3 +805,5 @@ DELETE /api/tasks/[id]
 - **Routes:** src/app/api/**
 - **Database:** supabase/migrations/
 - **Types:** src/core/planTypes.ts, src/core/types.ts
+
+
