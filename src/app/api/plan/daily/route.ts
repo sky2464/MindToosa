@@ -4,6 +4,7 @@ import { goalService } from "@/server/services/goalService";
 import { llmClient } from "@/server/llmClient";
 import { NextResponse } from "next/server";
 import { handleRouteError } from "@/lib/routeError";
+import { rateLimit } from "@/server/rateLimit";
 import { z } from "zod";
 
 const DailyPlanRequestSchema = z.object({
@@ -19,6 +20,10 @@ export async function POST(request: Request) {
   const userId = session?.user?.email;
   if (!userId) {
     return new NextResponse("Unauthorized", { status: 401 });
+  }
+
+  if (!(await rateLimit(userId, { limit: 10, windowMs: 60 * 60 * 1000 }))) {
+    return new NextResponse("Too Many Requests — AI plan limited to 10/hour", { status: 429 });
   }
 
   try {

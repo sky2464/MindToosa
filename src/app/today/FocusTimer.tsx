@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/apiClient";
 import { useToast } from "@/hooks/useToast";
 import { ToastContainer } from "@/components/ui/ToastContainer";
+import SVGVisualizer from "./SVGVisualizer";
 
 interface FocusTimerProps {
   activeTaskId?: string;
@@ -145,6 +146,12 @@ export default function FocusTimer({ activeTaskId, onComplete }: FocusTimerProps
           ))}
         </div>
       )}
+
+      {/* SVG Visualizer (Nano Banana Pro + Gemini 3.1 SVGs) */}
+      <SVGVisualizer
+        mode={mode}
+        progress={selectedMinutes > 0 ? ((selectedMinutes * 60) - timeLeft) / (selectedMinutes * 60) : 0}
+      />
 
       <div
         className={`font-mono text-6xl font-black tracking-tight transition-colors duration-500 ${isActive ? "text-indigo-400 drop-shadow-[0_0_15px_rgba(99,102,241,0.5)]" : "text-zinc-600"}`}
