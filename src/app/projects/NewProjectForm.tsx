@@ -48,8 +48,9 @@ export default function NewProjectForm({ spaceId }: { spaceId: string }) {
       <form action={handleSubmit} className="space-y-4">
         <input type="hidden" name="spaceId" value={spaceId} />
         <div>
-          <label className="mb-1 block text-xs font-medium text-muted-foreground">Title</label>
+          <label htmlFor="title" className="mb-1 block text-xs font-medium text-muted-foreground">Title</label>
           <input
+            id="title"
             name="title"
             required
             placeholder="e.g. Website Redesign"
@@ -58,11 +59,22 @@ export default function NewProjectForm({ spaceId }: { spaceId: string }) {
           />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-muted-foreground">Description</label>
+          <label htmlFor="description" className="mb-1 block text-xs font-medium text-muted-foreground">Description</label>
           <textarea
+            id="description"
             name="description"
             rows={2}
             placeholder="Brief goal..."
+            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-zinc-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+          />
+        </div>
+        <div>
+          <label htmlFor="scope" className="mb-1 block text-xs font-medium text-muted-foreground">Scope (Context for AI Breakdown)</label>
+          <textarea
+            id="scope"
+            name="scope"
+            rows={3}
+            placeholder="e.g. Needs frontend refactor, new API endpoints, full test coverage..."
             className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-zinc-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
           />
         </div>

@@ -9,6 +9,7 @@ import { llmClient } from "@/server/llmClient";
 const CreateProjectSchema = z.object({
   title: z.string().min(1),
   description: z.string().optional(),
+  scope: z.string().optional(),
   spaceId: z.string().uuid(),
 });
 
@@ -23,6 +24,7 @@ export async function createProjectAction(formData: FormData) {
 
   const title = formData.get("title") as string;
   const description = formData.get("description") as string;
+  const scope = formData.get("scope") as string;
   const spaceId = formData.get("spaceId") as string;
 
   if (!title || !spaceId) {
@@ -32,6 +34,7 @@ export async function createProjectAction(formData: FormData) {
   await projectService.createProject(userId, {
     title,
     description,
+    scope,
     space_id: spaceId,
     status: "active",
   });
