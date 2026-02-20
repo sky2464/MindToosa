@@ -3,6 +3,7 @@ import { taskService } from "@/server/services/taskService";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { handleRouteError } from "@/lib/routeError";
+import { jsonEnvelope } from "@/lib/apiEnvelope";
 
 const TrashActionSchema = z.object({
   taskId: z.string().uuid(),
@@ -16,7 +17,7 @@ export async function GET() {
 
   try {
     const tasks = await taskService.getDeletedTasks(userId);
-    return NextResponse.json(tasks);
+    return jsonEnvelope(tasks);
   } catch (error: unknown) {
     return handleRouteError(error);
   }

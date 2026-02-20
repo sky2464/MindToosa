@@ -2,6 +2,7 @@ import { auth } from "@auth";
 import { notificationService } from "@/server/services/notificationService";
 import { NextResponse } from "next/server";
 import { handleRouteError } from "@/lib/routeError";
+import { jsonEnvelope } from "@/lib/apiEnvelope";
 
 export async function GET() {
     const session = await auth();
@@ -10,7 +11,7 @@ export async function GET() {
 
     try {
         const notifications = await notificationService.getUnread(userId);
-        return NextResponse.json(notifications);
+        return jsonEnvelope(notifications);
     } catch (error: unknown) {
         return handleRouteError(error);
     }

@@ -37,7 +37,7 @@ describe('Search API Route', () => {
 
     it('should return 429 if rate limited', async () => {
         (auth as any).mockResolvedValue({ user: { email: 'test@example.com' } });
-        (rateLimit as any).mockReturnValue(false); // Rate limit exceeded
+        (rateLimit as any).mockResolvedValue(false); // Rate limit exceeded
 
         const req = new NextRequest('http://localhost/api/search?q=test');
         const res = await GET(req);
@@ -47,15 +47,17 @@ describe('Search API Route', () => {
 
     it('should return search results on success', async () => {
         (auth as any).mockResolvedValue({ user: { email: 'test@example.com' } });
-        (rateLimit as any).mockReturnValue(true);
-        (searchService.search as any).mockResolvedValue({ tasks: [], projects: [] });
+        (rateLimit as any).mockResolvedValue(true);
+        (searchService.search as any).mockResolvedValue([]);
 
         const req = new NextRequest('http://localhost/api/search?q=test');
         const res = await GET(req);
 
         expect(res.status).toBe(200);
-        const data = await res.json();
-        expect(data).toEqual({ tasks: [], projects: [] });
+        const body = await res.json();
+        // Response is now wrapped in the API envelope
+        expect(body.__envelope).toBe(true);
+        expect(Array.isArray(body.data)).toBe(true);
     });
 
     it('should handle service errors gracefully', async () => {

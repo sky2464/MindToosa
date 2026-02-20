@@ -2,23 +2,15 @@ import { auth } from "@auth";
 import { NextResponse } from "next/server";
 import { gamificationService } from "@/server/services/gamificationService";
 import { handleRouteError } from "@/lib/routeError";
+import { jsonEnvelope } from "@/lib/apiEnvelope";
 
 export async function GET() {
   const session = await auth();
-
-  // v5 session.user might have different shape, typically it has email/name/image.
-  // If we need ID, we might need to check how it's stored.
-  // For now assuming email is the key as used elsewhere in the app (projectService).
-  if (!session?.user?.email) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  if (!session?.user?.email) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
-    // Warning: gamificationService.getStats likely expects an ID, but we are using email as user_id in other places.
-    // We should double check what logic is used for user identification.
-    // In projectService we used email. Let's assume email is the consistent ID.
     const stats = await gamificationService.getStats(session.user.email);
-    return NextResponse.json(stats);
+    return jsonEnvelope(stats);
   } catch (error: unknown) {
     return handleRouteError(error);
   }

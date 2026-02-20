@@ -35,6 +35,13 @@ const envSchema = z.object({
   // Optional: Auth URL (defaults to localhost in development)
   AUTH_URL: z.preprocess(emptyToUndefined, z.string().url("AUTH_URL must be a valid URL").optional()),
 
+  // Optional: Upstash Redis for production rate limiting (falls back to in-memory when absent)
+  UPSTASH_REDIS_REST_URL: z.preprocess(emptyToUndefined, z.string().url().optional()),
+  UPSTASH_REDIS_REST_TOKEN: z.preprocess(emptyToUndefined, z.string().min(1).optional()),
+
+  // Optional: Vercel Cron secret (protects /api/cron/* routes)
+  CRON_SECRET: z.preprocess(emptyToUndefined, z.string().min(16).optional()),
+
   // Node environment
   NODE_ENV: z.enum(["development", "production", "test"]).optional().default("development"),
 });
@@ -52,6 +59,9 @@ function getEnv() {
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
     AUTH_URL: process.env.AUTH_URL,
+    UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
+    UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
+    CRON_SECRET: process.env.CRON_SECRET,
     NODE_ENV: process.env.NODE_ENV,
   };
 

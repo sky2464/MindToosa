@@ -2,6 +2,8 @@ import { auth } from "@auth";
 import { NextResponse } from "next/server";
 import { labelService } from "@/server/services/labelService";
 import { z } from "zod";
+import { handleRouteError } from "@/lib/routeError";
+import { jsonEnvelope } from "@/lib/apiEnvelope";
 
 const LabelCreateSchema = z.object({
     name: z.string().min(1, "Label name is required"),
@@ -15,10 +17,9 @@ export async function GET() {
 
     try {
         const labels = await labelService.getLabels(userId);
-        return NextResponse.json(labels);
+        return jsonEnvelope(labels);
     } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : "Failed to fetch labels";
-        return NextResponse.json({ error: message }, { status: 500 });
+        return handleRouteError(error);
     }
 }
 
@@ -41,7 +42,6 @@ export async function POST(req: Request) {
         const label = await labelService.createLabel(userId, parsed.data.name, parsed.data.color);
         return NextResponse.json(label, { status: 201 });
     } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : "Failed to create label";
-        return NextResponse.json({ error: message }, { status: 500 });
+        return handleRouteError(error);
     }
 }

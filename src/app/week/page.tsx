@@ -2,7 +2,7 @@ import { auth } from "@auth";
 import { redirect } from "next/navigation";
 import { taskService } from "@/server/services/taskService";
 import { spaceService } from "@/server/services/spaceService";
-import { Calendar, ChevronRight } from "lucide-react";
+import { Calendar, ChevronRight, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import WeekCarryForward from "./WeekCarryForward";
 
@@ -139,11 +139,19 @@ export default async function WeekPage() {
                                             className="rounded-lg border border-zinc-800 bg-zinc-900/60 px-2.5 py-1.5"
                                         >
                                             <p className="line-clamp-2 text-xs text-zinc-300">{task.title}</p>
-                                            {task.priority === "must_do" && (
-                                                <span className="mt-1 inline-block rounded-full bg-red-500/10 px-1.5 py-0.5 text-[9px] font-bold text-red-400 uppercase">
-                                                    Must-do
-                                                </span>
-                                            )}
+                                            <div className="mt-1 flex flex-wrap items-center gap-1">
+                                                {task.priority === "must_do" && (
+                                                    <span className="inline-block rounded-full bg-red-500/10 px-1.5 py-0.5 text-[9px] font-bold text-red-400 uppercase">
+                                                        Must-do
+                                                    </span>
+                                                )}
+                                                {task.series_id && (
+                                                    <span className="inline-flex items-center gap-0.5 rounded-full bg-indigo-500/10 px-1.5 py-0.5 text-[9px] text-indigo-400" title="Recurring task">
+                                                        <RefreshCw size={8} />
+                                                        Recurring
+                                                    </span>
+                                                )}
+                                            </div>
                                         </div>
                                     ))}
                                     {doneTasks.length > 0 && (

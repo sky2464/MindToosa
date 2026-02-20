@@ -12,6 +12,10 @@ const mockOrder = vi.fn();
 const mockSingle = vi.fn();
 const mockGte = vi.fn();
 const mockLte = vi.fn();
+const mockIs = vi.fn();
+const mockRange = vi.fn();
+const mockNot = vi.fn();
+const mockIn = vi.fn();
 
 const mockChain = {
     select: mockSelect,
@@ -23,6 +27,10 @@ const mockChain = {
     single: mockSingle,
     gte: mockGte,
     lte: mockLte,
+    is: mockIs,
+    range: mockRange,
+    not: mockNot,
+    in: mockIn,
 } as any;
 
 // Setup chainable returns
@@ -35,6 +43,10 @@ mockOrder.mockReturnValue(mockChain);
 mockSingle.mockReturnValue(mockChain);
 mockGte.mockReturnValue(mockChain);
 mockLte.mockReturnValue(mockChain);
+mockIs.mockReturnValue(mockChain);
+mockRange.mockReturnValue(mockChain);
+mockNot.mockReturnValue(mockChain);
+mockIn.mockReturnValue(mockChain);
 
 vi.mock('@/server/db', () => ({
     db: {
@@ -58,6 +70,10 @@ describe('taskService', () => {
         mockSingle.mockReturnValue(mockChain);
         mockGte.mockReturnValue(mockChain);
         mockLte.mockReturnValue(mockChain);
+        mockIs.mockReturnValue(mockChain);
+        mockRange.mockReturnValue(mockChain);
+        mockNot.mockReturnValue(mockChain);
+        mockIn.mockReturnValue(mockChain);
     });
 
     describe('getTasks', () => {
@@ -77,7 +93,10 @@ describe('taskService', () => {
 
             const thenableChain = {
                 ...mockChain,
-                then: (resolve: any) => resolve({ data: mockTasks, error: null })
+                is: vi.fn().mockReturnThis(),
+                range: vi.fn().mockReturnThis(),
+                then: (resolve: (v: { data: typeof mockTasks; error: null }) => void) =>
+                    resolve({ data: mockTasks, error: null }),
             };
 
             // We need `db.from` to return this thenable chain eventually or the specific filter methods to return it.
@@ -86,6 +105,8 @@ describe('taskService', () => {
             mockEq.mockReturnValue(thenableChain);
             mockGte.mockReturnValue(thenableChain);
             mockLte.mockReturnValue(thenableChain);
+            mockIs.mockReturnValue(thenableChain);
+            mockOrder.mockReturnValue(thenableChain);
 
             const result = await taskService.getTasks(userId, { spaceId });
             expect(result).toEqual(mockTasks);
