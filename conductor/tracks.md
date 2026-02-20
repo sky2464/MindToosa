@@ -4,6 +4,6 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 ---
 
-## [ ] Track: AI-Powered Project Management and Break-Down
+## [~] Track: AI-Powered Project Management and Break-Down
 
 _Link: [./conductor/tracks/ai_project_management_20260219/](./conductor/tracks/ai_project_management_20260219/)_

@@ -73,7 +73,7 @@ describe('projectService', () => {
 
     describe('createProject', () => {
         it('should create project successfully', async () => {
-            const projectData = { title: 'New Project', space_id: spaceId };
+            const projectData = { title: 'New Project', space_id: spaceId, scope: 'Build an AI tool' };
             const createdProject = { id: projectId, ...projectData, user_id: userId };
 
             mockSingle.mockResolvedValueOnce({ data: createdProject, error: null });

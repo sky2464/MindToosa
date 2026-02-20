@@ -28,6 +28,7 @@ export const ProjectSchema = z.object({
   space_id: z.string().uuid(),
   title: z.string().min(1),
   description: z.string().optional(),
+  scope: z.string().optional(),
   status: z.enum(["active", "completed", "on_hold"]).default("active"),
   due_date: z.string().date().optional(), // YYYY-MM-DD
   created_at: z.date().optional(),
