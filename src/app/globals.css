@@ -1,5 +1,19 @@
 @import "tailwindcss";
 
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+  }
+  @supports (scrollbar-width: none) {
+    .no-scrollbar {
+      scrollbar-width: none; /* Firefox */
+    }
+  }
+}
+
 :root {
   /* Midnight Glass Palette */
   --background: #09090b; /* zinc-950 */

@@ -16,7 +16,7 @@ export default async function SpacesPage() {
     const archivedSpaces = spaces.filter((s) => s.archived);
 
     return (
-        <div className="min-h-screen p-6 pb-24 max-w-3xl mx-auto md:ml-20">
+        <div className="min-h-screen p-4 sm:p-6 lg:p-8 pb-24 max-w-4xl mx-auto">
             <header className="mb-10 space-y-1">
                 <Link href="/" className="group mb-4 flex items-center gap-2 text-zinc-500 transition hover:text-white text-sm">
                     ← Back

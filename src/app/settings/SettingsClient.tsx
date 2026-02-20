@@ -63,7 +63,7 @@ export default function SettingsClient({ userEmail }: SettingsClientProps) {
     };
 
     return (
-        <div className="mx-auto min-h-screen max-w-2xl p-6 pb-24 md:ml-20">
+        <div className="mx-auto min-h-screen max-w-2xl p-4 sm:p-6 lg:p-8 pb-24">
             <header className="mb-10">
                 <h1 className="text-4xl font-black tracking-tight text-white">Settings</h1>
                 <p className="mt-1 text-zinc-500">Manage your account and preferences.</p>
@@ -108,7 +108,6 @@ export default function SettingsClient({ userEmail }: SettingsClientProps) {
                                     <button
                                         key={t}
                                         onClick={() => setSettings(prev => ({ ...prev, theme: t }))}
-                                        aria-pressed={settings.theme === t}
                                         className={`flex-1 py-1.5 rounded-lg text-sm font-medium transition-all ${settings.theme === t ? "bg-indigo-600 text-white shadow-lg" : "text-zinc-400 hover:text-white"
                                             }`}
                                     >

@@ -21,7 +21,7 @@ export default async function ProjectsPage() {
   );
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8 p-6 md:ml-20">
+    <div className="mx-auto max-w-5xl space-y-8 p-4 sm:p-6 lg:p-8">
       <header className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Projects</h1>

@@ -277,16 +277,16 @@ export default function TaskEditModal({ task, onClose }: TaskEditModalProps) {
 
     return (
         <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/70 backdrop-blur-sm"
             onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
         >
-            <div className="w-full max-w-lg rounded-3xl border border-white/10 bg-zinc-950 shadow-2xl shadow-indigo-500/10 max-h-[85vh] flex flex-col">
+            <div className="w-full max-w-lg rounded-2xl sm:rounded-3xl border border-white/10 bg-zinc-950 shadow-2xl shadow-indigo-500/10 max-h-[90vh] sm:max-h-[85vh] flex flex-col">
                 {/* Header */}
-                <div className="flex items-center justify-between border-b border-white/5 px-6 py-4 shrink-0">
-                    <h2 className="font-bold text-white">Edit Task (Recurrence Added)</h2>
+                <div className="flex items-center justify-between border-b border-white/5 px-4 sm:px-6 py-3 sm:py-4 shrink-0">
+                    <h2 className="font-bold text-white text-sm sm:text-base">Edit Task (Recurrence Added)</h2>
                     <button
                         onClick={onClose}
-                        className="rounded-lg p-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300 transition-colors"
+                        className="rounded-lg p-2 sm:p-1.5 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300 transition-colors"
                         aria-label="Close edit modal"
                         title="Close"
                     >
@@ -312,7 +312,7 @@ export default function TaskEditModal({ task, onClose }: TaskEditModalProps) {
                 </div>
 
                 {/* Tab Content (scrollable) */}
-                <div className="overflow-y-auto flex-1 p-6">
+                <div className="overflow-y-auto flex-1 p-4 sm:p-6 pb-24 sm:pb-6">
                     {activeTab === "details" && (
                         <div className="space-y-5">
                             {/* Title */}
@@ -396,7 +396,7 @@ export default function TaskEditModal({ task, onClose }: TaskEditModalProps) {
                             <div className="flex items-center gap-2">
                                 <button
                                     onClick={() => setSubtasksExpanded(!subtasksExpanded)}
-                                    className="text-zinc-500 hover:text-zinc-300"
+                                    className="p-1 sm:p-0 text-zinc-500 hover:text-zinc-300"
                                     aria-label="Toggle subtasks"
                                 >
                                     {subtasksExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
@@ -622,7 +622,7 @@ export default function TaskEditModal({ task, onClose }: TaskEditModalProps) {
                 </div>
 
                 {/* Footer — always visible */}
-                <div className="border-t border-white/5 px-6 py-4 shrink-0">
+                <div className="fixed sm:static bottom-0 left-0 right-0 bg-zinc-950/95 sm:bg-transparent backdrop-blur-xl sm:backdrop-blur-none border-t border-white/5 px-4 sm:px-6 py-3 sm:py-4 shrink-0 mt-auto">
                     {error && (
                         <div className="mb-3 flex items-center gap-2 rounded-xl border border-red-500/20 bg-red-500/5 px-4 py-3 text-sm text-red-400">
                             <AlertCircle size={16} />
@@ -669,6 +669,6 @@ export default function TaskEditModal({ task, onClose }: TaskEditModalProps) {
                 onConfirm={handleDelete}
                 onCancel={() => setShowDeleteConfirm(false)}
             />
-        </div>
+        </div >
     );
 }

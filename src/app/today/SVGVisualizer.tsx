@@ -14,27 +14,27 @@ export default function SVGVisualizer({ mode, progress }: SVGVisualizerProps) {
             case "running":
                 return {
                     stroke: "#818cf8", // indigo-400
-                    pulseDuration: "4s",
-                    rotateDuration: "20s",
+                    pulseClass: "animate-[breathe_4s_ease-in-out_infinite]",
+                    rotateClass: "animate-[spin_20s_linear_infinite]",
                 };
             case "paused":
                 return {
                     stroke: "#a1a1aa", // zinc-400
-                    pulseDuration: "0s", // static
-                    rotateDuration: "0s",
+                    pulseClass: "",
+                    rotateClass: "",
                 };
             case "completed":
                 return {
                     stroke: "#34d399", // emerald-400
-                    pulseDuration: "2s",
-                    rotateDuration: "10s",
+                    pulseClass: "animate-[breathe_2s_ease-in-out_infinite]",
+                    rotateClass: "animate-[spin_10s_linear_infinite]",
                 };
             case "idle":
             default:
                 return {
                     stroke: "#52525b", // zinc-600
-                    pulseDuration: "0s",
-                    rotateDuration: "0s",
+                    pulseClass: "",
+                    rotateClass: "",
                 };
         }
     };
@@ -89,10 +89,7 @@ export default function SVGVisualizer({ mode, progress }: SVGVisualizerProps) {
 
                 {/* Outer Orbiting Particles (only run when active) */}
                 {mode === "running" && (
-                    <g
-                        className="origin-center animate-[spin_var(--rotate-dur)_linear_infinite]"
-                        style={{ "--rotate-dur": animProps.rotateDuration } as React.CSSProperties}
-                    >
+                    <g className={`origin-center ${animProps.rotateClass}`}>
                         <circle cx="150" cy="15" r="3" fill="#818cf8" filter="url(#glow)" />
                         <circle cx="285" cy="150" r="2" fill="#818cf8" opacity="0.6" />
                         <circle cx="15" cy="150" r="4" fill="#818cf8" opacity="0.8" />
@@ -106,8 +103,7 @@ export default function SVGVisualizer({ mode, progress }: SVGVisualizerProps) {
                     stroke={animProps.stroke}
                     strokeWidth="1"
                     opacity="0.2"
-                    className={`origin-center ${mode !== 'idle' && mode !== 'paused' ? 'animate-[breathe_var(--pulse-dur)_ease-in-out_infinite]' : ''}`}
-                    style={{ "--pulse-dur": animProps.pulseDuration } as React.CSSProperties}
+                    className={`origin-center ${mode !== 'idle' && mode !== 'paused' ? animProps.pulseClass : ''}`}
                 />
 
                 <style>

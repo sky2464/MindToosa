@@ -185,7 +185,7 @@ export default function FlowBoard({ tasks: initialTasks }: FlowBoardProps) {
           </div>
 
           <div
-            className={`group relative w-full ${zenMode ? "aspect-video" : "aspect-[4/3]"} glass-card rounded-3xl p-1 transition-all duration-500`}
+            className={`group relative w-full ${zenMode ? "aspect-video" : "aspect-square sm:aspect-[4/3]"} glass-card rounded-3xl p-1 transition-all duration-500`}
           >
             {/* Glow Effect */}
             <div className="absolute -inset-0.5 rounded-3xl bg-gradient-to-r from-indigo-500/20 to-violet-500/20 opacity-30 blur transition duration-1000 group-hover:opacity-50"></div>

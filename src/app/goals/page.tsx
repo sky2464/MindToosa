@@ -29,7 +29,7 @@ export default async function GoalsPage({
     const goals = await goalService.getGoals(userId, { archived: isArchivedView });
 
     return (
-        <div className="min-h-screen p-6 pb-24 max-w-5xl mx-auto md:ml-20">
+        <div className="min-h-screen p-4 sm:p-6 lg:p-8 pb-24 max-w-5xl mx-auto">
             <header className="mb-12 flex items-center justify-between">
                 <div className="space-y-1">
                     <Link href="/" className="group mb-4 flex items-center gap-2 text-zinc-500 transition hover:text-white">
