@@ -36,7 +36,7 @@ export function ContactCard({ icon: Icon, title, description, href, external, ar
       href={href}
       target={external ? "_blank" : undefined}
       rel={external ? "noopener noreferrer" : undefined}
-      className="p-6 bg-card border border-border rounded-lg hover:border-primary hover:bg-secondary transition-colors group"
+      className="block p-6 bg-card border border-border rounded-lg hover:border-primary hover:bg-secondary transition-colors group"
       aria-label={ariaLabel || title}
     >
       {content}

@@ -44,6 +44,9 @@ const envSchema = z.object({
 
   // Node environment
   NODE_ENV: z.enum(["development", "production", "test"]).optional().default("development"),
+
+  // Test Backdoor (ONLY USE IN DEV/TESTING)
+  PLAYWRIGHT_TEST_BACKDOOR_SECRET: z.preprocess(emptyToUndefined, z.string().min(8).optional()),
 });
 
 /**
@@ -63,6 +66,7 @@ function getEnv() {
     UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
     CRON_SECRET: process.env.CRON_SECRET,
     NODE_ENV: process.env.NODE_ENV,
+    PLAYWRIGHT_TEST_BACKDOOR_SECRET: process.env.PLAYWRIGHT_TEST_BACKDOOR_SECRET,
   };
 
   if (process.env.SKIP_ENV_VALIDATION === "true") {

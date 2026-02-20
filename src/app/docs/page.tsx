@@ -8,8 +8,8 @@ export const metadata: Metadata = {
 
 export default function DocsPage() {
   return (
-    <main className="min-h-screen bg-background px-4 py-8 md:px-8 md:ml-16">
-      <div className="max-w-4xl">
+    <div className="mx-auto max-w-4xl px-4 py-8 md:px-8">
+      <div>
         <h1 className="mb-2 text-4xl font-bold text-foreground">Documentation</h1>
         <p className="mb-12 text-muted-foreground">Detailed guides and documentation for every feature in MindToosa.</p>
 
@@ -119,20 +119,20 @@ export default function DocsPage() {
         <DocSection title="Tips &amp; Best Practices" id="tips">
           <h4 className="font-semibold text-foreground">Daily Ritual</h4>
           <p>Start each day by reviewing your tasks and identifying your top 3. This sets intention and reduces decision fatigue.</p>
-          
+
           <h4 className="font-semibold text-foreground mt-4">Weekly Planning</h4>
           <p>Spend 15 minutes every Sunday reviewing goals, planning the week, and ensuring work aligns with priorities.</p>
-          
+
           <h4 className="font-semibold text-foreground mt-4">Batch Similar Work</h4>
           <p>Use Spaces to group related tasks. Then filter by Space to focus on one context, reducing context switching overhead.</p>
-          
+
           <h4 className="font-semibold text-foreground mt-4">Build Focus Streaks</h4>
           <p>Consistency matters. Aim for at least one focus session every day. The streak counter provides motivation and accountability.</p>
-          
+
           <h4 className="font-semibold text-foreground mt-4">Archive Completed Work</h4>
           <p>Keep your views clean by archiving completed tasks. This maintains focus on what's current and important.</p>
         </DocSection>
       </div>
-    </main>
+    </div>
   );
 }
