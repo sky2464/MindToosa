@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ArrowRight, Layout, Zap, Target } from "lucide-react";
+import { ArrowRight, Zap, Target } from "lucide-react";
+import SignInButton from "@/components/SignInButton";
 
 export default function Home() {
   return (
@@ -38,12 +39,7 @@ export default function Home() {
         </div>
 
         <div className="border-t border-white/5 pt-8">
-          <Link
-            href="/api/auth/signin"
-            className="text-xs font-semibold tracking-widest text-zinc-600 uppercase transition hover:text-zinc-400"
-          >
-            Sign In with Google
-          </Link>
+          <SignInButton />
         </div>
       </div>
     </div>
