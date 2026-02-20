@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Task } from "@/core/planTypes";
 import { useRouter } from "next/navigation";
 import {
@@ -22,6 +22,10 @@ interface FlowBoardProps {
 
 export default function FlowBoard({ tasks: initialTasks }: FlowBoardProps) {
   const [tasks, setTasks] = useState(initialTasks);
+
+  useEffect(() => {
+    setTasks(initialTasks);
+  }, [initialTasks]);
   const router = useRouter();
   const [dragTaskId, setDragTaskId] = useState<string | null>(null);
   const [zenMode, setZenMode] = useState(false);
