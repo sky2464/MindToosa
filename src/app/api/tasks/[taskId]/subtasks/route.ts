@@ -2,6 +2,7 @@ import { auth } from "@auth";
 import { taskService } from "@/server/services/taskService";
 import { NextResponse } from "next/server";
 import { handleRouteError } from "@/lib/routeError";
+import { jsonEnvelope } from "@/lib/apiEnvelope";
 
 export async function GET(
   _req: Request,
@@ -14,7 +15,7 @@ export async function GET(
   try {
     const { taskId } = await params;
     const subtasks = await taskService.getTasks(userId, { parentId: taskId });
-    return NextResponse.json(subtasks);
+    return jsonEnvelope(subtasks);
   } catch (error: unknown) {
     return handleRouteError(error);
   }

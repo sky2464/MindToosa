@@ -23,8 +23,8 @@ export default function NotificationsPanel({ direction = "down" }: { direction?:
             const { apiClient } = await import("@/lib/apiClient");
             const data = await apiClient.get<Notification[]>("/api/notifications");
             setNotifications(data);
-        } catch (e) {
-            console.error(e);
+        } catch {
+            // Non-critical — notifications silently unavailable
         }
     };
 
@@ -47,7 +47,9 @@ export default function NotificationsPanel({ direction = "down" }: { direction?:
             // SSE failed (e.g., server restart); close and fall back to one-time fetch
             es.close();
             import("@/lib/apiClient").then(({ apiClient }) =>
-                apiClient.get<Notification[]>("/api/notifications").then(setNotifications).catch(console.error)
+                apiClient.get<Notification[]>("/api/notifications").then(setNotifications).catch(() => {
+                    // Fallback also failed — notifications unavailable
+                })
             );
         };
 
@@ -59,8 +61,8 @@ export default function NotificationsPanel({ direction = "down" }: { direction?:
             const { apiClient } = await import("@/lib/apiClient");
             await apiClient.patch("/api/notifications", { action: "mark_read", id });
             setNotifications(prev => prev.filter(n => n.id !== id));
-        } catch (e) {
-            console.error(e);
+        } catch {
+            // Optimistic UI already updated — silently ignore
         }
     };
 
@@ -69,8 +71,8 @@ export default function NotificationsPanel({ direction = "down" }: { direction?:
             const { apiClient } = await import("@/lib/apiClient");
             await apiClient.patch("/api/notifications", { action: "mark_all_read" });
             setNotifications([]);
-        } catch (e) {
-            console.error(e);
+        } catch {
+            // Optimistic UI already updated — silently ignore
         }
     };
 

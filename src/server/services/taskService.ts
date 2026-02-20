@@ -3,6 +3,15 @@ import { Task, TaskSchema } from "@/core/planTypes";
 import { z } from "zod";
 import { AppError, ValidationError, AuthError } from "@/lib/errors";
 
+interface BlockerRow {
+  blocking_task: Array<{ status: string }>;
+}
+
+interface DependencyRow {
+  blocking_task_id: string;
+  blocking_task: Task[];
+}
+
 const UUIDSchema = z.string().uuid("Invalid UUID format");
 const UUIDOptionalSchema = z.string().uuid("Invalid UUID format").optional();
 
@@ -173,7 +182,7 @@ export const taskService = {
             `)
         .eq("task_id", taskId);
 
-      const hasOpenBlockers = blockers?.some((d: any) => d.blocking_task?.status !== "done");
+      const hasOpenBlockers = blockers?.some((d: BlockerRow) => d.blocking_task[0]?.status !== "done");
       if (hasOpenBlockers) {
         throw new ValidationError("Cannot complete task: Waiting on dependencies.");
       }
@@ -296,7 +305,7 @@ export const taskService = {
 
     if (error) throw new AppError(error.message, "DB_ERROR");
     // Flatten result
-    return data.map((d: any) => d.blocking_task) as Task[];
+    return data.map((d: DependencyRow) => d.blocking_task[0]).filter((t): t is Task => Boolean(t));
   },
 
   async addDependency(userId: string, taskId: string, blockingTaskId: string) {

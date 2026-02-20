@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Sparkles, Loader2, X, CheckCircle2, AlertCircle, Zap, Battery, BatteryLow, BatteryMedium } from "lucide-react";
 import { Task } from "@/core/planTypes";
+import { apiClient } from "@/lib/apiClient";
 
 interface PlanGeneratorProps {
     spaceId: string;
@@ -45,24 +46,14 @@ export default function PlanGenerator({ spaceId }: PlanGeneratorProps) {
         setError("");
         setPlan(null);
         try {
-            const res = await fetch("/api/plan/daily", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    timeAvailable,
-                    constraints: constraints ? constraints.split(",").map((s) => s.trim()) : [],
-                    notes: notes + (rebootMode ? ` [REBOOT MODE: energy=${energyLevel}]` : ` [energy=${energyLevel}]`),
-                }),
+            const data = await apiClient.post<GeneratedPlan>("/api/plan/daily", {
+                timeAvailable,
+                constraints: constraints ? constraints.split(",").map((s) => s.trim()) : [],
+                notes: notes + (rebootMode ? ` [REBOOT MODE: energy=${energyLevel}]` : ` [energy=${energyLevel}]`),
             });
-            if (!res.ok) {
-                const data = await res.json();
-                setError(data.error || "Failed to generate plan");
-                return;
-            }
-            const data = await res.json();
             setPlan(data);
-        } catch {
-            setError("Network error. Please try again.");
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Failed to generate plan");
         } finally {
             setLoading(false);
         }
@@ -72,24 +63,14 @@ export default function PlanGenerator({ spaceId }: PlanGeneratorProps) {
         if (!plan) return;
         setApplying(true);
         try {
-            // Inject spaceId into tasks that don't have one
             const withSpace = (tasks: Task[]) =>
                 tasks.map((t) => ({ ...t, space_id: t.space_id || spaceId }));
 
-            const res = await fetch("/api/plan/apply", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    ...plan,
-                    mustDo: withSpace(plan.mustDo),
-                    optional: withSpace(plan.optional),
-                }),
+            await apiClient.post("/api/plan/apply", {
+                ...plan,
+                mustDo: withSpace(plan.mustDo),
+                optional: withSpace(plan.optional),
             });
-            if (!res.ok) {
-                const data = await res.json();
-                setError(data.error || "Failed to apply plan");
-                return;
-            }
             setApplied(true);
             router.refresh();
             setTimeout(() => {
@@ -97,8 +78,8 @@ export default function PlanGenerator({ spaceId }: PlanGeneratorProps) {
                 setApplied(false);
                 setPlan(null);
             }, 1500);
-        } catch {
-            setError("Network error. Please try again.");
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Failed to apply plan");
         } finally {
             setApplying(false);
         }

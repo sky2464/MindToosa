@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Loader2 } from "lucide-react";
+import { apiClient } from "@/lib/apiClient";
 
 const PRESET_SPACES = ["Work", "Personal", "Family & Friends"];
 
@@ -16,20 +17,11 @@ export default function SpaceForm() {
         setLoading(true);
         setError("");
         try {
-            const res = await fetch("/api/spaces", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name: spaceName }),
-            });
-            if (!res.ok) {
-                const data = await res.json();
-                setError(data.error || "Failed to create space");
-            } else {
-                setName("");
-                router.refresh();
-            }
-        } catch {
-            setError("Network error");
+            await apiClient.post("/api/spaces", { name: spaceName });
+            setName("");
+            router.refresh();
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Failed to create space");
         } finally {
             setLoading(false);
         }

@@ -102,9 +102,8 @@ export default function FlowBoard({ tasks: initialTasks }: FlowBoardProps) {
         );
       }
       router.refresh();
-    } catch (error) {
+    } catch {
       setReorderError("Failed to save new order. Please refresh.");
-      void error;
     }
   };
 

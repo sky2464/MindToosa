@@ -106,15 +106,11 @@ export default function FocusTimer({ activeTaskId, onComplete }: FocusTimerProps
     if (!activeTaskId) return;
     setMarkingDone(true);
     try {
-      await fetch(`/api/tasks/${activeTaskId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "done" }),
-      });
+      await apiClient.patch(`/api/tasks/${activeTaskId}`, { status: "done" });
       router.refresh();
       resetTimer();
-    } catch (error) {
-      console.error("Failed to mark task done:", error);
+    } catch {
+      addToast("Failed to mark task done. Please try again.", "error");
     } finally {
       setMarkingDone(false);
     }

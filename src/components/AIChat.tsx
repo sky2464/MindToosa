@@ -41,8 +41,7 @@ export default function AIChat({ project, tasks }: { project: Project; tasks: Ta
     try {
       const response = await chatWithProjectAction(project.id!, userMsg);
       setMessages((prev) => [...prev, { id: crypto.randomUUID(), role: "assistant", content: response }]);
-    } catch (error) {
-      console.error(error);
+    } catch {
       setMessages((prev) => [
         ...prev,
         { id: crypto.randomUUID(), role: "assistant", content: "Sorry, I encountered an error. Please try again." },

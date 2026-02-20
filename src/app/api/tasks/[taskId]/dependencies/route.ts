@@ -3,6 +3,7 @@ import { taskService } from "@/server/services/taskService";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { handleRouteError } from "@/lib/routeError";
+import { jsonEnvelope } from "@/lib/apiEnvelope";
 
 const DependencySchema = z.object({
   blocking_task_id: z.string().uuid("Invalid blocking task ID"),
@@ -19,7 +20,7 @@ export async function GET(
   try {
     const { taskId } = await params;
     const dependencies = await taskService.getDependencies(userId, taskId);
-    return NextResponse.json(dependencies);
+    return jsonEnvelope(dependencies);
   } catch (error: unknown) {
     return handleRouteError(error);
   }
