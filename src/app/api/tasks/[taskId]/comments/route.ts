@@ -3,9 +3,10 @@ import { taskService } from "@/server/services/taskService";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { handleRouteError } from "@/lib/routeError";
+import { jsonEnvelope } from "@/lib/apiEnvelope";
 
 const CommentCreateSchema = z.object({
-    content: z.string().min(1, "Comment cannot be empty"),
+    content: z.string().min(1, "Comment cannot be empty").max(2000),
 });
 
 export async function GET(
@@ -20,7 +21,7 @@ export async function GET(
 
     try {
         const comments = await taskService.getComments(userId, taskId);
-        return NextResponse.json(comments);
+        return jsonEnvelope(comments);
     } catch (error: unknown) {
         return handleRouteError(error);
     }

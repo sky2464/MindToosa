@@ -58,7 +58,7 @@ export default function KanbanBoard({
     try {
       await handleTaskMove(draggedTaskId, status);
     } catch (error) {
-      console.error("Failed to move task", error);
+
       setTasks(tasks); // Revert
       addToast("Failed to update task status.", "error");
     }
@@ -76,7 +76,7 @@ export default function KanbanBoard({
       addToast(`Created ${subtasks.length} subtasks for "${task.title}"`, "success");
       router.refresh();
     } catch (e) {
-      console.error(e);
+
       addToast("Failed to break down task.", "error");
     } finally {
       setIsBreakingDown(null);
@@ -112,8 +112,8 @@ export default function KanbanBoard({
       const newTask = await handleTaskCreate(project.id, title, status, project.space_id);
       setTasks((prev) => prev.map((t) => (t.id === tempId ? newTask : t)));
     } catch (error) {
-      console.error("Failed to create task", error);
       setTasks(tasks); // Revert
+      addToast("Failed to create task.", "error");
     }
   };
 

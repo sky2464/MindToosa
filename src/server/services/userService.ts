@@ -8,6 +8,7 @@ export const UserSettingsSchema = z.object({
     working_hours_start: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:MM)"),
     working_hours_end: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:MM)"),
     notifications_enabled: z.boolean().default(false),
+    timezone: z.string().optional(),
 });
 
 export type UserSettings = z.infer<typeof UserSettingsSchema>;

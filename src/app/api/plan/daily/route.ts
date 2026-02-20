@@ -50,7 +50,6 @@ export async function POST(request: Request) {
 
     return NextResponse.json(plan);
   } catch (error: unknown) {
-    console.error("Plan API Error:", error);
     return handleRouteError(error);
   }
 }

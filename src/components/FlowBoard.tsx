@@ -26,6 +26,7 @@ export default function FlowBoard({ tasks: initialTasks }: FlowBoardProps) {
   const [dragTaskId, setDragTaskId] = useState<string | null>(null);
   const [zenMode, setZenMode] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [reorderError, setReorderError] = useState<string | null>(null);
   const { playSound } = useSoundEffects();
 
   const doneTasks = tasks.filter((t) => t.status === "done");
@@ -102,7 +103,8 @@ export default function FlowBoard({ tasks: initialTasks }: FlowBoardProps) {
       }
       router.refresh();
     } catch (error) {
-      console.error("Failed to update task", error);
+      setReorderError("Failed to save new order. Please refresh.");
+      void error;
     }
   };
 
@@ -113,6 +115,11 @@ export default function FlowBoard({ tasks: initialTasks }: FlowBoardProps) {
 
   return (
     <div className="space-y-4">
+      {reorderError && (
+        <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm text-red-400">
+          {reorderError}
+        </div>
+      )}
       {/* Next Concrete Action Panel */}
       {nextAction && !zenMode && (
         <div className="flex items-center gap-3 rounded-xl border border-indigo-500/20 bg-indigo-500/5 px-4 py-3">

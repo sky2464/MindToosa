@@ -13,11 +13,13 @@ const TaskUpdateSchema = z
     priority: TaskPrioritySchema.optional(),
     estimated_minutes: z.number().int().min(1).optional(),
     scheduled_for: z.string().date().optional().nullable(),
+    space_id: z.string().uuid().optional().nullable(),
     goal_id: z.string().uuid().optional().nullable(),
     project_id: z.string().uuid().optional().nullable(),
     micro_steps: z.array(z.string()).optional(),
     parent_task_id: z.string().uuid().optional().nullable(),
     position: z.number().int().optional(),
+    recurrence_rule: z.string().optional().nullable(),
   })
   .strict(); // reject unknown fields
 

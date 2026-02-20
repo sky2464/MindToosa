@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@auth";
+import { db } from "@/server/db";
+import { handleRouteError } from "@/lib/routeError";
 
 const SupportSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -27,21 +29,21 @@ export async function POST(req: Request) {
 
     const { email, subject, message } = parsed.data;
 
-    // TODO: Implement email sending (Resend, SendGrid, etc.)
-    // For now, log to console in dev and return success
-    if (process.env.NODE_ENV === "development") {
-      console.log("📧 Support Message:", { email, subject, message });
-    }
+    // Persist to DB — visible to admins, traceable by user
+    const { error: dbError } = await db.from("support_requests").insert({
+      user_id: session.user.email,
+      email,
+      subject,
+      message,
+    });
+
+    if (dbError) throw new Error(dbError.message);
 
     return NextResponse.json(
       { success: true, message: "Your message has been received" },
       { status: 200 }
     );
-  } catch (error) {
-    console.error("Support API error:", error);
-    return NextResponse.json(
-      { error: "Failed to process request" },
-      { status: 500 }
-    );
+  } catch (error: unknown) {
+    return handleRouteError(error);
   }
 }

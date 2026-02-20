@@ -44,7 +44,6 @@ export const projectService = {
     const { data, error } = await db.from("projects").insert(validation.data).select().single();
 
     if (error) {
-      console.error("Error creating project:", error);
       throw new AppError(error.message, "DB_ERROR");
     }
 

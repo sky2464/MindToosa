@@ -40,7 +40,7 @@ export default function GoalForm({ spaceId, onSuccess, onCancel }: GoalFormProps
             router.refresh();
             if (onSuccess) onSuccess();
         } catch (error) {
-            console.error("Error creating goal:", error);
+
             addToast("Failed to create goal. Please try again.", "error");
         } finally {
             setIsLoading(false);

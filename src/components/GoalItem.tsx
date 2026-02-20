@@ -28,7 +28,7 @@ export default function GoalItem({ goal }: GoalItemProps) {
             await apiClient.patch(`/api/goals/${goal.id}`, { archived: !goal.archived });
             router.refresh();
         } catch (error) {
-            console.error(`Error during goal ${action}:`, error);
+
             addToast(`Failed to ${action} goal. Please try again.`, "error");
         } finally {
             setIsArchiving(false);

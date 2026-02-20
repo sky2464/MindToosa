@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { labelService } from "@/server/services/labelService";
 import { z } from "zod";
 import { handleRouteError } from "@/lib/routeError";
+import { jsonEnvelope } from "@/lib/apiEnvelope";
 
 const LabelAssignSchema = z.object({
     label_id: z.string().uuid("Invalid label ID"),
@@ -20,7 +21,7 @@ export async function GET(
 
     try {
         const labels = await labelService.getTaskLabels(userId, taskId);
-        return NextResponse.json(labels);
+        return jsonEnvelope(labels);
     } catch (error: unknown) {
         return handleRouteError(error);
     }

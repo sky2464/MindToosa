@@ -15,6 +15,7 @@ export default function SettingsClient({ userEmail }: SettingsClientProps) {
         working_hours_start: "09:00",
         working_hours_end: "17:00",
         notifications_enabled: false,
+        timezone: "",
     });
     const [loadingSettings, setLoadingSettings] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -139,6 +140,34 @@ export default function SettingsClient({ userEmail }: SettingsClientProps) {
                                     className="w-full rounded-xl border border-zinc-700 bg-zinc-900/50 px-4 py-2 text-white outline-none focus:border-indigo-500"
                                 />
                             </div>
+                        </div>
+
+                        {/* Timezone */}
+                        <div>
+                            <label htmlFor="timezone" className="block text-xs font-bold text-zinc-500 uppercase mb-2">Timezone</label>
+                            <input
+                                id="timezone"
+                                type="text"
+                                placeholder="e.g. America/New_York"
+                                value={settings.timezone}
+                                onChange={(e) => setSettings(prev => ({ ...prev, timezone: e.target.value }))}
+                                list="tz-suggestions"
+                                className="w-full rounded-xl border border-zinc-700 bg-zinc-900/50 px-4 py-2 text-white outline-none focus:border-indigo-500"
+                            />
+                            <datalist id="tz-suggestions">
+                                <option value="UTC" />
+                                <option value="America/New_York" />
+                                <option value="America/Chicago" />
+                                <option value="America/Denver" />
+                                <option value="America/Los_Angeles" />
+                                <option value="Europe/London" />
+                                <option value="Europe/Berlin" />
+                                <option value="Europe/Paris" />
+                                <option value="Asia/Tokyo" />
+                                <option value="Asia/Dubai" />
+                                <option value="Asia/Kolkata" />
+                                <option value="Australia/Sydney" />
+                            </datalist>
                         </div>
 
                         {/* Notifications */}
