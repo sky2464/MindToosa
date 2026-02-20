@@ -103,4 +103,48 @@ Rules:
       return ["Define requirements", "Execute task", "Verify output"];
     }
   },
+  async breakdownProject(title: string, description: string, scope: string): Promise<Partial<Task>[]> {
+    if (!env.AI_PROVIDER_API_KEY) {
+      // Mock fallback if no API key
+      return [
+        { title: "Define Requirements", estimated_minutes: 30 },
+        { title: "Initial Implementation", estimated_minutes: 60 },
+        { title: "Review and Refine", estimated_minutes: 30 }
+      ];
+    }
+
+    const ai = getClient();
+    const safeTitle = sanitizeLLMInput(title);
+    const safeDesc = sanitizeLLMInput(description);
+    const safeScope = sanitizeLLMInput(scope);
+
+    const prompt = `You are an expert project manager. Break down the following project into actionable tasks.
+Project Title: ${safeTitle}
+Description: ${safeDesc || "None"}
+Scope/Context: ${safeScope || "None"}
+
+Rules:
+1. Return ONLY a valid JSON array of task objects.
+2. Each object MUST have:
+   - "title" (string, clear actionable task name)
+   - "estimated_minutes" (integer, duration, default 25 or 50)
+   - "micro_steps" (array of strings, further breakdown of the task)
+3. Do not include markdown formatting or json code blocks, just the raw JSON.
+Example output:
+[{"title": "Setup repository", "estimated_minutes": 25, "micro_steps": ["git init", "npm install"]}]`;
+
+    try {
+      const response = await ai.models.generateContent({
+        model: MODEL,
+        config: { responseMimeType: "application/json" },
+        contents: prompt,
+      });
+      const text = response.text ?? "[]";
+      const cleanJson = text.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+      const json = JSON.parse(cleanJson);
+      return Array.isArray(json) ? json : [];
+    } catch {
+      return [];
+    }
+  },
 };

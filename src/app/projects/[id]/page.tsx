@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import KanbanBoard from "@/components/KanbanBoard";
 import AIChat from "@/components/AIChat";
 import Link from "next/link";
+import GenerateProjectTasksButton from "./GenerateProjectTasksButton";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -39,7 +40,9 @@ export default async function ProjectDetailPage({ params }: Props) {
             {project.status}
           </span>
         </div>
-        <div>{/* Settings or Delete */}</div>
+        <div>
+          <GenerateProjectTasksButton projectId={project.id!} spaceId={project.space_id} />
+        </div>
       </header>
 
       {/* Main Content Area */}

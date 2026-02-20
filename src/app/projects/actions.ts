@@ -63,3 +63,18 @@ export async function suggestSubtasksAction(taskTitle: string) {
   await getAuthUserId(); // Verify auth
   return await llmClient.suggestSubtasks(taskTitle);
 }
+
+export async function generateSubTasksAction(projectId: string) {
+  const userId = await getAuthUserId();
+  const project = await projectService.getProjectById(userId, projectId);
+
+  if (!project) {
+    throw new Error("Project not found");
+  }
+
+  return await llmClient.breakdownProject(
+    project.title,
+    project.description || "",
+    project.scope || ""
+  );
+}

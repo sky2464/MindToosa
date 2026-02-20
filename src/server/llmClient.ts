@@ -10,5 +10,6 @@ export type { PlanContext, ProjectContext };
 export const llmClient = {
   generateDailyPlan: planAI.generateDailyPlan.bind(planAI),
   suggestSubtasks: planAI.suggestSubtasks.bind(planAI),
+  breakdownProject: planAI.breakdownProject.bind(planAI),
   chatWithProject: chatAI.chatWithProject.bind(chatAI),
 };
