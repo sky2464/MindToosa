@@ -10,6 +10,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   secret: env.NEXTAUTH_SECRET || env.AUTH_SECRET,
+  trustHost: true,
   session: {
     strategy: "jwt",
   },
