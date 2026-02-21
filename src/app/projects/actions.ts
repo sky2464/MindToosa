@@ -31,13 +31,21 @@ export async function createProjectAction(formData: FormData) {
     throw new Error("Missing required fields");
   }
 
-  await projectService.createProject(userId, {
-    title,
-    description,
-    scope,
-    space_id: spaceId,
-    status: "active",
-  });
+  try {
+    await projectService.createProject(userId, {
+      title,
+      description,
+      scope,
+      space_id: spaceId,
+      status: "active",
+    });
+  } catch (err: any) {
+    console.error("CREATE_PROJECT_ERROR:", err.message);
+    if (err.details) {
+      console.error("DETAILS:", JSON.stringify(err.details, null, 2));
+    }
+    throw err;
+  }
 
   revalidatePath("/projects");
 }
