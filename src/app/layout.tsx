@@ -18,7 +18,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "MindToosa — Planning for Deep Flow",
-  description: "Focus-friendly planning and execution webapp. Create daily plans, track goals, and run focus sprints.",
+  description:
+    "Focus-friendly planning and execution webapp. Create daily plans, track goals, and run focus sprints.",
 };
 
 export default function RootLayout({
@@ -31,9 +32,7 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <AmbientBackground />
         <NavBar />
-        <main className="pb-16 md:pb-0 md:pl-16">
-          {children}
-        </main>
+        <main className="pb-16 md:pb-0 md:pl-16">{children}</main>
         <SpeedInsights />
         <Analytics />
       </body>

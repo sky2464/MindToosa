@@ -76,7 +76,9 @@ Rules:
       const json = JSON.parse(response.text ?? "");
       const parsed = DailyPlanSchema.safeParse(json);
       if (!parsed.success) {
-        throw new ValidationError("Failed to parse LLM response: " + parsed.error.issues[0].message);
+        throw new ValidationError(
+          "Failed to parse LLM response: " + parsed.error.issues[0].message
+        );
       }
       return parsed.data;
     } catch (error) {
@@ -86,7 +88,8 @@ Rules:
   },
 
   async suggestSubtasks(taskTitle: string): Promise<string[]> {
-    if (!env.AI_PROVIDER_API_KEY) return ["Analyze requirements", "Draft outline", "Review and refine"];
+    if (!env.AI_PROVIDER_API_KEY)
+      return ["Analyze requirements", "Draft outline", "Review and refine"];
 
     const ai = getClient();
     const prompt = `Break down the task "${taskTitle}" into 3-5 actionable micro-steps. Return ONLY a JSON array of strings. Example: ["Step 1", "Step 2"]`;
@@ -103,13 +106,17 @@ Rules:
       return ["Define requirements", "Execute task", "Verify output"];
     }
   },
-  async breakdownProject(title: string, description: string, scope: string): Promise<Partial<Task>[]> {
+  async breakdownProject(
+    title: string,
+    description: string,
+    scope: string
+  ): Promise<Partial<Task>[]> {
     if (!env.AI_PROVIDER_API_KEY) {
       // Mock fallback if no API key
       return [
         { title: "Define Requirements", estimated_minutes: 30 },
         { title: "Initial Implementation", estimated_minutes: 60 },
-        { title: "Review and Refine", estimated_minutes: 30 }
+        { title: "Review and Refine", estimated_minutes: 30 },
       ];
     }
 
@@ -140,7 +147,7 @@ Example output:
         contents: prompt,
       });
       const text = response.text ?? "[]";
-      const cleanJson = text.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+      const cleanJson = text.replace(/```json\n?/g, "").replace(/```\n?/g, "");
       const json = JSON.parse(cleanJson);
       return Array.isArray(json) ? json : [];
     } catch {

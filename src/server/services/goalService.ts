@@ -12,82 +12,84 @@ const UUIDSchema = z.string().uuid("Invalid UUID format");
  * Schema for allowed goal update fields
  * Only specific fields can be updated to prevent arbitrary modifications
  */
-export const GoalUpdateSchema = z.object({
+export const GoalUpdateSchema = z
+  .object({
     title: z.string().optional(),
     horizon: z.enum(["week", "month", "year", "life"]).optional(),
     why: z.string().optional(),
     archived: z.boolean().optional(),
     space_id: z.string().uuid().optional(),
-}).strict(); // Reject any fields not in this schema
+  })
+  .strict(); // Reject any fields not in this schema
 
 export type GoalUpdate = z.infer<typeof GoalUpdateSchema>;
 
 export const goalService = {
-    async getGoals(userId: string, options: { archived?: boolean; spaceId?: string } = {}) {
-        let query = db.from("goals").select("*").eq("user_id", userId);
+  async getGoals(userId: string, options: { archived?: boolean; spaceId?: string } = {}) {
+    let query = db.from("goals").select("*").eq("user_id", userId);
 
-        if (options.archived !== undefined) {
-            query = query.eq("archived", options.archived);
-        }
+    if (options.archived !== undefined) {
+      query = query.eq("archived", options.archived);
+    }
 
-        if (options.spaceId) {
-            // Validate spaceId is a valid UUID
-            const validation = UUIDSchema.safeParse(options.spaceId);
-            if (!validation.success) {
-                throw new ValidationError("Invalid space ID format", "spaceId");
-            }
-            query = query.eq("space_id", options.spaceId);
-        }
+    if (options.spaceId) {
+      // Validate spaceId is a valid UUID
+      const validation = UUIDSchema.safeParse(options.spaceId);
+      if (!validation.success) {
+        throw new ValidationError("Invalid space ID format", "spaceId");
+      }
+      query = query.eq("space_id", options.spaceId);
+    }
 
-        const { data, error } = await query.order("created_at", { ascending: false });
+    const { data, error } = await query.order("created_at", { ascending: false });
 
-        if (error) throw new AppError(error.message, "DB_ERROR");
-        return data as Goal[];
-    },
+    if (error) throw new AppError(error.message, "DB_ERROR");
+    return data as Goal[];
+  },
 
-    async createGoal(userId: string, goalData: Partial<Goal>) {
-        const payload = { ...goalData, user_id: userId };
-        const validation = GoalSchema.safeParse(payload);
+  async createGoal(userId: string, goalData: Partial<Goal>) {
+    const payload = { ...goalData, user_id: userId };
+    const validation = GoalSchema.safeParse(payload);
 
-        if (!validation.success) {
-            throw new ValidationError("Validation failed", undefined, validation.error.format());
-        }
+    if (!validation.success) {
+      throw new ValidationError("Validation failed", undefined, validation.error.format());
+    }
 
-        const { data, error } = await db.from("goals").insert(validation.data).select().single();
+    const { data, error } = await db.from("goals").insert(validation.data).select().single();
 
-        if (error) throw new AppError(error.message, "DB_ERROR");
-        return data as Goal;
-    },
+    if (error) throw new AppError(error.message, "DB_ERROR");
+    return data as Goal;
+  },
 
-    async updateGoal(userId: string, goalId: string, updates: GoalUpdate) {
-        // Validate goalId is a valid UUID
-        const idValidation = UUIDSchema.safeParse(goalId);
-        if (!idValidation.success) {
-            throw new ValidationError("Invalid goal ID format", "goalId");
-        }
+  async updateGoal(userId: string, goalId: string, updates: GoalUpdate) {
+    // Validate goalId is a valid UUID
+    const idValidation = UUIDSchema.safeParse(goalId);
+    if (!idValidation.success) {
+      throw new ValidationError("Invalid goal ID format", "goalId");
+    }
 
-        const { data, error } = await db
-            .from("goals")
-            .update(updates)
-            .eq("id", goalId)
-            .eq("user_id", userId)
-            .select()
-            .single();
+    const { data, error } = await db
+      .from("goals")
+      .update(updates)
+      .eq("id", goalId)
+      .eq("user_id", userId)
+      .select()
+      .single();
 
-        if (error) throw new AppError(error.message, "DB_ERROR");
-        return data as Goal;
-    },
+    if (error) throw new AppError(error.message, "DB_ERROR");
+    return data as Goal;
+  },
 
-    async deleteGoal(userId: string, goalId: string) {
-        // Validate goalId is a valid UUID
-        const idValidation = UUIDSchema.safeParse(goalId);
-        if (!idValidation.success) {
-            throw new ValidationError("Invalid goal ID format", "goalId");
-        }
+  async deleteGoal(userId: string, goalId: string) {
+    // Validate goalId is a valid UUID
+    const idValidation = UUIDSchema.safeParse(goalId);
+    if (!idValidation.success) {
+      throw new ValidationError("Invalid goal ID format", "goalId");
+    }
 
-        const { error } = await db.from("goals").delete().eq("id", goalId).eq("user_id", userId);
+    const { error } = await db.from("goals").delete().eq("id", goalId).eq("user_id", userId);
 
-        if (error) throw new AppError(error.message, "DB_ERROR");
-        return true;
-    },
+    if (error) throw new AppError(error.message, "DB_ERROR");
+    return true;
+  },
 };

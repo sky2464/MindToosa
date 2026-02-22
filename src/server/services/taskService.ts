@@ -18,12 +18,22 @@ const UUIDOptionalSchema = z.string().uuid("Invalid UUID format").optional();
 export const taskService = {
   async getTasks(
     userId: string,
-    options: { spaceId?: string; date?: string; dateFrom?: string; dateTo?: string; projectId?: string; parentId?: string; limit?: number; offset?: number } = {}
+    options: {
+      spaceId?: string;
+      date?: string;
+      dateFrom?: string;
+      dateTo?: string;
+      projectId?: string;
+      parentId?: string;
+      limit?: number;
+      offset?: number;
+    } = {}
   ) {
     let query = db.from("tasks").select("*").eq("user_id", userId);
 
     if (options.spaceId) {
-      if (!UUIDSchema.safeParse(options.spaceId).success) throw new ValidationError("Invalid space ID");
+      if (!UUIDSchema.safeParse(options.spaceId).success)
+        throw new ValidationError("Invalid space ID");
       query = query.eq("space_id", options.spaceId);
     }
 
@@ -40,12 +50,14 @@ export const taskService = {
     }
 
     if (options.projectId) {
-      if (!UUIDSchema.safeParse(options.projectId).success) throw new ValidationError("Invalid project ID");
+      if (!UUIDSchema.safeParse(options.projectId).success)
+        throw new ValidationError("Invalid project ID");
       query = query.eq("project_id", options.projectId);
     }
 
     if (options.parentId) {
-      if (!UUIDSchema.safeParse(options.parentId).success) throw new ValidationError("Invalid parent task ID");
+      if (!UUIDSchema.safeParse(options.parentId).success)
+        throw new ValidationError("Invalid parent task ID");
       query = query.eq("parent_task_id", options.parentId);
     }
 
@@ -75,11 +87,7 @@ export const taskService = {
     if (error) throw new AppError(error.message, "DB_ERROR");
 
     // If this is a root recurring task (no parent), stamp its own id as series_id
-    if (
-      validation.data.recurrence_rule &&
-      !validation.data.parent_recurring_task_id &&
-      data?.id
-    ) {
+    if (validation.data.recurrence_rule && !validation.data.parent_recurring_task_id && data?.id) {
       await db.from("tasks").update({ series_id: data.id }).eq("id", data.id);
       (data as Task).series_id = data.id;
     }
@@ -143,7 +151,11 @@ export const taskService = {
     const validatedTasks = tasks.map((t) => {
       const result = UpsertTaskSchema.safeParse(t);
       if (!result.success) {
-        throw new ValidationError(`Task validation failed: ${result.error.message}`, undefined, result.error.format());
+        throw new ValidationError(
+          `Task validation failed: ${result.error.message}`,
+          undefined,
+          result.error.format()
+        );
       }
       return { ...result.data, user_id: userId };
     });
@@ -165,7 +177,7 @@ export const taskService = {
       .single();
 
     if (fetchError || !currentTask) {
-      // If not found or not owned, return null or throw error. 
+      // If not found or not owned, return null or throw error.
       // Standard practice: if not found, it might be auth or existing.
       // We'll throw AuthError to be safe or AppError.
       throw new AuthError("Task not found or access denied");
@@ -175,14 +187,18 @@ export const taskService = {
     if (updates.status === "done") {
       const { data: blockers } = await db
         .from("task_dependencies")
-        .select(`
+        .select(
+          `
                 blocking_task:tasks!task_dependencies_blocking_task_id_fkey (
                     status
                 )
-            `)
+            `
+        )
         .eq("task_id", taskId);
 
-      const hasOpenBlockers = blockers?.some((d: BlockerRow) => d.blocking_task[0]?.status !== "done");
+      const hasOpenBlockers = blockers?.some(
+        (d: BlockerRow) => d.blocking_task[0]?.status !== "done"
+      );
       if (hasOpenBlockers) {
         throw new ValidationError("Cannot complete task: Waiting on dependencies.");
       }
@@ -233,7 +249,8 @@ export const taskService = {
   },
 
   async getSubtasks(userId: string, parentTaskId: string): Promise<Task[]> {
-    if (!UUIDSchema.safeParse(parentTaskId).success) throw new ValidationError("Invalid parent task ID");
+    if (!UUIDSchema.safeParse(parentTaskId).success)
+      throw new ValidationError("Invalid parent task ID");
     const { data, error } = await db
       .from("tasks")
       .select("*")
@@ -297,10 +314,12 @@ export const taskService = {
     // Get tasks that block this task
     const { data, error } = await db
       .from("task_dependencies")
-      .select(`
+      .select(
+        `
         blocking_task_id,
         blocking_task:tasks!task_dependencies_blocking_task_id_fkey (*)
-      `)
+      `
+      )
       .eq("task_id", taskId);
 
     if (error) throw new AppError(error.message, "DB_ERROR");
@@ -310,7 +329,8 @@ export const taskService = {
 
   async addDependency(userId: string, taskId: string, blockingTaskId: string) {
     if (!UUIDSchema.safeParse(taskId).success) throw new ValidationError("Invalid task ID");
-    if (!UUIDSchema.safeParse(blockingTaskId).success) throw new ValidationError("Invalid blocking task ID");
+    if (!UUIDSchema.safeParse(blockingTaskId).success)
+      throw new ValidationError("Invalid blocking task ID");
     if (taskId === blockingTaskId) throw new ValidationError("Task cannot depend on itself");
 
     // Verify ownership of both
@@ -324,7 +344,12 @@ export const taskService = {
 
     // Check for circular dependency (simple 1-level check for now, handling deep cycles requires recursive CTEs or app logic)
     // For MVP, just preventing direct cycle
-    const { data: reverse } = await db.from("task_dependencies").select("*").eq("task_id", blockingTaskId).eq("blocking_task_id", taskId).single();
+    const { data: reverse } = await db
+      .from("task_dependencies")
+      .select("*")
+      .eq("task_id", blockingTaskId)
+      .eq("blocking_task_id", taskId)
+      .single();
     if (reverse) throw new ValidationError("Circular dependency detected");
 
     const { data, error } = await db
@@ -339,7 +364,8 @@ export const taskService = {
 
   async removeDependency(userId: string, taskId: string, blockingTaskId: string) {
     if (!UUIDSchema.safeParse(taskId).success) throw new ValidationError("Invalid task ID");
-    if (!UUIDSchema.safeParse(blockingTaskId).success) throw new ValidationError("Invalid blocking task ID");
+    if (!UUIDSchema.safeParse(blockingTaskId).success)
+      throw new ValidationError("Invalid blocking task ID");
 
     // Verify ownership of both tasks before deleting (service-role key bypasses RLS)
     const { count } = await db

@@ -51,10 +51,7 @@ async function request<T>(url: string, options: RequestInit = {}): Promise<T> {
   return unwrap<T>(json);
 }
 
-async function requestWithMeta<T>(
-  url: string,
-  options: RequestInit = {}
-): Promise<ListResult<T>> {
+async function requestWithMeta<T>(url: string, options: RequestInit = {}): Promise<ListResult<T>> {
   const response = await fetch(url, {
     ...options,
     headers: { "Content-Type": "application/json", ...options.headers },
@@ -80,14 +77,13 @@ async function requestWithMeta<T>(
     (json as Record<string, unknown>).__envelope === true;
 
   return {
-    data: isEnvelope ? (json as Record<string, unknown>).data as T : json as T,
+    data: isEnvelope ? ((json as Record<string, unknown>).data as T) : (json as T),
     meta: isEnvelope ? ((json as Record<string, unknown>).meta as PaginationMeta | null) : null,
   };
 }
 
 export const apiClient = {
-  get: <T>(url: string, options?: RequestInit) =>
-    request<T>(url, { ...options, method: "GET" }),
+  get: <T>(url: string, options?: RequestInit) => request<T>(url, { ...options, method: "GET" }),
 
   /** Use when you need pagination meta alongside the data array. */
   list: <T>(url: string, options?: RequestInit) =>
@@ -106,4 +102,3 @@ export const apiClient = {
       ...(body ? { body: JSON.stringify(body) } : {}),
     }),
 };
-

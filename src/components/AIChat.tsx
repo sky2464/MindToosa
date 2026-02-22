@@ -40,11 +40,18 @@ export default function AIChat({ project, tasks }: { project: Project; tasks: Ta
 
     try {
       const response = await chatWithProjectAction(project.id!, userMsg);
-      setMessages((prev) => [...prev, { id: crypto.randomUUID(), role: "assistant", content: response }]);
+      setMessages((prev) => [
+        ...prev,
+        { id: crypto.randomUUID(), role: "assistant", content: response },
+      ]);
     } catch {
       setMessages((prev) => [
         ...prev,
-        { id: crypto.randomUUID(), role: "assistant", content: "Sorry, I encountered an error. Please try again." },
+        {
+          id: crypto.randomUUID(),
+          role: "assistant",
+          content: "Sorry, I encountered an error. Please try again.",
+        },
       ]);
     } finally {
       setLoading(false);
@@ -52,23 +59,30 @@ export default function AIChat({ project, tasks }: { project: Project; tasks: Ta
   }
 
   return (
-    <div className="flex h-full flex-col bg-card">
-      <div className="flex-1 space-y-4 overflow-y-auto p-4" ref={scrollRef} role="log" aria-live="polite">
+    <div className="bg-card flex h-full flex-col">
+      <div
+        className="flex-1 space-y-4 overflow-y-auto p-4"
+        ref={scrollRef}
+        role="log"
+        aria-live="polite"
+      >
         {messages.map((m) => (
           <div key={m.id} className={`flex gap-3 ${m.role === "user" ? "flex-row-reverse" : ""}`}>
             <div
-              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${m.role === "assistant"
-                ? "bg-indigo-500/10 text-indigo-400"
-                : "bg-zinc-800 text-zinc-400"
-                }`}
+              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
+                m.role === "assistant"
+                  ? "bg-indigo-500/10 text-indigo-400"
+                  : "bg-zinc-800 text-zinc-400"
+              }`}
             >
               {m.role === "assistant" ? <Bot size={16} /> : <User size={16} />}
             </div>
             <div
-              className={`max-w-[85%] rounded-2xl px-4 py-2 text-sm ${m.role === "assistant"
-                ? "rounded-tl-none bg-secondary text-foreground"
-                : "rounded-tr-none bg-indigo-600 text-white"
-                }`}
+              className={`max-w-[85%] rounded-2xl px-4 py-2 text-sm ${
+                m.role === "assistant"
+                  ? "bg-secondary text-foreground rounded-tl-none"
+                  : "rounded-tr-none bg-indigo-600 text-white"
+              }`}
             >
               {m.content}
             </div>
@@ -79,14 +93,14 @@ export default function AIChat({ project, tasks }: { project: Project; tasks: Ta
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-500/10 text-indigo-400">
               <Bot size={16} />
             </div>
-            <div className="rounded-2xl rounded-tl-none bg-secondary px-4 py-2">
+            <div className="bg-secondary rounded-2xl rounded-tl-none px-4 py-2">
               <Loader2 className="h-4 w-4 animate-spin text-zinc-500" />
             </div>
           </div>
         )}
       </div>
 
-      <div className="border-t border-border bg-secondary/50 p-3">
+      <div className="border-border bg-secondary/50 border-t p-3">
         <form onSubmit={handleSubmit} className="relative">
           <input
             value={input}
@@ -94,7 +108,7 @@ export default function AIChat({ project, tasks }: { project: Project; tasks: Ta
             placeholder="Ask AI..."
             aria-label="Chat input"
             maxLength={1000}
-            className="w-full rounded-full border border-border bg-background py-2.5 pr-10 pl-4 text-sm text-foreground focus:border-indigo-500 focus:ring-indigo-500 focus:outline-none"
+            className="border-border bg-background text-foreground w-full rounded-full border py-2.5 pr-10 pl-4 text-sm focus:border-indigo-500 focus:ring-indigo-500 focus:outline-none"
           />
           <button
             type="submit"

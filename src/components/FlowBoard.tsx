@@ -3,10 +3,7 @@
 import { useState, useEffect } from "react";
 import { Task } from "@/core/planTypes";
 import { useRouter } from "next/navigation";
-import {
-  Maximize2, Minimize2, CheckCircle2, Clock, MoveRight, Flame,
-  Pencil
-} from "lucide-react";
+import { Maximize2, Minimize2, CheckCircle2, Clock, MoveRight, Flame, Pencil } from "lucide-react";
 import FocusTimer from "@/app/today/FocusTimer";
 import useSoundEffects from "@/hooks/useSoundEffects";
 import TaskEditModal from "@/components/TaskEditModal";
@@ -42,9 +39,7 @@ export default function FlowBoard({ tasks: initialTasks }: FlowBoardProps) {
   const upNextTasks = pendingTasks.length > 1 ? pendingTasks.slice(1) : [];
 
   const nextAction =
-    activeTask?.micro_steps && activeTask.micro_steps.length > 0
-      ? activeTask.micro_steps[0]
-      : null;
+    activeTask?.micro_steps && activeTask.micro_steps.length > 0 ? activeTask.micro_steps[0] : null;
 
   const handleDragStart = (e: React.DragEvent, taskId: string) => {
     setDragTaskId(taskId);
@@ -130,7 +125,9 @@ export default function FlowBoard({ tasks: initialTasks }: FlowBoardProps) {
             <MoveRight size={14} className="text-indigo-400" />
           </div>
           <div>
-            <p className="text-[10px] font-bold tracking-widest text-indigo-500 uppercase">Next Concrete Action</p>
+            <p className="text-[10px] font-bold tracking-widest text-indigo-500 uppercase">
+              Next Concrete Action
+            </p>
             <p className="text-sm font-medium text-white">{nextAction}</p>
           </div>
         </div>
@@ -211,22 +208,30 @@ export default function FlowBoard({ tasks: initialTasks }: FlowBoardProps) {
 
                   {!zenMode && activeTask.micro_steps && activeTask.micro_steps.length > 0 && (
                     <div className="mb-4 w-full max-w-sm">
-                      <p className="mb-2 text-[10px] font-bold tracking-widest text-zinc-600 uppercase">Steps</p>
+                      <p className="mb-2 text-[10px] font-bold tracking-widest text-zinc-600 uppercase">
+                        Steps
+                      </p>
                       <div className="space-y-1 text-left">
                         {activeTask.micro_steps.slice(0, 3).map((step, i) => (
                           <div key={i} className="flex items-start gap-2 text-xs text-zinc-500">
                             <span className="mt-0.5 font-mono text-zinc-700">{i + 1}.</span>
-                            <span className={i === 0 ? "text-zinc-300 font-medium" : ""}>{step}</span>
+                            <span className={i === 0 ? "font-medium text-zinc-300" : ""}>
+                              {step}
+                            </span>
                           </div>
                         ))}
                         {activeTask.micro_steps.length > 3 && (
-                          <p className="text-[10px] text-zinc-700">+{activeTask.micro_steps.length - 3} more</p>
+                          <p className="text-[10px] text-zinc-700">
+                            +{activeTask.micro_steps.length - 3} more
+                          </p>
                         )}
                       </div>
                     </div>
                   )}
 
-                  <div className={`mt-6 flex w-full flex-col items-center gap-4 ${zenMode ? "scale-125 transform" : ""}`}>
+                  <div
+                    className={`mt-6 flex w-full flex-col items-center gap-4 ${zenMode ? "scale-125 transform" : ""}`}
+                  >
                     <FocusTimer activeTaskId={activeTask.id} activeTaskTitle={activeTask.title} />
 
                     {!zenMode && (
@@ -277,7 +282,7 @@ export default function FlowBoard({ tasks: initialTasks }: FlowBoardProps) {
                   className="group flex items-center gap-3 rounded-lg border border-zinc-800/80 bg-zinc-900/80 p-3 text-zinc-500 transition hover:bg-zinc-900"
                 >
                   <CheckCircle2 size={16} className="shrink-0 text-emerald-500/50" />
-                  <span className="truncate text-sm line-through decoration-zinc-700 flex-1">
+                  <span className="flex-1 truncate text-sm line-through decoration-zinc-700">
                     {task.title}
                   </span>
                   <button
@@ -301,12 +306,7 @@ export default function FlowBoard({ tasks: initialTasks }: FlowBoardProps) {
       </div>
 
       {/* Task Edit Modal */}
-      {editingTask && (
-        <TaskEditModal
-          task={editingTask}
-          onClose={() => setEditingTask(null)}
-        />
-      )}
+      {editingTask && <TaskEditModal task={editingTask} onClose={() => setEditingTask(null)} />}
     </div>
   );
 }

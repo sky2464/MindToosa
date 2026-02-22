@@ -63,4 +63,3 @@ export async function rateLimit(ip: string, config: RateLimitConfig): Promise<bo
   }
   return inMemoryRateLimit(ip, config);
 }
-

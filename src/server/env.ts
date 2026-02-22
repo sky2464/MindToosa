@@ -2,11 +2,11 @@ import { z } from "zod";
 
 /**
  * Environment Variable Schema
- * 
+ *
  * This schema validates all required environment variables at application startup.
  * If any required variable is missing or invalid, the application will fail fast
  * with a clear error message instead of failing at runtime.
- * 
+ *
  * Note: Some variables are optional to allow builds without all env vars.
  * Runtime validation will still occur when these features are used.
  */
@@ -18,14 +18,20 @@ const emptyToUndefined = (val: unknown) => (val === "" ? undefined : val);
 
 const envSchema = z.object({
   // AI Provider (optional for build, required at runtime for AI features)
-  AI_PROVIDER_API_KEY: z.preprocess(emptyToUndefined, z.string().min(1, "AI_PROVIDER_API_KEY is required for AI features").optional()),
+  AI_PROVIDER_API_KEY: z.preprocess(
+    emptyToUndefined,
+    z.string().min(1, "AI_PROVIDER_API_KEY is required for AI features").optional()
+  ),
 
   // Supabase
   SUPABASE_URL: z.string().url("SUPABASE_URL must be a valid URL (e.g., https://xyz.supabase.co)"),
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1, "SUPABASE_SERVICE_ROLE_KEY is required"),
 
   // NextAuth (optional for build, required at runtime)
-  NEXTAUTH_SECRET: z.preprocess(emptyToUndefined, z.string().min(32, "NEXTAUTH_SECRET must be at least 32 characters").optional()),
+  NEXTAUTH_SECRET: z.preprocess(
+    emptyToUndefined,
+    z.string().min(32, "NEXTAUTH_SECRET must be at least 32 characters").optional()
+  ),
   AUTH_SECRET: z.string().min(32, "AUTH_SECRET must be at least 32 characters"),
 
   // Google OAuth
@@ -33,7 +39,10 @@ const envSchema = z.object({
   GOOGLE_CLIENT_SECRET: z.string().min(1, "GOOGLE_CLIENT_SECRET is required for authentication"),
 
   // Optional: Auth URL (defaults to localhost in development)
-  AUTH_URL: z.preprocess(emptyToUndefined, z.string().url("AUTH_URL must be a valid URL").optional()),
+  AUTH_URL: z.preprocess(
+    emptyToUndefined,
+    z.string().url("AUTH_URL must be a valid URL").optional()
+  ),
 
   // Optional: Upstash Redis for production rate limiting (falls back to in-memory when absent)
   UPSTASH_REDIS_REST_URL: z.preprocess(emptyToUndefined, z.string().url().optional()),
@@ -54,7 +63,8 @@ const envSchema = z.object({
  */
 function getEnv() {
   const rawEnv = {
-    AI_PROVIDER_API_KEY: process.env.AI_PROVIDER_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY,
+    AI_PROVIDER_API_KEY:
+      process.env.AI_PROVIDER_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY,
     SUPABASE_URL: process.env.SUPABASE_URL,
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET,
@@ -69,8 +79,19 @@ function getEnv() {
     PLAYWRIGHT_TEST_BACKDOOR_SECRET: process.env.PLAYWRIGHT_TEST_BACKDOOR_SECRET,
   };
 
-  if (process.env.SKIP_ENV_VALIDATION === "true") {
-    console.log("\x1b[33m%s\x1b[0m", "⚠️ Skipping environment validation (SKIP_ENV_VALIDATION=true)");
+  const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build";
+  if (isBuildPhase || process.env.SKIP_ENV_VALIDATION === "true") {
+    if (isBuildPhase) {
+      console.log(
+        "\x1b[33m%s\x1b[0m",
+        "⚠️ Build phase detected: skipping env validation (runtime secrets are not available at build time)"
+      );
+    } else {
+      console.log(
+        "\x1b[33m%s\x1b[0m",
+        "⚠️ Skipping environment validation (SKIP_ENV_VALIDATION=true)"
+      );
+    }
     return {
       ...rawEnv,
       SUPABASE_URL: rawEnv.SUPABASE_URL || "https://example.com",
@@ -91,7 +112,10 @@ function getEnv() {
         "\x1b[33m%s\x1b[0m",
         "⚠️ WARNING: AUTH_URL is set to localhost in production. This will break authentication redirects."
       );
-      console.warn("\x1b[33m%s\x1b[0m", "Please update AUTH_URL in your Vercel Project Settings to your production URL.");
+      console.warn(
+        "\x1b[33m%s\x1b[0m",
+        "Please update AUTH_URL in your Vercel Project Settings to your production URL."
+      );
     }
 
     return parsed;
@@ -103,11 +127,17 @@ function getEnv() {
         const value = (rawEnv as Record<string, unknown>)[path];
         console.error("\x1b[31m%s\x1b[0m", `  - ${path}: ${issue.message}`);
       });
-      console.error("\x1b[33m%s\x1b[0m", "\nTip: Check your .env.local file or Docker environment variables.");
+      console.error(
+        "\x1b[33m%s\x1b[0m",
+        "\nTip: Check your .env.local file or Docker environment variables."
+      );
       console.error("\x1b[33m%s\x1b[0m", "URLs must include protocol (e.g., https://)");
 
       if (process.env.NODE_ENV === "production") {
-        console.error("\x1b[31m%s\x1b[0m", "In production, missing environment variables are fatal.");
+        console.error(
+          "\x1b[31m%s\x1b[0m",
+          "In production, missing environment variables are fatal."
+        );
       }
     }
     throw error;

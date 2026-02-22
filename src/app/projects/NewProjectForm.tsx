@@ -36,7 +36,7 @@ export default function NewProjectForm({ spaceId }: { spaceId: string }) {
   return (
     <div className="glass-card rounded-xl p-5 ring-2 ring-indigo-500/20">
       <div className="mb-4 flex items-center justify-between">
-        <h3 className="font-semibold text-foreground">New Project</h3>
+        <h3 className="text-foreground font-semibold">New Project</h3>
         <button
           onClick={() => setIsOpen(false)}
           className="text-zinc-500 hover:text-zinc-300"
@@ -48,34 +48,43 @@ export default function NewProjectForm({ spaceId }: { spaceId: string }) {
       <form action={handleSubmit} className="space-y-4">
         <input type="hidden" name="spaceId" value={spaceId} />
         <div>
-          <label htmlFor="title" className="mb-1 block text-xs font-medium text-muted-foreground">Title</label>
+          <label htmlFor="title" className="text-muted-foreground mb-1 block text-xs font-medium">
+            Title
+          </label>
           <input
             id="title"
             name="title"
             required
             placeholder="e.g. Website Redesign"
-            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-zinc-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+            className="border-border bg-background text-foreground w-full rounded-lg border px-3 py-2 text-sm placeholder:text-zinc-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
             autoFocus
           />
         </div>
         <div>
-          <label htmlFor="description" className="mb-1 block text-xs font-medium text-muted-foreground">Description</label>
+          <label
+            htmlFor="description"
+            className="text-muted-foreground mb-1 block text-xs font-medium"
+          >
+            Description
+          </label>
           <textarea
             id="description"
             name="description"
             rows={2}
             placeholder="Brief goal..."
-            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-zinc-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+            className="border-border bg-background text-foreground w-full rounded-lg border px-3 py-2 text-sm placeholder:text-zinc-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
           />
         </div>
         <div>
-          <label htmlFor="scope" className="mb-1 block text-xs font-medium text-muted-foreground">Scope (Context for AI Breakdown)</label>
+          <label htmlFor="scope" className="text-muted-foreground mb-1 block text-xs font-medium">
+            Scope (Context for AI Breakdown)
+          </label>
           <textarea
             id="scope"
             name="scope"
             rows={3}
             placeholder="e.g. Needs frontend refactor, new API endpoints, full test coverage..."
-            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-zinc-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+            className="border-border bg-background text-foreground w-full rounded-lg border px-3 py-2 text-sm placeholder:text-zinc-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
           />
         </div>
         <div className="flex justify-end gap-2 pt-2">

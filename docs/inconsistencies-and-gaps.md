@@ -11,26 +11,24 @@
 
 **Issue:** Spaces API inconsistently bypasses service layer for GET operations.
 
-| Endpoint | Pattern | Expected | Issue |
-|----------|---------|----------|-------|
-| `GET /spaces` | Direct DB query | Use `spaceService.getSpaces()` | ✓ Inconsistent with other resources |
-| `POST /spaces` | Uses spaceService ✓ | ✓ Consistent | N/A |
-| `PATCH /spaces/[id]` | Direct DB query | Use `spaceService.updateSpace()` | ✓ Manual field filtering |
+| Endpoint             | Pattern             | Expected                         | Issue                               |
+| -------------------- | ------------------- | -------------------------------- | ----------------------------------- |
+| `GET /spaces`        | Direct DB query     | Use `spaceService.getSpaces()`   | ✓ Inconsistent with other resources |
+| `POST /spaces`       | Uses spaceService ✓ | ✓ Consistent                     | N/A                                 |
+| `PATCH /spaces/[id]` | Direct DB query     | Use `spaceService.updateSpace()` | ✓ Manual field filtering            |
 
 **Code Location:** `src/app/api/spaces/route.ts`
 
 ```typescript
 // Current (inconsistent)
-const { data } = await db
-  .from("spaces")
-  .select("*")
-  .eq("user_id", userId);
+const { data } = await db.from("spaces").select("*").eq("user_id", userId);
 
 // Expected (consistent)
 const spaces = await spaceService.getSpaces(userId);
 ```
 
 **Impact:**
+
 - ⚠️ Inconsistent with architecture intent (all mutations through services)
 - ⚠️ Bypasses any future service-layer middleware (logging, caching)
 - ⚠️ Duplicates ownership validation logic
@@ -44,16 +42,17 @@ const spaces = await spaceService.getSpaces(userId);
 
 **Issue:** Projects use server actions; all other resources use API routes.
 
-| Resource | Mutation Pattern | Query Pattern | Consistency |
-|----------|-----------------|--------------|-------------|
-| Tasks | API routes | API routes | ✓ |
-| Goals | API routes | API routes | ✓ |
-| Projects | Server actions | N/A ⚠️ | ✗ Inconsistent |
-| Spaces | API routes + Direct DB | API routes | ⚠️ Partial inconsistency |
-| Labels | API routes | API routes | ✓ |
-| Settings | API routes | API routes | ✓ |
+| Resource | Mutation Pattern       | Query Pattern | Consistency              |
+| -------- | ---------------------- | ------------- | ------------------------ |
+| Tasks    | API routes             | API routes    | ✓                        |
+| Goals    | API routes             | API routes    | ✓                        |
+| Projects | Server actions         | N/A ⚠️        | ✗ Inconsistent           |
+| Spaces   | API routes + Direct DB | API routes    | ⚠️ Partial inconsistency |
+| Labels   | API routes             | API routes    | ✓                        |
+| Settings | API routes             | API routes    | ✓                        |
 
 **Code Locations:**
+
 - Server Actions: `src/app/projects/actions.ts`
 - API Routes: `src/app/api/**`
 
@@ -71,12 +70,14 @@ PATCH /api/tasks/[id] ← API route
 ```
 
 **Impact:**
+
 - ⚠️ Inconsistent client mutation pattern
 - ⚠️ Projects can't be managed via REST client or external tools
 - ⚠️ Different error handling patterns (server actions throw; API routes return responses)
 - ⚠️ Harder for new developers to predict where to add mutations
 
 **Recommendation:** Decide:
+
 1. Migrate all projects to API routes (consistent with other resources)
 2. OR migrate all resources to server actions (simpler, but less flexible)
 3. OR document the decision and keep both (with clear guidelines)
@@ -85,13 +86,13 @@ PATCH /api/tasks/[id] ← API route
 
 ### 1.3 Input Validation Inconsistencies
 
-| Endpoint | Validation Pattern | Validated | Issue |
-|----------|------------------|-----------|-------|
-| `POST /tasks` | Zod schema | ✓ Complete | N/A |
-| `PATCH /tasks/[id]` | Zod schema (strict) | ✓ Complete | N/A |
-| `PATCH /goals/[id]` | None | ✗ Missing | ⚠️ Accepts any field |
-| `PATCH /spaces/[id]` | Manual field whitelist | Partial | ⚠️ Not Zod |
-| `POST /spaces` | Zod schema | ✓ Complete | N/A |
+| Endpoint             | Validation Pattern     | Validated  | Issue                |
+| -------------------- | ---------------------- | ---------- | -------------------- |
+| `POST /tasks`        | Zod schema             | ✓ Complete | N/A                  |
+| `PATCH /tasks/[id]`  | Zod schema (strict)    | ✓ Complete | N/A                  |
+| `PATCH /goals/[id]`  | None                   | ✗ Missing  | ⚠️ Accepts any field |
+| `PATCH /spaces/[id]` | Manual field whitelist | Partial    | ⚠️ Not Zod           |
+| `POST /spaces`       | Zod schema             | ✓ Complete | N/A                  |
 
 **Examples:**
 
@@ -113,6 +114,7 @@ const archived = (await req.json()).archived;
 ```
 
 **Impact:**
+
 - ⚠️ Allows arbitrary field updates on goals (could corrupt data)
 - ⚠️ Inconsistent error messages (goals accept anything; tasks reject unknown fields)
 - ⚠️ Harder to enforce business rules (e.g., prevent editing certain fields)
@@ -123,11 +125,11 @@ const archived = (await req.json()).archived;
 
 ### 1.4 Error Handling Inconsistencies
 
-| Layer | Pattern | Consistency |
-|-------|---------|-------------|
-| Service | Throws typed errors (AppError, ValidationError, AuthError) | ✓ Consistent |
-| API Routes | Catch all; return NextResponse.json | ⚠️ Partial |
-| API Routes | Some routes have no error handling | ✗ Unsafe |
+| Layer      | Pattern                                                    | Consistency  |
+| ---------- | ---------------------------------------------------------- | ------------ |
+| Service    | Throws typed errors (AppError, ValidationError, AuthError) | ✓ Consistent |
+| API Routes | Catch all; return NextResponse.json                        | ⚠️ Partial   |
+| API Routes | Some routes have no error handling                         | ✗ Unsafe     |
 
 **Examples:**
 
@@ -148,11 +150,13 @@ return NextResponse.json(result); // If service throws, unhandled!
 ```
 
 **Endpoints with Potentially Unsafe Error Handling:**
+
 - `GET /gamification` - No try-catch (might throw if stats don't exist)
 - `POST /plan/daily` - LLM errors not explicitly caught
 - `POST /plan/apply` - Batch updates could fail mid-way
 
 **Impact:**
+
 - ⚠️ Unhandled promise rejections crash API routes
 - ⚠️ Clients receive 500 errors without structured response
 - ⚠️ Debugging difficult (no error details in response)
@@ -163,19 +167,24 @@ return NextResponse.json(result); // If service throws, unhandled!
 
 ### 1.5 Authorization Verification Patterns
 
-| Method | Pattern | Consistency |
-|--------|---------|-------------|
-| Tasks | Service-layer check `.eq("user_id", userId)` | ✓ |
-| Goals | Service-layer check `.eq("user_id", userId)` | ✓ |
-| Comments | Service-layer check + task ownership verification | ✓ Strict |
-| Labels | Manual loop to verify ownership on every label | ⚠️ Verbose |
-| Projects | Service-layer check `.eq("user_id", userId)` | ✓ |
-| Spaces | Direct DB, no service wrapper | ✗ Missing wrapper |
+| Method   | Pattern                                           | Consistency       |
+| -------- | ------------------------------------------------- | ----------------- |
+| Tasks    | Service-layer check `.eq("user_id", userId)`      | ✓                 |
+| Goals    | Service-layer check `.eq("user_id", userId)`      | ✓                 |
+| Comments | Service-layer check + task ownership verification | ✓ Strict          |
+| Labels   | Manual loop to verify ownership on every label    | ⚠️ Verbose        |
+| Projects | Service-layer check `.eq("user_id", userId)`      | ✓                 |
+| Spaces   | Direct DB, no service wrapper                     | ✗ Missing wrapper |
 
 **Example (Labels - verbose approach):**
+
 ```typescript
 // Current: Verify ownership for EVERY label
-const { data: tasks } = await db.from("task_labels").select("task_id").eq("user_id", userId).eq("id", labelId);
+const { data: tasks } = await db
+  .from("task_labels")
+  .select("task_id")
+  .eq("user_id", userId)
+  .eq("id", labelId);
 if (tasks.length === 0) throw new AuthError("Label not found");
 
 // Expected: Simpler service wrapper
@@ -183,6 +192,7 @@ const label = await labelService.getLabel(userId, labelId);
 ```
 
 **Impact:**
+
 - ⚠️ Inconsistent complexity
 - ⚠️ Duplication of authorization logic
 - ⚠️ Harder to audit security
@@ -199,22 +209,24 @@ const label = await labelService.getLabel(userId, labelId);
 
 **Trade-offs:**
 
-| Aspect | Email | UUID |
-|--------|-------|------|
-| **Human-readable** | ✓ Yes | ✗ No |
-| **Deduplication** | ✓ Matches OAuth | ⚠️ Need mapping |
-| **Email changes** | ✗ Cannot update | ✓ Can change |
-| **Query performance** | ⚠️ String comparison | ✓ Integer/UUID |
-| **Normalization** | ✗ Case-sensitive | ✓ Consistent |
-| **Data model clarity** | ⚠️ Mixed types | ✓ Single type |
+| Aspect                 | Email                | UUID            |
+| ---------------------- | -------------------- | --------------- |
+| **Human-readable**     | ✓ Yes                | ✗ No            |
+| **Deduplication**      | ✓ Matches OAuth      | ⚠️ Need mapping |
+| **Email changes**      | ✗ Cannot update      | ✓ Can change    |
+| **Query performance**  | ⚠️ String comparison | ✓ Integer/UUID  |
+| **Normalization**      | ✗ Case-sensitive     | ✓ Consistent    |
+| **Data model clarity** | ⚠️ Mixed types       | ✓ Single type   |
 
 **Issues:**
+
 - ⚠️ If user email changes (rare but possible), all records become orphaned
 - ⚠️ Case sensitivity could cause duplicate users (example@gmail.com vs Example@gmail.com)
 - ⚠️ String joins slower than UUID joins at scale
 - ⚠️ Inconsistent with auth.users table structure (which uses UUID id)
 
 **Code Evidence:**
+
 ```typescript
 // Tables use TEXT for user_id
 CREATE TABLE tasks (
@@ -238,6 +250,7 @@ CREATE TABLE tasks (
 **Issue:** Cascading deletes on complex dependency trees could silently delete unexpected data.
 
 **Example Cascade Chain:**
+
 ```
 DELETE task
   ↓ CASCADE
@@ -249,6 +262,7 @@ DELETE task
 ```
 
 **Risk:** Deleting a project cascades to:
+
 1. All tasks in project
 2. All comments on those tasks
 3. All labels assigned
@@ -256,6 +270,7 @@ DELETE task
 5. All subtasks orphaned (parent_task_id = NULL)
 
 **Impact:**
+
 - ⚠️ Difficult to audit what was deleted
 - ⚠️ No soft-delete option (hard delete permanent)
 - ⚠️ No recovery mechanism
@@ -268,16 +283,17 @@ DELETE task
 
 **Potential Performance Issues:**
 
-| Table | Column | Current Index | Needed |
-|-------|--------|--------|--------|
-| tasks | parent_task_id | ✗ | ✓ (for fetching subtasks) |
-| focus_sessions | task_id | ✗ | ✓ (for task focus history) |
-| task_comments | created_at | ✗ | ✓ (for sorting by time) |
-| notifications | created_at | ✗ | ✓ (for reverse-chronological feeds) |
+| Table          | Column         | Current Index | Needed                              |
+| -------------- | -------------- | ------------- | ----------------------------------- |
+| tasks          | parent_task_id | ✗             | ✓ (for fetching subtasks)           |
+| focus_sessions | task_id        | ✗             | ✓ (for task focus history)          |
+| task_comments  | created_at     | ✗             | ✓ (for sorting by time)             |
+| notifications  | created_at     | ✗             | ✓ (for reverse-chronological feeds) |
 
 **Code Location:** `supabase/migrations/0006-*.sql`
 
 **Impact:**
+
 - ⚠️ Table scans on historical queries (focus sessions by date range)
 - ⚠️ Slow subtask fetches as user accumulates tasks
 
@@ -292,20 +308,26 @@ DELETE task
 #### 3.1.1 Rate Limiting (Broken on Serverless)
 
 **Current Implementation:**
+
 ```typescript
 // src/server/rateLimit.ts
 const userRequests = new Map<string, number[]>();
 
-export function rateLimit(userId: string, endpoint: string, limit: number, window: number): boolean {
+export function rateLimit(
+  userId: string,
+  endpoint: string,
+  limit: number,
+  window: number
+): boolean {
   const key = `${userId}:${endpoint}`;
   const now = Date.now();
   const requests = userRequests.get(key) || [];
-  
+
   // Keep only recent requests
-  const recent = requests.filter(t => now - t < window);
-  
+  const recent = requests.filter((t) => now - t < window);
+
   if (recent.length >= limit) return false;
-  
+
   recent.push(now);
   userRequests.set(key, recent);
   return true;
@@ -313,12 +335,14 @@ export function rateLimit(userId: string, endpoint: string, limit: number, windo
 ```
 
 **Issues:**
+
 - ✗ In-memory Map shared across processes
 - ✗ Breaks on serverless (Vercel has ephemeral processes)
 - ✗ No persistence across container restarts
 - ✓ Works locally; fails in production
 
 **Current Usage:**
+
 - Search endpoint only (20 requests/min per user)
 - Other endpoints have no rate limiting
 
@@ -343,6 +367,7 @@ if (error) {
 ```
 
 **Missing:**
+
 - Request ID / Trace ID
 - Request duration (latency)
 - Status codes
@@ -376,12 +401,14 @@ const { data } = await db
 ```
 
 **Endpoints Missing Pagination:**
+
 - `GET /tasks` (could be 1000+ tasks)
 - `GET /goals` (could be 100+ goals)
 - `GET /projects` (could be 50+ projects)
 - `GET /notifications` (could be 1000+ notifications)
 
 **Impact:**
+
 - ⚠️ Slow on users with lots of data
 - ⚠️ Memory bloat (all results in memory)
 - ⚠️ Network bloat (send all records to client)
@@ -396,6 +423,7 @@ const { data } = await db
 **Current State:** No multi-step transactions.
 
 **Issue Example:**
+
 ```
 User applies AI plan with 50 tasks:
   1. Update task 1 ← success
@@ -409,6 +437,7 @@ Partial data corruption: 45 tasks updated, 5 tasks not.
 ```
 
 **Current `plan/apply` Code:**
+
 ```typescript
 for (const task of plan.tasks) {
   await taskService.updateTask(userId, task.id, { order, priority });
@@ -477,15 +506,16 @@ if (error.code === "23505") throw new Error("Duplicate label name");
 
 #### 3.3.1 Missing DELETE Endpoints
 
-| Resource | GET | POST | PATCH | DELETE | Issue |
-|----------|-----|------|-------|--------|-------|
-| Tasks | ✓ | ✓ | ✓ | ✓ | Complete |
-| Goals | ✓ | ✓ | ⚠️ No validation | ✓ | Validation gap |
-| Projects | N/A | Server action | N/A | Server action | Inconsistent |
-| Spaces | ✓ | ✓ | ✓ | ✗ Missing | No DELETE route |
-| Labels | ✓ | ✓ | N/A | ✓ | N/A |
+| Resource | GET | POST          | PATCH            | DELETE        | Issue           |
+| -------- | --- | ------------- | ---------------- | ------------- | --------------- |
+| Tasks    | ✓   | ✓             | ✓                | ✓             | Complete        |
+| Goals    | ✓   | ✓             | ⚠️ No validation | ✓             | Validation gap  |
+| Projects | N/A | Server action | N/A              | Server action | Inconsistent    |
+| Spaces   | ✓   | ✓             | ✓                | ✗ Missing     | No DELETE route |
+| Labels   | ✓   | ✓             | N/A              | ✓             | N/A             |
 
 **Spaces Issue:**
+
 ```typescript
 // No DELETE /spaces/[id] endpoint
 // But DELETE logic exists in service
@@ -521,6 +551,7 @@ import { recurrenceService } from "./recurrenceService"; // ← Dynamic
 ```
 
 **Issue:**
+
 - Not obvious from static analysis
 - No typescript error if recurrenceService removed
 - Circular dependency risk
@@ -601,22 +632,25 @@ USING (EXISTS (SELECT 1 FROM tasks WHERE id = task_id AND user_id = current_sett
 ## Recommendations for Next Phase
 
 **Immediate (Week 1):**
+
 - Add Zod validation to PATCH /goals/[id]
 - Migrate spaces GET/PATCH to spaceService
 - Wrap all service calls in try-catch error handling
 
 **Short-term (Week 2-3):**
+
 - Implement pagination for list endpoints
 - Standardize mutation pattern (API routes for all)
 - Add structured logging middleware
 
 **Medium-term (Month 2):**
+
 - Implement Redis-backed rate limiting
 - Add transaction support for bulk operations
 - Document and consolidate RLS policies
 
 **Long-term (Q2-Q3):**
+
 - Migrate user_id from email to UUID
 - Add audit logging for compliance
 - Performance optimization (indexes, caching)
-

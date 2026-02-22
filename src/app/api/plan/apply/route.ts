@@ -30,7 +30,7 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           error: "Invalid input",
-          details: result.error.format()
+          details: result.error.format(),
         },
         { status: 400 }
       );
@@ -44,10 +44,7 @@ export async function POST(req: Request) {
     const daysDiff = Math.abs((planDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
     if (daysDiff > 365) {
-      return NextResponse.json(
-        { error: "Date must be within one year of today" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Date must be within one year of today" }, { status: 400 });
     }
 
     // 1. Prepare tasks for upsert

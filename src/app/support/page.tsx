@@ -10,8 +10,8 @@ export default function SupportPage() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 md:px-8">
       <div>
-        <h1 className="mb-2 text-4xl font-bold text-foreground">Support</h1>
-        <p className="mb-12 text-muted-foreground">Get in touch with us. We're here to help.</p>
+        <h1 className="text-foreground mb-2 text-4xl font-bold">Support</h1>
+        <p className="text-muted-foreground mb-12">Get in touch with us. We're here to help.</p>
         <SupportPageClient />
       </div>
     </div>

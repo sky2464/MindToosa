@@ -23,19 +23,23 @@ export default async function ProjectDetailPage({ params }: Props) {
   const tasks = await projectService.getProjectTasks(userId, id);
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-background">
+    <div className="bg-background flex h-screen flex-col overflow-hidden">
       {/* Header */}
-      <header className="z-10 flex shrink-0 items-center justify-between border-b border-border bg-card px-6 py-4 shadow-sm shadow-black/20">
+      <header className="border-border bg-card z-10 flex shrink-0 items-center justify-between border-b px-6 py-4 shadow-sm shadow-black/20">
         <div className="flex items-center gap-4">
-          <Link href="/projects" className="text-muted-foreground transition-colors hover:text-foreground">
+          <Link
+            href="/projects"
+            className="text-muted-foreground hover:text-foreground transition-colors"
+          >
             &larr; Projects
           </Link>
-          <h1 className="text-xl font-bold text-foreground">{project.title}</h1>
+          <h1 className="text-foreground text-xl font-bold">{project.title}</h1>
           <span
-            className={`rounded-full px-2 py-0.5 text-xs font-medium ${project.status === "active"
-              ? "bg-green-500/10 text-green-400"
-              : "bg-zinc-800 text-zinc-400"
-              }`}
+            className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+              project.status === "active"
+                ? "bg-green-500/10 text-green-400"
+                : "bg-zinc-800 text-zinc-400"
+            }`}
           >
             {project.status}
           </span>
@@ -53,9 +57,9 @@ export default async function ProjectDetailPage({ params }: Props) {
         </div>
 
         {/* AI Sidebar */}
-        <div className="z-20 flex w-80 flex-col overflow-hidden border-l border-border bg-card shadow-xl shadow-black/20">
-          <div className="border-b border-border bg-secondary/50 p-4">
-            <h2 className="text-sm font-semibold text-muted-foreground">Project Assistant</h2>
+        <div className="border-border bg-card z-20 flex w-80 flex-col overflow-hidden border-l shadow-xl shadow-black/20">
+          <div className="border-border bg-secondary/50 border-b p-4">
+            <h2 className="text-muted-foreground text-sm font-semibold">Project Assistant</h2>
           </div>
           <div className="flex-1 overflow-hidden">
             <AIChat project={project} tasks={tasks} />

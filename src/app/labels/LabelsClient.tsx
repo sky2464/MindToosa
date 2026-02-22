@@ -7,9 +7,16 @@ import { apiClient } from "@/lib/apiClient";
 import { TaskLabel } from "@/core/planTypes";
 
 const PRESET_COLORS = [
-  "#6366f1", "#8b5cf6", "#ec4899", "#ef4444",
-  "#f97316", "#eab308", "#22c55e", "#14b8a6",
-  "#3b82f6", "#64748b",
+  "#6366f1",
+  "#8b5cf6",
+  "#ec4899",
+  "#ef4444",
+  "#f97316",
+  "#eab308",
+  "#22c55e",
+  "#14b8a6",
+  "#3b82f6",
+  "#64748b",
 ];
 
 interface LabelsClientProps {
@@ -78,30 +85,27 @@ export default function LabelsClient({ initialLabels }: LabelsClientProps) {
   };
 
   return (
-    <div className="container mx-auto max-w-2xl space-y-8 py-8 px-4">
+    <div className="container mx-auto max-w-2xl space-y-8 px-4 py-8">
       <div className="flex items-center gap-3">
         <div className="rounded-full bg-indigo-500/10 p-2">
           <Tag className="h-5 w-5 text-indigo-400" />
         </div>
-        <h1 className="text-2xl font-bold text-foreground">Labels</h1>
-        <span className="rounded-full bg-zinc-800 px-2 py-0.5 text-xs text-muted-foreground">
+        <h1 className="text-foreground text-2xl font-bold">Labels</h1>
+        <span className="text-muted-foreground rounded-full bg-zinc-800 px-2 py-0.5 text-xs">
           {labels.length}
         </span>
       </div>
 
       {/* Create form */}
-      <form
-        onSubmit={handleCreate}
-        className="glass-card rounded-2xl p-5 space-y-4"
-      >
-        <p className="text-sm font-semibold text-foreground">New Label</p>
+      <form onSubmit={handleCreate} className="glass-card space-y-4 rounded-2xl p-5">
+        <p className="text-foreground text-sm font-semibold">New Label</p>
         <div className="flex gap-3">
           <input
             type="text"
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             placeholder="Label name…"
-            className="flex-1 rounded-xl border border-zinc-700 bg-zinc-900/50 px-4 py-2 text-sm text-white placeholder:text-zinc-500 outline-none focus:border-indigo-500/50"
+            className="flex-1 rounded-xl border border-zinc-700 bg-zinc-900/50 px-4 py-2 text-sm text-white outline-none placeholder:text-zinc-500 focus:border-indigo-500/50"
           />
           <button
             type="submit"
@@ -119,7 +123,7 @@ export default function LabelsClient({ initialLabels }: LabelsClientProps) {
               type="button"
               onClick={() => setNewColor(color)}
               className={`h-6 w-6 rounded-full transition-transform hover:scale-110 ${
-                newColor === color ? "ring-2 ring-white/50 scale-110" : ""
+                newColor === color ? "scale-110 ring-2 ring-white/50" : ""
               }`}
               style={{ backgroundColor: color }}
               aria-label={`Select color ${color}`}
@@ -131,15 +135,12 @@ export default function LabelsClient({ initialLabels }: LabelsClientProps) {
       {/* Label list */}
       <div className="space-y-2">
         {labels.length === 0 && (
-          <p className="text-center text-sm text-muted-foreground py-8">
+          <p className="text-muted-foreground py-8 text-center text-sm">
             No labels yet. Create one above.
           </p>
         )}
         {labels.map((label) => (
-          <div
-            key={label.id}
-            className="glass-card flex items-center gap-3 rounded-xl px-4 py-3"
-          >
+          <div key={label.id} className="glass-card flex items-center gap-3 rounded-xl px-4 py-3">
             <span
               className="h-3 w-3 shrink-0 rounded-full"
               style={{ backgroundColor: label.color }}
@@ -160,7 +161,7 @@ export default function LabelsClient({ initialLabels }: LabelsClientProps) {
                       type="button"
                       onClick={() => setEditColor(color)}
                       className={`h-4 w-4 rounded-full transition-transform hover:scale-110 ${
-                        editColor === color ? "ring-1 ring-white/50 scale-110" : ""
+                        editColor === color ? "scale-110 ring-1 ring-white/50" : ""
                       }`}
                       style={{ backgroundColor: color }}
                       aria-label={`Select color ${color}`}
@@ -169,14 +170,14 @@ export default function LabelsClient({ initialLabels }: LabelsClientProps) {
                 </div>
                 <button
                   onClick={() => handleUpdate(label.id!)}
-                  className="text-green-400 hover:text-green-300 transition-colors"
+                  className="text-green-400 transition-colors hover:text-green-300"
                   aria-label="Save label"
                 >
                   <Check size={16} />
                 </button>
                 <button
                   onClick={() => setEditingId(null)}
-                  className="text-zinc-500 hover:text-zinc-300 transition-colors"
+                  className="text-zinc-500 transition-colors hover:text-zinc-300"
                   aria-label="Cancel edit"
                 >
                   <X size={16} />
@@ -184,17 +185,17 @@ export default function LabelsClient({ initialLabels }: LabelsClientProps) {
               </>
             ) : (
               <>
-                <span className="flex-1 text-sm font-medium text-foreground">{label.name}</span>
+                <span className="text-foreground flex-1 text-sm font-medium">{label.name}</span>
                 <button
                   onClick={() => startEdit(label)}
-                  className="text-zinc-500 hover:text-zinc-300 transition-colors"
+                  className="text-zinc-500 transition-colors hover:text-zinc-300"
                   aria-label={`Edit label ${label.name}`}
                 >
                   <Pencil size={14} />
                 </button>
                 <button
                   onClick={() => handleDelete(label.id!)}
-                  className="text-zinc-500 hover:text-red-400 transition-colors"
+                  className="text-zinc-500 transition-colors hover:text-red-400"
                   aria-label={`Delete label ${label.name}`}
                 >
                   <Trash2 size={14} />

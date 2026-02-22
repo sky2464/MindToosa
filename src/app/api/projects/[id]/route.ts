@@ -13,10 +13,7 @@ const ProjectUpdateSchema = z
   })
   .strict();
 
-export async function GET(
-  _req: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
   const userId = session?.user?.email;
   if (!userId) return new NextResponse("Unauthorized", { status: 401 });
@@ -31,10 +28,7 @@ export async function GET(
   }
 }
 
-export async function PATCH(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
   const userId = session?.user?.email;
   if (!userId) return new NextResponse("Unauthorized", { status: 401 });
@@ -57,10 +51,7 @@ export async function PATCH(
   }
 }
 
-export async function DELETE(
-  _req: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
   const userId = session?.user?.email;
   if (!userId) return new NextResponse("Unauthorized", { status: 401 });

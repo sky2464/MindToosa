@@ -41,7 +41,9 @@ export default function AmbientControls() {
 
   const initAudioContext = () => {
     if (!audioContextRef.current) {
-      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const AudioCtx =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       audioContextRef.current = new AudioCtx();
     }
     // Resume if suspended (browser requirements)

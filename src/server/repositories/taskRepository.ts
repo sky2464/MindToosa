@@ -14,11 +14,7 @@ const UUIDSchema = z.string().uuid();
 
 export class SupabaseTaskRepository implements ITaskRepository {
   async findMany(userId: string, filters: TaskFilters = {}): Promise<Task[]> {
-    let query = db
-      .from("tasks")
-      .select("*")
-      .eq("user_id", userId)
-      .is("soft_deleted_at", null);
+    let query = db.from("tasks").select("*").eq("user_id", userId).is("soft_deleted_at", null);
 
     if (filters.spaceId) query = query.eq("space_id", filters.spaceId);
     if (filters.date) query = query.eq("scheduled_for", filters.date);
@@ -53,11 +49,7 @@ export class SupabaseTaskRepository implements ITaskRepository {
     if (!validation.success) {
       throw new ValidationError("Validation failed", undefined, validation.error.format());
     }
-    const { data: row, error } = await db
-      .from("tasks")
-      .insert(validation.data)
-      .select()
-      .single();
+    const { data: row, error } = await db.from("tasks").insert(validation.data).select().single();
     if (error) throw new AppError(error.message, "DB_ERROR");
     return row as Task;
   }
@@ -97,11 +89,7 @@ export class SupabaseTaskRepository implements ITaskRepository {
 
   async permanentDelete(userId: string, taskId: string): Promise<void> {
     if (!UUIDSchema.safeParse(taskId).success) throw new ValidationError("Invalid task ID");
-    const { error } = await db
-      .from("tasks")
-      .delete()
-      .eq("id", taskId)
-      .eq("user_id", userId);
+    const { error } = await db.from("tasks").delete().eq("id", taskId).eq("user_id", userId);
     if (error) throw new AppError(error.message, "DB_ERROR");
   }
 

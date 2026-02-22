@@ -44,6 +44,7 @@ This document serves as the primary context and rulebook for the MindToosa codeb
 ### Public Pages Pattern
 
 MindToosa includes public-facing pages (Help, Docs, About, Support) that:
+
 - Do NOT require authentication (not protected by `proxy.ts`)
 - Are statically prerendered for fast delivery
 - Use the Midnight Glass design system
@@ -51,6 +52,7 @@ MindToosa includes public-facing pages (Help, Docs, About, Support) that:
 - Follow SEO best practices with proper Metadata
 
 **Reusable components for content pages:**
+
 - `FaqItem` — Accordion for FAQs with `aria-expanded`
 - `DocSection` — Section wrapper with scroll anchoring
 - `ContactCard` — Icon + link cards for contact methods

@@ -132,10 +132,11 @@ export default function FocusTimer({ activeTaskId, onComplete }: FocusTimerProps
             <button
               key={minutes}
               onClick={() => setSelectedMinutes(minutes)}
-              className={`rounded-lg px-2.5 py-1 text-xs font-bold transition-all ${selectedMinutes === minutes
-                ? "bg-indigo-600/30 text-indigo-300 border border-indigo-500/30"
-                : "text-zinc-600 hover:text-zinc-400"
-                }`}
+              className={`rounded-lg px-2.5 py-1 text-xs font-bold transition-all ${
+                selectedMinutes === minutes
+                  ? "border border-indigo-500/30 bg-indigo-600/30 text-indigo-300"
+                  : "text-zinc-600 hover:text-zinc-400"
+              }`}
             >
               {label}
             </button>
@@ -146,7 +147,9 @@ export default function FocusTimer({ activeTaskId, onComplete }: FocusTimerProps
       {/* SVG Visualizer (Nano Banana Pro + Gemini 3.1 SVGs) */}
       <SVGVisualizer
         mode={mode}
-        progress={selectedMinutes > 0 ? ((selectedMinutes * 60) - timeLeft) / (selectedMinutes * 60) : 0}
+        progress={
+          selectedMinutes > 0 ? (selectedMinutes * 60 - timeLeft) / (selectedMinutes * 60) : 0
+        }
       />
 
       <div
@@ -184,7 +187,7 @@ export default function FocusTimer({ activeTaskId, onComplete }: FocusTimerProps
                 <button
                   onClick={markTaskDone}
                   disabled={markingDone}
-                  className="flex items-center gap-1 rounded-lg bg-emerald-600/20 border border-emerald-500/30 px-3 py-1 text-xs font-bold text-emerald-400 transition hover:bg-emerald-600/30"
+                  className="flex items-center gap-1 rounded-lg border border-emerald-500/30 bg-emerald-600/20 px-3 py-1 text-xs font-bold text-emerald-400 transition hover:bg-emerald-600/30"
                 >
                   <Check size={12} /> Yes
                 </button>

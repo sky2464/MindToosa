@@ -3,18 +3,14 @@ import { AppError } from "@/lib/errors";
 
 /**
  * Gamification Service
- * 
+ *
  * Manages user stats, XP, levels, and streaks for the gamification system.
  * Uses the centralized database client from @/server/db.
  */
 
 export const gamificationService = {
   async getStats(userId: string) {
-    const { data, error } = await db
-      .from("user_stats")
-      .select("*")
-      .eq("user_id", userId)
-      .single();
+    const { data, error } = await db.from("user_stats").select("*").eq("user_id", userId).single();
 
     if (error && error.code === "PGRST116") {
       // No stats found, create default

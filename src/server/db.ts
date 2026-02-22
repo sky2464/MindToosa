@@ -1,26 +1,53 @@
-import { createClient } from "@supabase/supabase-js";
-import { env } from "@/server/env";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 /**
- * Supabase Database Client (Service Role)
- * 
- * IMPORTANT: This client uses the service role key, which bypasses Row Level Security (RLS).
- * 
- * Security Architecture:
- * - RLS policies are defined in the database for defense-in-depth
- * - This service role client bypasses RLS for server-side operations
- * - Authorization is enforced in the service layer (goalService, taskService, etc.)
- * - Each service method MUST verify userId matches the authenticated user
- * 
- * Why Service Role Key?
- * - Simplifies server-side operations (no need to pass user context to Supabase)
- * - Allows admin operations when needed
- * - Service layer provides centralized authorization logic
- * 
- * Security Requirements:
- * - NEVER expose this client to the browser
- * - ALWAYS verify userId in service methods before database operations
- * - Use .eq("user_id", userId) in all queries to enforce data isolation
+ * Lazy-initialized Supabase Database Client (Service Role)
+ *
+ * This module provides two exports:
+ * - `getDb()` to explicitly obtain the initialized client
+ * - `db` which is a proxy that forwards calls to the real client
+ *
+ * Both avoid importing validated `env` at module-import time so that builds
+ * and static analysis don't trigger runtime-only environment validation.
  */
 
-export const db = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
+let cachedDb: SupabaseClient | null = null;
+
+function initDb(): SupabaseClient {
+	const supabaseUrl = process.env.SUPABASE_URL;
+	const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+	if (!supabaseUrl || !supabaseKey) {
+		throw new Error(
+			"SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set in the runtime environment"
+		);
+	}
+
+	cachedDb = createClient(supabaseUrl, supabaseKey);
+	return cachedDb;
+}
+
+export function getDb(): SupabaseClient {
+	return cachedDb ?? initDb();
+}
+
+// Backwards-compatible proxy so existing imports `import { db } from '@/server/db'`
+// continue to work without changing call sites. The proxy forwards property
+// access and method calls to the lazily-initialized client.
+const dbProxy = new Proxy({} as SupabaseClient, {
+	get(_, prop: string | symbol) {
+		const target = getDb();
+		// @ts-ignore - forward to real client
+		const val = (target as any)[prop];
+		if (typeof val === "function") return val.bind(target);
+		return val;
+	},
+	set(_, prop: string | symbol, value) {
+		const target = getDb();
+		// @ts-ignore
+		target[prop as any] = value;
+		return true;
+	},
+});
+
+export const db = dbProxy as SupabaseClient;

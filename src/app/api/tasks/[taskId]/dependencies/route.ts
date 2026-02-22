@@ -9,10 +9,7 @@ const DependencySchema = z.object({
   blocking_task_id: z.string().uuid("Invalid blocking task ID"),
 });
 
-export async function GET(
-  _req: Request,
-  { params }: { params: Promise<{ taskId: string }> }
-) {
+export async function GET(_req: Request, { params }: { params: Promise<{ taskId: string }> }) {
   const session = await auth();
   const userId = session?.user?.email;
   if (!userId) return new NextResponse("Unauthorized", { status: 401 });
@@ -26,10 +23,7 @@ export async function GET(
   }
 }
 
-export async function POST(
-  req: Request,
-  { params }: { params: Promise<{ taskId: string }> }
-) {
+export async function POST(req: Request, { params }: { params: Promise<{ taskId: string }> }) {
   const session = await auth();
   const userId = session?.user?.email;
   if (!userId) return new NextResponse("Unauthorized", { status: 401 });
@@ -51,10 +45,7 @@ export async function POST(
   }
 }
 
-export async function DELETE(
-  req: Request,
-  { params }: { params: Promise<{ taskId: string }> }
-) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ taskId: string }> }) {
   const session = await auth();
   const userId = session?.user?.email;
   if (!userId) return new NextResponse("Unauthorized", { status: 401 });

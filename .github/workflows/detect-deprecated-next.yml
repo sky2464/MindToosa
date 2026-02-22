@@ -1,0 +1,25 @@
+name: Detect deprecated Next.js artifacts
+
+on:
+  pull_request:
+    paths:
+      - "**/*"
+
+jobs:
+  check-deprecated-next:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Detect middleware files
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --prune --depth=1 origin ${{ github.event.pull_request.base.ref }}
+          BASE="origin/${{ github.event.pull_request.base.ref }}"
+          CHANGED=$(git diff --name-only "$BASE"...${{ github.sha }}) || true
+          echo "Changed files:" "$CHANGED"
+          if echo "$CHANGED" | grep -E '(^|/)middleware\.(ts|js|tsx|jsx)$' >/dev/null; then
+            echo "ERROR: Detected middleware.* file in PR — project uses Next.js 16 with proxy.ts. Please use proxy.ts instead of middleware.*" >&2
+            exit 1
+          fi
