@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { db } from "@/server/db";
+import { getDb } from "@/server/db";
+export const dynamic = "force-dynamic";
 import { taskService } from "@/server/services/taskService";
 import { recurrenceService } from "@/server/services/recurrenceService";
 import { handleRouteError } from "@/lib/routeError";
@@ -24,6 +25,7 @@ export async function GET(req: Request) {
 
     // Fetch all active recurring tasks that haven't already spawned for today
     // A recurring task is one with recurrence_rule set and status != done/cancelled
+    const db = getDb();
     const { data: recurringTasks, error } = await db
       .from("tasks")
       .select("*")
