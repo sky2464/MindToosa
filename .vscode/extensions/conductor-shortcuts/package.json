@@ -1,0 +1,41 @@
+{
+  "name": "conductor-shortcuts",
+  "displayName": "Conductor Shortcuts",
+  "description": "Quickly copy /conductor.* slash commands to clipboard and open Copilot Chat.",
+  "version": "0.0.0",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "main": "extension.js",
+  "activationEvents": [
+    "onCommand:conductor.copyStatus",
+    "onCommand:conductor.copySetup",
+    "onCommand:conductor.copyNewTrack",
+    "onCommand:conductor.copyImplement",
+    "onCommand:conductor.copyRevert"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "conductor.copyStatus",
+        "title": "Conductor: Copy /conductor.status"
+      },
+      {
+        "command": "conductor.copySetup",
+        "title": "Conductor: Copy /conductor.setup"
+      },
+      {
+        "command": "conductor.copyNewTrack",
+        "title": "Conductor: Copy /conductor.newTrack <title>"
+      },
+      {
+        "command": "conductor.copyImplement",
+        "title": "Conductor: Copy /conductor.implement <track_id>"
+      },
+      {
+        "command": "conductor.copyRevert",
+        "title": "Conductor: Copy /conductor.revert <track_id> <phase|task>"
+      }
+    ]
+  }
+}
