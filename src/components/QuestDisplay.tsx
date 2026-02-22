@@ -14,7 +14,8 @@ export default function QuestDisplay() {
   const [stats, setStats] = useState<UserStats | null>(null);
 
   useEffect(() => {
-    apiClient.get<UserStats>("/api/gamification")
+    apiClient
+      .get<UserStats>("/api/gamification")
       .then((data) => {
         setStats(data);
       })
@@ -49,7 +50,9 @@ export default function QuestDisplay() {
             <div className="h-2 w-32 overflow-hidden rounded-full bg-zinc-800">
               <div
                 className="h-full bg-gradient-to-r from-indigo-500 to-fuchsia-500 transition-all duration-1000"
-                ref={(el) => { if (el) el.style.width = `${progress}%`; }}
+                ref={(el) => {
+                  if (el) el.style.width = `${progress}%`;
+                }}
               />
             </div>
             <span className="font-mono text-xs text-zinc-500">{stats.xp} XP</span>

@@ -1,0 +1,6 @@
+# CODEOWNERS — sensitive paths owned by @sky2464
+/src/server/services/ @sky2464
+/src/server/env.ts @sky2464
+/auth.ts @sky2464
+/proxy.ts @sky2464
+/supabase/migrations/ @sky2464

@@ -11,7 +11,7 @@ The project is in the **MVP Enhancements Phase**. Focus Session Persistence and 
     - Directory structure follows `src/core` (domain), `src/server` (infra), `app` (UI).
 2.  **Authentication**:
     - Auth.js (NextAuth v5) configured with Google Provider.
-    - Middleware/Env vars set up.
+    - Proxy (`proxy.ts`) / Env vars set up (historically middleware).
 3.  **Data Modeling**:
     - Zod schemas defined for `Space`, `Goal`, `Task`, `DailyPlan` in `src/core/planTypes.ts`.
 4.  **API Implementation (Sprint B - Backend)**:

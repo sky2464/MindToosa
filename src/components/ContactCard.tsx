@@ -10,14 +10,21 @@ interface ContactCardProps {
   ariaLabel?: string;
 }
 
-export function ContactCard({ icon: Icon, title, description, href, external, ariaLabel }: ContactCardProps) {
+export function ContactCard({
+  icon: Icon,
+  title,
+  description,
+  href,
+  external,
+  ariaLabel,
+}: ContactCardProps) {
   const content = (
     <div className="flex items-start gap-4">
       <div className="mt-1 flex-shrink-0">
-        <Icon className="w-6 h-6 text-primary" aria-label={ariaLabel || title} />
+        <Icon className="text-primary h-6 w-6" aria-label={ariaLabel || title} />
       </div>
       <div className="flex-1">
-        <h3 className="font-semibold text-foreground mb-1">{title}</h3>
+        <h3 className="text-foreground mb-1 font-semibold">{title}</h3>
         <p className="text-muted-foreground text-sm">{description}</p>
       </div>
     </div>
@@ -25,7 +32,7 @@ export function ContactCard({ icon: Icon, title, description, href, external, ar
 
   if (!href) {
     return (
-      <div className="p-6 bg-card border border-border rounded-lg hover:border-primary/50 transition-colors">
+      <div className="bg-card border-border hover:border-primary/50 rounded-lg border p-6 transition-colors">
         {content}
       </div>
     );
@@ -36,7 +43,7 @@ export function ContactCard({ icon: Icon, title, description, href, external, ar
       href={href}
       target={external ? "_blank" : undefined}
       rel={external ? "noopener noreferrer" : undefined}
-      className="block p-6 bg-card border border-border rounded-lg hover:border-primary hover:bg-secondary transition-colors group"
+      className="bg-card border-border hover:border-primary hover:bg-secondary group block rounded-lg border p-6 transition-colors"
       aria-label={ariaLabel || title}
     >
       {content}

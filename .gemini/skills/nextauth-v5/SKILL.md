@@ -30,13 +30,13 @@ description: Guide for using NextAuth.js v5 (Beta) with Next.js App Router
 
 ## 3. Edge Compatibility
 
-- v5 is designed for Edge runtimes. Ensure your database adapter (if used) is Edge-compatible or split auth logic into edge-safe (middleware) and node-dependent parts.
+- v5 is designed for Edge runtimes. Ensure your database adapter (if used) is Edge-compatible or split auth logic into edge-safe (proxy / historically middleware) and node-dependent parts.
 
-## 4. Middleware
+## 4. Proxy (historically middleware)
 
-- **`auth` Wrapper**: Middleware is simpler.
+- **`auth` Wrapper**: Proxy-based auth gating is simpler.
   ```typescript
-  export { auth as middleware } from "@/auth";
+  export { auth as proxy } from "@/auth";
   ```
 - **Matchers**: Configure strict matchers to avoid running auth logic on static assets.
 

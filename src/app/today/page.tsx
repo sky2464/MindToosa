@@ -44,7 +44,7 @@ export default async function TodayPage() {
   );
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden p-4 sm:p-6 lg:p-8 pb-32 md:pb-24">
+    <div className="relative min-h-screen overflow-x-hidden p-4 pb-32 sm:p-6 md:pb-24 lg:p-8">
       {/* Minimal Header */}
       <header className="mb-8 flex items-center justify-between px-2">
         <div>

@@ -58,7 +58,6 @@ export default function KanbanBoard({
     try {
       await handleTaskMove(draggedTaskId, status);
     } catch (error) {
-
       setTasks(tasks); // Revert
       addToast("Failed to update task status.", "error");
     }
@@ -76,7 +75,6 @@ export default function KanbanBoard({
       addToast(`Created ${subtasks.length} subtasks for "${task.title}"`, "success");
       router.refresh();
     } catch (e) {
-
       addToast("Failed to break down task.", "error");
     } finally {
       setIsBreakingDown(null);
@@ -123,12 +121,12 @@ export default function KanbanBoard({
         {columns.map((col) => (
           <div
             key={col.id}
-            className="flex max-h-full w-80 min-w-[320px] flex-col rounded-xl border border-border bg-secondary/30"
+            className="border-border bg-secondary/30 flex max-h-full w-80 min-w-[320px] flex-col rounded-xl border"
             onDragOver={onDragOver}
             onDrop={(e) => onDrop(e, col.id)}
           >
             {/* Column Header */}
-            <div className="sticky top-0 z-10 flex items-center justify-between bg-transparent p-3 font-semibold text-muted-foreground">
+            <div className="text-muted-foreground sticky top-0 z-10 flex items-center justify-between bg-transparent p-3 font-semibold">
               <span className="flex items-center gap-2">
                 {col.title}
                 <span className="rounded-full bg-zinc-800 px-2 py-0.5 text-[10px] text-zinc-400">
@@ -150,7 +148,9 @@ export default function KanbanBoard({
                     className="glass-card group cursor-grab rounded-lg p-3 whitespace-normal transition-all hover:border-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/5 active:cursor-grabbing"
                   >
                     <div className="mb-2 flex items-start justify-between">
-                      <p className="text-sm leading-snug font-medium text-foreground">{task.title}</p>
+                      <p className="text-foreground text-sm leading-snug font-medium">
+                        {task.title}
+                      </p>
                       <button
                         onClick={() => handleBreakDown(task)}
                         disabled={!!isBreakingDown}
@@ -183,7 +183,7 @@ export default function KanbanBoard({
                 <input
                   name="title"
                   placeholder="Add task..."
-                  className="w-full rounded-lg border border-transparent bg-zinc-900 px-3 py-2 text-sm text-foreground shadow-sm transition-all placeholder:text-zinc-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
+                  className="text-foreground w-full rounded-lg border border-transparent bg-zinc-900 px-3 py-2 text-sm shadow-sm transition-all placeholder:text-zinc-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
                   autoComplete="off"
                 />
                 <button

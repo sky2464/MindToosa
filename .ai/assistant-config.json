@@ -1,0 +1,44 @@
+{
+  "project": "MindToosa",
+  "version": "1.0.0",
+  "framework": { "name": "next", "major": 16, "notes": "Use proxy.ts instead of proxy.ts" },
+  "rules": [
+    {
+      "id": "next-proxy-only",
+      "type": "hard",
+      "description": "Use proxy.ts instead of proxy.ts",
+      "forbid": ["proxy.ts", "proxy.js", "proxy.tsx", "proxy.jsx"],
+      "recommend": ["proxy.ts"]
+    },
+    {
+      "id": "zod-validate",
+      "type": "hard",
+      "description": "Validate all external input with Zod",
+      "require": ["zod"]
+    },
+    {
+      "id": "no-eslint",
+      "type": "soft",
+      "description": "Project intentionally does not use ESLint (see SECURITY.md for rationale)"
+    }
+  ],
+  "sensitive_paths": [
+    "src/server/services/**",
+    "src/server/env.ts",
+    "auth.ts",
+    "proxy.ts",
+    "supabase/migrations/**"
+  ],
+  "preflight_checks": [
+    "no-middleware-files",
+    "zod-present-for-new-routes",
+    "confirm-sensitive-human-review"
+  ],
+  "package_policy": {
+    "mode": "recommend-updates",
+    "auto_pr": true,
+    "allow_auto_merge": false
+  },
+  "recommendations": [".vscode/extensions.json", ".devcontainer/devcontainer.json"],
+  "metadata": { "createdBy": "copilot", "date": "2026-02-21" }
+}

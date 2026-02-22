@@ -7,25 +7,25 @@ import { jsonEnvelope } from "@/lib/apiEnvelope";
 import { handleRouteError } from "@/lib/routeError";
 
 export async function GET(request: NextRequest) {
-    const session = await auth();
-    const userEmail = session?.user?.email;
-    if (!userEmail) return new NextResponse("Unauthorized", { status: 401 });
+  const session = await auth();
+  const userEmail = session?.user?.email;
+  if (!userEmail) return new NextResponse("Unauthorized", { status: 401 });
 
-    const userId = userEmail;
-    const tracer = createTracer(request, userId);
+  const userId = userEmail;
+  const tracer = createTracer(request, userId);
 
-    if (!(await rateLimit(userId, { limit: 20, windowMs: 60000 }))) {
-        return new NextResponse("Too Many Requests", { status: 429 });
-    }
+  if (!(await rateLimit(userId, { limit: 20, windowMs: 60000 }))) {
+    return new NextResponse("Too Many Requests", { status: 429 });
+  }
 
-    const q = request.nextUrl.searchParams.get("q") ?? "";
+  const q = request.nextUrl.searchParams.get("q") ?? "";
 
-    try {
-        const results = await searchService.search(userId, q);
-        tracer.end(200, { q, resultCount: Array.isArray(results) ? results.length : 0 });
-        return jsonEnvelope(results);
-    } catch (error: unknown) {
-        tracer.error(error);
-        return handleRouteError(error);
-    }
+  try {
+    const results = await searchService.search(userId, q);
+    tracer.end(200, { q, resultCount: Array.isArray(results) ? results.length : 0 });
+    return jsonEnvelope(results);
+  } catch (error: unknown) {
+    tracer.error(error);
+    return handleRouteError(error);
+  }
 }

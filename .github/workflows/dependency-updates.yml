@@ -1,0 +1,33 @@
+name: Dependency Updates (ncu + PR)
+
+on:
+  schedule:
+    - cron: '0 3 * * 1' # weekly on Monday UTC
+  workflow_dispatch: {}
+
+jobs:
+  upgrade-deps:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install npm-check-updates
+        run: npm ci --no-audit --prefer-offline
+      - name: Run npm-check-updates and install
+        run: |
+          npx npm-check-updates -u
+          npm install
+      - name: Create PR for dependency upgrades
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: chore(deps): upgrade dependencies
+          branch: chore/auto-deps-updates
+          title: "chore(deps): automated dependency upgrades"
+          body: |
+            Automated dependency upgrade via workflow.
+          labels: "chore,deps"

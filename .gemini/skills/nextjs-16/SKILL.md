@@ -69,10 +69,10 @@ description: Best practices for developing with Next.js 16 App Router, Server Ac
   }
   ```
 
-## 6. Proxy (Formerly Middleware)
+## 6. Proxy (historically `middleware.ts`) (Formerly Middleware)
 
 > [!WARNING]
-> **Middleware Renamed to Proxy**: As of Next.js 16, `middleware.ts` has been renamed to `proxy.ts`. The term "middleware" was confusing (often mistaken for Express middleware), and "proxy" better describes its purpose: running code at the network boundary before requests reach your app.
+> **Middleware Renamed to Proxy**: As of Next.js 16, `proxy.ts` has been renamed to `proxy.ts`. The term "middleware" was confusing (often mistaken for Express middleware), and "proxy" better describes its purpose: running code at the network boundary before requests reach your app.
 
 ### When to Use Proxy
 
@@ -82,7 +82,7 @@ description: Best practices for developing with Next.js 16 App Router, Server Ac
 
 ### Migration from Middleware
 
-If you have an existing `middleware.ts` file, migrate using the official codemod:
+If you have an existing `proxy.ts` file, migrate using the official codemod:
 
 ```bash
 npx @next/codemod@canary middleware-to-proxy .
@@ -90,8 +90,8 @@ npx @next/codemod@canary middleware-to-proxy .
 
 This will:
 
-- Rename `middleware.ts` → `proxy.ts`
-- Rename `export function middleware()` → `export function proxy()`
+- Rename `proxy.ts` → `proxy.ts`
+- Rename `export function proxy()` → `export function proxy()`
 
 ### Basic Proxy Structure
 

@@ -1,0 +1,14 @@
+{
+  "recommendations": [
+    "esbenp.prettier-vscode",
+    "editorconfig.editorconfig",
+    "dsznajder.es7-react-js-snippets",
+    "ms-vscode.vscode-typescript-next",
+    "eamodio.gitlens",
+    "christian-kohler.npm-intellisense",
+    "eg2.vscode-npm-script",
+    "redhat.vscode-yaml",
+    "GitHub.copilot",
+    "GitHub.copilot-chat"
+  ]
+}

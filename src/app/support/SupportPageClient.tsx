@@ -49,7 +49,7 @@ export default function SupportPageClient() {
   return (
     <>
       <section className="mb-16">
-        <h2 className="mb-6 text-2xl font-bold text-foreground">Contact Us</h2>
+        <h2 className="text-foreground mb-6 text-2xl font-bold">Contact Us</h2>
         <div className="space-y-4">
           <ContactCard
             icon={Mail}
@@ -76,10 +76,13 @@ export default function SupportPageClient() {
 
       {/* Support Form */}
       <section className="mb-16">
-        <h2 className="mb-6 text-2xl font-bold text-foreground">Send us a Message</h2>
-        <form onSubmit={handleSubmit} className="bg-card border border-border rounded-lg p-8 max-w-2xl">
+        <h2 className="text-foreground mb-6 text-2xl font-bold">Send us a Message</h2>
+        <form
+          onSubmit={handleSubmit}
+          className="bg-card border-border max-w-2xl rounded-lg border p-8"
+        >
           <div className="mb-6">
-            <label htmlFor="email" className="block mb-2 font-semibold text-foreground">
+            <label htmlFor="email" className="text-foreground mb-2 block font-semibold">
               Email Address
             </label>
             <input
@@ -89,13 +92,13 @@ export default function SupportPageClient() {
               value={formData.email}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 bg-background border border-border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              className="bg-background border-border text-foreground placeholder-muted-foreground focus:ring-primary w-full rounded-lg border px-4 py-2 focus:ring-2 focus:outline-none"
               placeholder="you@example.com"
             />
           </div>
 
           <div className="mb-6">
-            <label htmlFor="subject" className="block mb-2 font-semibold text-foreground">
+            <label htmlFor="subject" className="text-foreground mb-2 block font-semibold">
               Subject
             </label>
             <input
@@ -105,13 +108,13 @@ export default function SupportPageClient() {
               value={formData.subject}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 bg-background border border-border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              className="bg-background border-border text-foreground placeholder-muted-foreground focus:ring-primary w-full rounded-lg border px-4 py-2 focus:ring-2 focus:outline-none"
               placeholder="How can we help?"
             />
           </div>
 
           <div className="mb-6">
-            <label htmlFor="message" className="block mb-2 font-semibold text-foreground">
+            <label htmlFor="message" className="text-foreground mb-2 block font-semibold">
               Message
             </label>
             <textarea
@@ -121,19 +124,19 @@ export default function SupportPageClient() {
               onChange={handleChange}
               required
               rows={6}
-              className="w-full px-4 py-2 bg-background border border-border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+              className="bg-background border-border text-foreground placeholder-muted-foreground focus:ring-primary w-full resize-none rounded-lg border px-4 py-2 focus:ring-2 focus:outline-none"
               placeholder="Tell us what's on your mind..."
             />
           </div>
 
           {submitStatus === "success" && (
-            <div className="mb-6 p-4 bg-green-500/10 border border-green-500/30 rounded-lg text-green-400">
+            <div className="mb-6 rounded-lg border border-green-500/30 bg-green-500/10 p-4 text-green-400">
               ✓ Message sent! Thank you for reaching out. We'll get back to you soon.
             </div>
           )}
 
           {submitStatus === "error" && (
-            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400">
+            <div className="mb-6 rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-red-400">
               ✗ Something went wrong. Please try again or email us directly.
             </div>
           )}
@@ -141,7 +144,7 @@ export default function SupportPageClient() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="px-6 py-2 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="bg-primary text-primary-foreground rounded-lg px-6 py-2 font-semibold transition-colors hover:bg-indigo-600 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isSubmitting ? "Sending..." : "Send Message"}
           </button>
@@ -150,30 +153,44 @@ export default function SupportPageClient() {
 
       {/* FAQ */}
       <section>
-        <h2 className="mb-6 text-2xl font-bold text-foreground">Frequently Asked Questions</h2>
-        <div className="bg-card border border-border rounded-lg p-6 space-y-6">
+        <h2 className="text-foreground mb-6 text-2xl font-bold">Frequently Asked Questions</h2>
+        <div className="bg-card border-border space-y-6 rounded-lg border p-6">
           <div>
-            <h3 className="font-semibold text-foreground mb-2">How quickly will I get a response?</h3>
+            <h3 className="text-foreground mb-2 font-semibold">
+              How quickly will I get a response?
+            </h3>
             <p className="text-muted-foreground">
-              We aim to respond to all support requests within 24 hours. For urgent issues, please mention "URGENT" in the subject line.
+              We aim to respond to all support requests within 24 hours. For urgent issues, please
+              mention "URGENT" in the subject line.
             </p>
           </div>
           <div>
-            <h3 className="font-semibold text-foreground mb-2">Do you offer phone support?</h3>
+            <h3 className="text-foreground mb-2 font-semibold">Do you offer phone support?</h3>
             <p className="text-muted-foreground">
-              Currently we support email and GitHub discussions. If you need a call, mention it in your message and we'll arrange a time.
+              Currently we support email and GitHub discussions. If you need a call, mention it in
+              your message and we'll arrange a time.
             </p>
           </div>
           <div>
-            <h3 className="font-semibold text-foreground mb-2">Can I report a bug directly?</h3>
+            <h3 className="text-foreground mb-2 font-semibold">Can I report a bug directly?</h3>
             <p className="text-muted-foreground">
-              Yes! Use the support form or email us with as much detail as possible: what you were doing, what happened, and what you expected.
+              Yes! Use the support form or email us with as much detail as possible: what you were
+              doing, what happened, and what you expected.
             </p>
           </div>
           <div>
-            <h3 className="font-semibold text-foreground mb-2">Is there a status page?</h3>
+            <h3 className="text-foreground mb-2 font-semibold">Is there a status page?</h3>
             <p className="text-muted-foreground">
-              We monitor MindToosa 24/7. For real-time status updates, follow our <a href="https://github.com/mindtoosa" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">GitHub</a>.
+              We monitor MindToosa 24/7. For real-time status updates, follow our{" "}
+              <a
+                href="https://github.com/mindtoosa"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                GitHub
+              </a>
+              .
             </p>
           </div>
         </div>

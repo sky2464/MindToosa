@@ -22,7 +22,13 @@ export async function GET(req: Request) {
   const offset = (page - 1) * pageSize;
 
   try {
-    const tasks = await taskService.getTasks(userId, { spaceId, date, parentId, limit: pageSize, offset });
+    const tasks = await taskService.getTasks(userId, {
+      spaceId,
+      date,
+      parentId,
+      limit: pageSize,
+      offset,
+    });
     tracer.end(200, { count: tasks.length });
     return jsonEnvelope(tasks, { page, pageSize, total: tasks.length });
   } catch (error: unknown) {

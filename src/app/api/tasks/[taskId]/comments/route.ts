@@ -6,50 +6,44 @@ import { handleRouteError } from "@/lib/routeError";
 import { jsonEnvelope } from "@/lib/apiEnvelope";
 
 const CommentCreateSchema = z.object({
-    content: z.string().min(1, "Comment cannot be empty").max(2000),
+  content: z.string().min(1, "Comment cannot be empty").max(2000),
 });
 
-export async function GET(
-    _req: Request,
-    { params }: { params: Promise<{ taskId: string }> }
-) {
-    const session = await auth();
-    const userId = session?.user?.email;
-    if (!userId) return new NextResponse("Unauthorized", { status: 401 });
+export async function GET(_req: Request, { params }: { params: Promise<{ taskId: string }> }) {
+  const session = await auth();
+  const userId = session?.user?.email;
+  if (!userId) return new NextResponse("Unauthorized", { status: 401 });
 
-    const { taskId } = await params;
+  const { taskId } = await params;
 
-    try {
-        const comments = await taskService.getComments(userId, taskId);
-        return jsonEnvelope(comments);
-    } catch (error: unknown) {
-        return handleRouteError(error);
-    }
+  try {
+    const comments = await taskService.getComments(userId, taskId);
+    return jsonEnvelope(comments);
+  } catch (error: unknown) {
+    return handleRouteError(error);
+  }
 }
 
-export async function POST(
-    req: Request,
-    { params }: { params: Promise<{ taskId: string }> }
-) {
-    const session = await auth();
-    const userId = session?.user?.email;
-    if (!userId) return new NextResponse("Unauthorized", { status: 401 });
+export async function POST(req: Request, { params }: { params: Promise<{ taskId: string }> }) {
+  const session = await auth();
+  const userId = session?.user?.email;
+  if (!userId) return new NextResponse("Unauthorized", { status: 401 });
 
-    const { taskId } = await params;
-    const body = await req.json();
-    const parsed = CommentCreateSchema.safeParse(body);
+  const { taskId } = await params;
+  const body = await req.json();
+  const parsed = CommentCreateSchema.safeParse(body);
 
-    if (!parsed.success) {
-        return NextResponse.json(
-            { error: "Invalid comment data", details: parsed.error.format() },
-            { status: 400 }
-        );
-    }
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "Invalid comment data", details: parsed.error.format() },
+      { status: 400 }
+    );
+  }
 
-    try {
-        const comment = await taskService.createComment(userId, taskId, parsed.data.content);
-        return NextResponse.json(comment, { status: 201 });
-    } catch (error: unknown) {
-        return handleRouteError(error);
-    }
+  try {
+    const comment = await taskService.createComment(userId, taskId, parsed.data.content);
+    return NextResponse.json(comment, { status: 201 });
+  } catch (error: unknown) {
+    return handleRouteError(error);
+  }
 }

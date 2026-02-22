@@ -46,7 +46,9 @@ This document serves as the primary context source for AI agents working on the 
 ```
 
 ### Public Pages (No Authentication Required)
+
 MindToosa includes public-facing pages that are NOT protected by the `proxy.ts` auth middleware:
+
 - **`/help`** — Help center with FAQs, keyboard shortcuts, and getting started guides
 - **`/docs`** — Comprehensive feature documentation
 - **`/about`** — Mission statement, vision, and core values
@@ -124,11 +126,13 @@ Both sections appear on desktop (sidebar) with icons and tooltips, and on mobile
 For content-heavy pages (Help, Docs, About, Support), use these components:
 
 - **`FaqItem`** (`src/components/FaqItem.tsx`) — Collapsible accordion for FAQ sections. Includes `aria-expanded` for accessibility. Usage:
+
   ```tsx
   <FaqItem question="How do I start?" answer={<p>Click Today, then add a task.</p>} />
   ```
 
 - **`DocSection`** (`src/components/DocSection.tsx`) — Semantic section wrapper with heading and content. Supports scroll-to anchoring with `id`. Usage:
+
   ```tsx
   <DocSection title="Getting Started" id="getting-started">
     <p>Your content here...</p>

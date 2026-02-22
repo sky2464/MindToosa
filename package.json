@@ -12,7 +12,11 @@
     "test:ci": "vitest run",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "audit": "npm audit --audit-level=high"
+    "audit": "npm audit --audit-level=high",
+    "validate-assistant-config": "node ./scripts/validate-assistant-config.js",
+    "validate-prompts": "node ./scripts/validate-prompts.js",
+    "upgrade:deps": "npx npm-check-updates -u && npm install",
+    "prepare-dep-pr": "echo \"Run 'npm run upgrade:deps' then commit package.json/package-lock.json to open a deps PR\""
   },
   "dependencies": {
     "@google/genai": "1.42.0",

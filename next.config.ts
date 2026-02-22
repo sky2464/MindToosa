@@ -5,11 +5,18 @@ const isDev = process.env.NODE_ENV === "development";
 // Routes exposed under the versioned prefix (/api/v1/)
 // New external clients should use /api/v1/; /api/ remains for internal use.
 const API_ROUTES = [
-  "tasks", "tasks/:taskId", "tasks/:taskId/subtasks", "tasks/:taskId/dependencies",
-  "goals", "goals/:id",
-  "projects", "projects/:id",
-  "spaces", "spaces/:id",
-  "labels", "labels/:id",
+  "tasks",
+  "tasks/:taskId",
+  "tasks/:taskId/subtasks",
+  "tasks/:taskId/dependencies",
+  "goals",
+  "goals/:id",
+  "projects",
+  "projects/:id",
+  "spaces",
+  "spaces/:id",
+  "labels",
+  "labels/:id",
   "trash",
   "notifications",
   "search",
@@ -20,7 +27,7 @@ const API_ROUTES = [
 ];
 
 const nextConfig: NextConfig = {
-  output: 'standalone',
+  output: "standalone",
   turbopack: {
     root: __dirname,
   },
@@ -33,10 +40,10 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        source: '/(.*)',
+        source: "/(.*)",
         headers: [
           {
-            key: 'Content-Security-Policy',
+            key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
               // unsafe-eval required for Next.js HMR in dev; removed in production.
@@ -48,7 +55,7 @@ const nextConfig: NextConfig = {
               "img-src 'self' blob: data:",
               "font-src 'self'",
               "connect-src 'self' https://s3.us-west-2.amazonaws.com https://*.vercel-insights.com https://*.vercel-analytics.com",
-            ].join('; '),
+            ].join("; "),
           },
         ],
       },

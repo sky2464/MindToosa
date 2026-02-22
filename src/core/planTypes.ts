@@ -101,4 +101,3 @@ export type FocusSession = z.infer<typeof FocusSessionSchema>;
 export type DailyPlan = z.infer<typeof DailyPlanSchema>;
 export type TaskLabel = z.infer<typeof TaskLabelSchema>;
 export type TaskComment = z.infer<typeof TaskCommentSchema>;
-

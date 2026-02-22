@@ -24,10 +24,13 @@ export default async function ProjectsPage() {
     <div className="mx-auto max-w-5xl space-y-8 p-4 sm:p-6 lg:p-8">
       <header className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Projects</h1>
-          <p className="mt-1 text-muted-foreground">Manage your big goals and tasks.</p>
+          <h1 className="text-foreground text-3xl font-bold">Projects</h1>
+          <p className="text-muted-foreground mt-1">Manage your big goals and tasks.</p>
         </div>
-        <Link href="/today" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+        <Link
+          href="/today"
+          className="text-muted-foreground hover:text-foreground text-sm font-medium transition-colors"
+        >
           &larr; Back to Today
         </Link>
       </header>
@@ -43,11 +46,11 @@ export default async function ProjectsPage() {
               <span className="sr-only">View project</span>
             </Link>
             <div className="relative z-10 flex items-start justify-between">
-              <h3 className="line-clamp-1 text-lg font-semibold text-foreground group-hover:text-primary">
+              <h3 className="text-foreground group-hover:text-primary line-clamp-1 text-lg font-semibold">
                 {project.title}
               </h3>
             </div>
-            <p className="mt-2 line-clamp-2 min-h-[40px] text-sm text-muted-foreground">
+            <p className="text-muted-foreground mt-2 line-clamp-2 min-h-[40px] text-sm">
               {project.description || "No description provided."}
             </p>
 
@@ -56,15 +59,18 @@ export default async function ProjectsPage() {
               <ProjectProgress tasks={projectTasks[i] ?? []} />
             </div>
 
-            <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
-              <span>{project.created_at ? new Date(project.created_at).toLocaleDateString() : ""}</span>
+            <div className="text-muted-foreground mt-4 flex items-center justify-between text-xs">
+              <span>
+                {project.created_at ? new Date(project.created_at).toLocaleDateString() : ""}
+              </span>
               <span
-                className={`rounded-full px-2 py-1 ${project.status === "active"
-                  ? "bg-green-500/10 text-green-400"
-                  : project.status === "completed"
-                    ? "bg-indigo-500/10 text-indigo-400"
-                    : "bg-zinc-800 text-zinc-400"
-                  }`}
+                className={`rounded-full px-2 py-1 ${
+                  project.status === "active"
+                    ? "bg-green-500/10 text-green-400"
+                    : project.status === "completed"
+                      ? "bg-indigo-500/10 text-indigo-400"
+                      : "bg-zinc-800 text-zinc-400"
+                }`}
               >
                 {project.status.replace("_", " ")}
               </span>

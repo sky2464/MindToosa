@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -9,9 +9,24 @@ import { Task } from "@/core/planTypes";
 type Priority = "must_do" | "optional" | "normal";
 
 const PRIORITY_CONFIG: { value: Priority; label: string; short: string; activeClass: string }[] = [
-  { value: "must_do", label: "Must-do", short: "!", activeClass: "bg-red-500/10 border-red-500/30 text-red-400" },
-  { value: "optional", label: "Optional", short: "~", activeClass: "bg-amber-500/10 border-amber-500/30 text-amber-400" },
-  { value: "normal", label: "Normal", short: "·", activeClass: "bg-zinc-800 border-zinc-700 text-zinc-400" },
+  {
+    value: "must_do",
+    label: "Must-do",
+    short: "!",
+    activeClass: "bg-red-500/10 border-red-500/30 text-red-400",
+  },
+  {
+    value: "optional",
+    label: "Optional",
+    short: "~",
+    activeClass: "bg-amber-500/10 border-amber-500/30 text-amber-400",
+  },
+  {
+    value: "normal",
+    label: "Normal",
+    short: "·",
+    activeClass: "bg-zinc-800 border-zinc-700 text-zinc-400",
+  },
 ];
 
 const RECURRENCE_OPTIONS: { value: string; label: string }[] = [
@@ -99,7 +114,11 @@ const TaskInput = ({ spaceId }: { spaceId: string }) => {
               ? "border-indigo-500/50 bg-indigo-500/10 text-indigo-400"
               : "border-zinc-700 bg-zinc-800 text-zinc-500 hover:text-zinc-300"
           }`}
-          title={recurrence ? `Repeats: ${RECURRENCE_OPTIONS.find((o) => o.value === recurrence)?.label}` : "Set recurrence"}
+          title={
+            recurrence
+              ? `Repeats: ${RECURRENCE_OPTIONS.find((o) => o.value === recurrence)?.label}`
+              : "Set recurrence"
+          }
           aria-label="Set recurrence"
         >
           <RefreshCw size={14} />
@@ -130,7 +149,9 @@ const TaskInput = ({ spaceId }: { spaceId: string }) => {
             title="Recurrence"
           >
             {RECURRENCE_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
             ))}
           </select>
         </div>

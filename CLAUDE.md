@@ -4,7 +4,7 @@ This document serves as the primary context source for Claude-based AI agents wo
 
 ## 1. 🛠️ Technology Stack
 
-- **Framework**: Next.js 16.1.6 (App Router, `proxy.ts` convention replaces deprecated `middleware.ts`)
+- **Framework**: Next.js 16.1.6 (App Router, `proxy (historically `middleware.ts`).ts` convention replaces deprecated `proxy.ts`)
 - **Language**: TypeScript 5.9.3 (`StrictMode` enabled)
 - **Styling**: Tailwind CSS 4.1.18 (Midnight Glass dark theme — see `globals.css` for design tokens)
 - **Database & Auth**: Supabase (PostgreSQL via service-role key), NextAuth.js v5 Beta 30 (Google OAuth)
@@ -179,11 +179,13 @@ The form uses client-side state management with `SupportPageClient.tsx` ('use cl
 Use these reusable components for content-heavy pages:
 
 - **`FaqItem`** — Collapsible accordion. Includes `aria-expanded` for accessibility:
+
   ```tsx
   <FaqItem question="How do I...?" answer={<p>Step 1...</p>} isOpen={false} />
   ```
 
 - **`DocSection`** — Section wrapper with heading and scroll anchoring:
+
   ```tsx
   <DocSection title="Getting Started" id="getting-started">
     <p>Your content...</p>
@@ -192,9 +194,9 @@ Use these reusable components for content-heavy pages:
 
 - **`ContactCard`** — Icon + link card for contact methods:
   ```tsx
-  <ContactCard 
-    icon={Mail} 
-    title="Email Support" 
+  <ContactCard
+    icon={Mail}
+    title="Email Support"
     description="Contact us via email"
     href="mailto:support@mindtoosa.com"
     external={false}
