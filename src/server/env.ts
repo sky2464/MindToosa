@@ -79,11 +79,19 @@ function getEnv() {
     PLAYWRIGHT_TEST_BACKDOOR_SECRET: process.env.PLAYWRIGHT_TEST_BACKDOOR_SECRET,
   };
 
-  if (process.env.SKIP_ENV_VALIDATION === "true") {
-    console.log(
-      "\x1b[33m%s\x1b[0m",
-      "⚠️ Skipping environment validation (SKIP_ENV_VALIDATION=true)"
-    );
+  const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build";
+  if (isBuildPhase || process.env.SKIP_ENV_VALIDATION === "true") {
+    if (isBuildPhase) {
+      console.log(
+        "\x1b[33m%s\x1b[0m",
+        "⚠️ Build phase detected: skipping env validation (runtime secrets are not available at build time)"
+      );
+    } else {
+      console.log(
+        "\x1b[33m%s\x1b[0m",
+        "⚠️ Skipping environment validation (SKIP_ENV_VALIDATION=true)"
+      );
+    }
     return {
       ...rawEnv,
       SUPABASE_URL: rawEnv.SUPABASE_URL || "https://example.com",

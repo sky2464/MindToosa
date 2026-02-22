@@ -1,13 +1,13 @@
 {
   "project": "MindToosa",
   "version": "1.0.0",
-  "framework": { "name": "next", "major": 16, "notes": "Use proxy.ts instead of proxy.ts" },
+  "framework": { "name": "next", "major": 16, "notes": "Use proxy.ts instead of middleware.ts" },
   "rules": [
     {
       "id": "next-proxy-only",
       "type": "hard",
-      "description": "Use proxy.ts instead of proxy.ts",
-      "forbid": ["proxy.ts", "proxy.js", "proxy.tsx", "proxy.jsx"],
+      "description": "Use proxy.ts instead of middleware.ts",
+      "forbid": ["middleware.ts", "middleware.js", "middleware.tsx", "middleware.jsx"],
       "recommend": ["proxy.ts"]
     },
     {
